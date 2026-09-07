@@ -1061,7 +1061,11 @@ export async function POST(
         {
           success: false,
           message:
-            result.message,
+            (
+              "message" in result
+                ? result.message
+                : "보스타임 동기화 요청을 처리하지 못했습니다."
+            ),
         },
         {
           status:

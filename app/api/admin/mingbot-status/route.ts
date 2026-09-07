@@ -11,6 +11,18 @@ import {
 } from "@/lib/supabase/admin";
 
 
+type HeartbeatRow = {
+  instance_key: string;
+  bot_user_id: string | null;
+  bot_name: string | null;
+  version: string | null;
+  guild_count: number;
+  heartbeat_at: string;
+  started_at: string | null;
+  updated_at: string;
+};
+
+
 export async function GET() {
 
   try {
@@ -88,8 +100,13 @@ export async function GET() {
     }
 
 
+    const heartbeat =
+      data as unknown as
+      HeartbeatRow | null;
+
+
     if (
-      !data
+      !heartbeat
     ) {
 
       return NextResponse.json({
@@ -112,7 +129,7 @@ export async function GET() {
 
     const heartbeatMs =
       new Date(
-        data.heartbeat_at
+        heartbeat.heartbeat_at
       ).getTime();
 
 
@@ -175,28 +192,28 @@ export async function GET() {
 
       heartbeat: {
         instanceKey:
-          data.instance_key,
+          heartbeat.instance_key,
 
         botUserId:
-          data.bot_user_id,
+          heartbeat.bot_user_id,
 
         botName:
-          data.bot_name,
+          heartbeat.bot_name,
 
         version:
-          data.version,
+          heartbeat.version,
 
         guildCount:
-          data.guild_count,
+          heartbeat.guild_count,
 
         heartbeatAt:
-          data.heartbeat_at,
+          heartbeat.heartbeat_at,
 
         startedAt:
-          data.started_at,
+          heartbeat.started_at,
 
         updatedAt:
-          data.updated_at,
+          heartbeat.updated_at,
       },
     });
 

@@ -199,7 +199,8 @@ export async function GET() {
       (
         bossRows ||
         []
-      ) as BossTimerRow[];
+      ) as unknown as
+      BossTimerRow[];
 
 
     // =====================================================
@@ -277,7 +278,8 @@ export async function GET() {
         (
           stateRows ||
           []
-        ) as BossStateRow[];
+        ) as unknown as
+        BossStateRow[];
     }
 
 
