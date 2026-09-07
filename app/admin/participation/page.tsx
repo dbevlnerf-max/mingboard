@@ -46,17 +46,7 @@ export default async function AdminParticipationPage() {
 
   return (
 
-    <ParticipationManager
-      currentUser={
-        session.user.name ||
-        "관리자"
-      }
-      isMaster={
-        Boolean(
-          session.user.isMaster
-        )
-      }
-    />
+    <ParticipationManager />
 
   );
 }

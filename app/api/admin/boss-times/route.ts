@@ -628,7 +628,13 @@ async function saveState(
 
 function actorInfo(
   session: any
-) {
+): {
+  actorDiscordId: string;
+  actorName: string;
+  actorRole:
+    | "MASTER"
+    | "ADMIN";
+} {
 
   return {
     actorDiscordId:
