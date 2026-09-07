@@ -1,0 +1,1762 @@
+.page {
+  min-height: 100vh;
+  padding: 16px;
+
+  color: #f5f5f5;
+
+  background:
+    radial-gradient(
+      circle at 72% 10%,
+      rgba(88, 101, 242, 0.075),
+      transparent 30%
+    ),
+    #050505;
+}
+
+
+/* =====================================================
+   SHELL
+===================================================== */
+
+.shell {
+  width: min(1500px, 100%);
+  min-height: calc(100vh - 32px);
+
+  margin: 0 auto;
+
+  overflow: hidden;
+
+  background: #080808;
+
+  border: 1px solid #2b2b2b;
+  border-radius: 20px;
+
+  box-shadow:
+    0 20px 70px
+    rgba(0, 0, 0, 0.38);
+}
+
+
+/* =====================================================
+   HEADER
+===================================================== */
+
+.header {
+  min-height: 76px;
+
+  display: grid;
+
+  grid-template-columns:
+    1fr auto 1fr;
+
+  align-items: center;
+
+  gap: 20px;
+
+  padding: 0 28px;
+
+  border-bottom: 1px solid #262626;
+}
+
+
+.brand {
+  color: #f3f3f3;
+
+  font-size: 16px;
+  font-weight: 900;
+}
+
+
+.server {
+  margin-top: 5px;
+
+  color: #909090;
+
+  font-size: 9px;
+  font-weight: 600;
+}
+
+
+.headerCenter {
+  padding: 7px 11px;
+
+  color: #949494;
+
+  background: #111111;
+
+  border: 1px solid #303030;
+  border-radius: 999px;
+
+  font-size: 9px;
+  font-weight: 700;
+
+  letter-spacing: 0.9px;
+}
+
+
+.headerRight {
+  justify-self: end;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  color: #aaaaaa;
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+
+.headerRight strong {
+  font-size: 8px;
+  font-weight: 900;
+
+  letter-spacing: 0.8px;
+}
+
+
+.master {
+  color: #e0ba6b;
+}
+
+
+.admin {
+  color: #aab1ff;
+}
+
+
+/* =====================================================
+   CONTENT
+===================================================== */
+
+.content {
+  width:
+    min(
+      1320px,
+      calc(100% - 50px)
+    );
+
+  margin: 0 auto;
+
+  padding:
+    42px 0 64px;
+}
+
+
+/* =====================================================
+   TITLE
+===================================================== */
+
+.titleSection {
+  display: flex;
+
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 20px;
+}
+
+
+.eyebrow {
+  margin-bottom: 8px;
+
+  color: #969696;
+
+  font-size: 9px;
+  font-weight: 900;
+
+  letter-spacing: 2.2px;
+}
+
+
+.titleSection h1 {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 38px;
+  font-weight: 900;
+
+  letter-spacing: -2px;
+}
+
+
+.titleSection p {
+  margin: 10px 0 0;
+
+  color: #a5a5a5;
+
+  font-size: 11px;
+  font-weight: 500;
+
+  line-height: 1.7;
+}
+
+
+/* =====================================================
+   TITLE BUTTONS
+===================================================== */
+
+.titleActions {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+}
+
+
+.addButton,
+.backButton,
+.refreshButton {
+  min-height: 38px;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 13px;
+
+  border-radius: 8px;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition: 0.15s ease;
+}
+
+
+.addButton {
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      135deg,
+      #5865f2,
+      #717bff
+    );
+
+  border:
+    1px solid
+    rgba(120, 132, 255, 0.65);
+
+  box-shadow:
+    0 8px 24px
+    rgba(88, 101, 242, 0.18);
+}
+
+
+.addButton:hover {
+  filter: brightness(1.1);
+
+  transform: translateY(-1px);
+}
+
+
+.backButton,
+.refreshButton {
+  color: #b6b6b6;
+
+  background: #111111;
+
+  border: 1px solid #303030;
+}
+
+
+.backButton:hover,
+.refreshButton:hover {
+  color: #ffffff;
+
+  background: #181818;
+
+  border-color: #464646;
+}
+
+
+.refreshButton:disabled {
+  opacity: 0.4;
+
+  cursor: default;
+}
+
+
+/* =====================================================
+   SUMMARY
+===================================================== */
+
+.summaryGrid {
+  margin-top: 28px;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+
+  gap: 10px;
+}
+
+
+.summaryCard {
+  min-height: 98px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: flex-start;
+  justify-content: center;
+
+  padding: 15px 17px;
+
+  color: #ffffff;
+
+  text-align: left;
+
+  background: #111111;
+
+  border: 1px solid #2e2e2e;
+  border-radius: 11px;
+
+  cursor: pointer;
+
+  transition: 0.15s ease;
+}
+
+
+.summaryCard:hover {
+  transform: translateY(-1px);
+
+  background: #141414;
+
+  border-color: #444444;
+}
+
+
+.summaryCard span {
+  color: #a0a0a0;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
+.summaryCard strong {
+  margin-top: 6px;
+
+  color: #ffffff;
+
+  font-size: 27px;
+  font-weight: 900;
+}
+
+
+.summaryCard small {
+  margin-top: 6px;
+
+  color: #777777;
+
+  font-size: 8px;
+  font-weight: 700;
+
+  letter-spacing: 1px;
+}
+
+
+.activeCard {
+  background: #171717;
+
+  border-color: #5a5a5a;
+}
+
+
+.pinkCard.activeCard {
+  border-color:
+    rgba(255, 108, 173, 0.58);
+}
+
+
+.redCard.activeCard {
+  border-color:
+    rgba(255, 80, 80, 0.58);
+}
+
+
+.blackCard.activeCard {
+  border-color:
+    rgba(220, 220, 220, 0.38);
+}
+
+
+/* =====================================================
+   TOOLBAR
+===================================================== */
+
+.toolbar {
+  margin-top: 17px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  flex-wrap: wrap;
+}
+
+
+.searchBox {
+  width: 260px;
+
+  min-height: 40px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 0 12px;
+
+  background: #101010;
+
+  border: 1px solid #303030;
+  border-radius: 8px;
+}
+
+
+.searchBox input {
+  flex: 1;
+
+  min-width: 0;
+
+  color: #eeeeee;
+
+  background: transparent;
+
+  border: 0;
+
+  outline: 0;
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+
+.searchBox input::placeholder {
+  color: #777777;
+}
+
+
+.toolbar select {
+  min-height: 40px;
+
+  padding: 0 12px;
+
+  color: #c0c0c0;
+
+  background: #101010;
+
+  border: 1px solid #303030;
+  border-radius: 8px;
+
+  outline: 0;
+
+  font-size: 10px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+
+.resultCount {
+  margin-left: auto;
+
+  color: #929292;
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+
+.resultCount strong {
+  margin: 0 4px;
+
+  color: #dedede;
+
+  font-weight: 900;
+}
+
+
+/* =====================================================
+   TABLE
+===================================================== */
+
+.tableWrap {
+  margin-top: 15px;
+
+  overflow: hidden;
+
+  background: #0f0f0f;
+
+  border: 1px solid #2b2b2b;
+  border-radius: 11px;
+}
+
+
+.tableHeader,
+.tableRow {
+  display: grid;
+
+  grid-template-columns:
+    45px
+    42px
+    minmax(125px, 1.3fr)
+    minmax(85px, 0.9fr)
+    95px
+    65px
+    70px
+    70px
+    118px
+    105px;
+
+  align-items: center;
+
+  gap: 9px;
+
+  padding: 0 14px;
+}
+
+
+.tableHeader {
+  min-height: 45px;
+
+  color: #a0a0a0;
+
+  background: #151515;
+
+  border-bottom: 1px solid #303030;
+
+  font-size: 9px;
+  font-weight: 800;
+}
+
+
+.tableRow {
+  min-height: 53px;
+
+  color: #b2b2b2;
+
+  border-bottom: 1px solid #242424;
+
+  font-size: 10px;
+  font-weight: 500;
+
+  transition: 0.12s ease;
+}
+
+
+.tableRow:hover {
+  background: #151515;
+}
+
+
+.tableRow:last-child {
+  border-bottom: 0;
+}
+
+
+.rank,
+.gid {
+  color: #858585;
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+
+.nickname {
+  color: #f4f4f4;
+
+  font-size: 11px;
+  font-weight: 900;
+}
+
+
+.growth {
+  color: #e0e0e0;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  font-variant-numeric:
+    tabular-nums;
+}
+
+
+.guildBadge {
+  width: fit-content;
+
+  min-width: 44px;
+
+  padding: 5px 8px;
+
+  text-align: center;
+
+  border-radius: 999px;
+
+  font-size: 8px;
+  font-weight: 900;
+}
+
+
+.pink {
+  color: #ffafd2;
+
+  background:
+    rgba(255, 91, 160, 0.09);
+
+  border:
+    1px solid
+    rgba(255, 91, 160, 0.25);
+}
+
+
+.red {
+  color: #ff9b9b;
+
+  background:
+    rgba(255, 77, 77, 0.09);
+
+  border:
+    1px solid
+    rgba(255, 77, 77, 0.25);
+}
+
+
+.black {
+  color: #d8d8d8;
+
+  background:
+    rgba(255, 255, 255, 0.055);
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.17);
+}
+
+
+.attendance {
+  color: #ecd16f;
+
+  font-weight: 900;
+}
+
+
+.participation {
+  color: #a8a8a8;
+
+  font-weight: 600;
+}
+
+
+/* =====================================================
+   ROW BUTTONS
+===================================================== */
+
+.rowActions {
+  display: flex;
+
+  align-items: center;
+
+  gap: 5px;
+}
+
+
+.editButton,
+.deleteButton {
+  min-height: 29px;
+
+  padding: 0 9px;
+
+  border-radius: 6px;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+
+.editButton {
+  color: #b0b6ff;
+
+  background:
+    rgba(88, 101, 242, 0.09);
+
+  border:
+    1px solid
+    rgba(88, 101, 242, 0.25);
+}
+
+
+.deleteButton {
+  color: #ed9a9a;
+
+  background:
+    rgba(210, 70, 70, 0.07);
+
+  border:
+    1px solid
+    rgba(210, 70, 70, 0.22);
+}
+
+
+.editButton:hover {
+  color: #ffffff;
+
+  background:
+    rgba(88, 101, 242, 0.2);
+}
+
+
+.deleteButton:hover {
+  color: #ffffff;
+
+  background:
+    rgba(210, 70, 70, 0.18);
+}
+
+
+/* =====================================================
+   DISCORD LINK
+===================================================== */
+
+.discordCell {
+  display: flex;
+
+  align-items: center;
+
+  gap: 6px;
+}
+
+
+.linkBadge {
+  min-width: 42px;
+
+  padding: 4px 7px;
+
+  color: #8f8f8f;
+
+  text-align: center;
+
+  background: #151515;
+
+  border: 1px solid #303030;
+  border-radius: 999px;
+
+  font-size: 8px;
+  font-weight: 900;
+
+  white-space: nowrap;
+}
+
+
+.linkPartial {
+  color: #e6c17a;
+
+  background:
+    rgba(205, 155, 65, 0.08);
+
+  border-color:
+    rgba(205, 155, 65, 0.24);
+}
+
+
+.linkFull {
+  color: #9ee0b1;
+
+  background:
+    rgba(65, 170, 95, 0.08);
+
+  border-color:
+    rgba(65, 170, 95, 0.24);
+}
+
+
+.linkManageButton {
+  min-height: 29px;
+
+  padding: 0 8px;
+
+  color: #aeb5ff;
+
+  background:
+    rgba(88, 101, 242, 0.09);
+
+  border:
+    1px solid
+    rgba(88, 101, 242, 0.25);
+
+  border-radius: 6px;
+
+  font-size: 8px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  white-space: nowrap;
+}
+
+
+.linkManageButton:hover {
+  color: #ffffff;
+
+  background:
+    rgba(88, 101, 242, 0.2);
+}
+
+
+.discordModal {
+  width:
+    min(
+      650px,
+      100%
+    );
+}
+
+
+.discordMemberInfo {
+  margin-top: 20px;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+
+  gap: 8px;
+}
+
+
+.discordMemberInfo > div {
+  min-height: 66px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+
+  padding: 0 12px;
+
+  background: #0a0a0a;
+
+  border: 1px solid #2d2d2d;
+  border-radius: 8px;
+}
+
+
+.discordMemberInfo span {
+  color: #858585;
+
+  font-size: 8px;
+  font-weight: 800;
+}
+
+
+.discordMemberInfo strong {
+  margin-top: 6px;
+
+  color: #efefef;
+
+  font-size: 11px;
+  font-weight: 900;
+}
+
+
+.discordLoading,
+.discordEmpty {
+  margin-top: 14px;
+
+  padding: 28px 15px;
+
+  color: #989898;
+
+  text-align: center;
+
+  background: #0b0b0b;
+
+  border: 1px dashed #343434;
+  border-radius: 9px;
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+
+.discordLinkList {
+  margin-top: 14px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 8px;
+}
+
+
+.discordLinkItem {
+  min-height: 72px;
+
+  display: grid;
+
+  grid-template-columns:
+    30px
+    minmax(0, 1fr)
+    auto;
+
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 10px 12px;
+
+  background: #0b0b0b;
+
+  border: 1px solid #303030;
+  border-radius: 9px;
+}
+
+
+.discordLinkIndex {
+  width: 27px;
+  height: 27px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  color: #aab1ff;
+
+  background:
+    rgba(88, 101, 242, 0.09);
+
+  border:
+    1px solid
+    rgba(88, 101, 242, 0.24);
+
+  border-radius: 7px;
+
+  font-size: 9px;
+  font-weight: 900;
+}
+
+
+.discordLinkMain {
+  min-width: 0;
+}
+
+
+.discordLinkName {
+  overflow: hidden;
+
+  color: #f1f1f1;
+
+  font-size: 12px;
+  font-weight: 900;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+
+.discordLinkMeta {
+  margin-top: 6px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  color: #858585;
+
+  font-size: 8px;
+  font-weight: 600;
+
+  flex-wrap: wrap;
+}
+
+
+.discordLinkMeta span:first-child {
+  padding: 3px 6px;
+
+  color: #b8bfff;
+
+  background:
+    rgba(88, 101, 242, 0.08);
+
+  border:
+    1px solid
+    rgba(88, 101, 242, 0.2);
+
+  border-radius: 999px;
+
+  font-weight: 900;
+}
+
+
+.unlinkButton {
+  min-height: 32px;
+
+  padding: 0 10px;
+
+  color: #ee9c9c;
+
+  background:
+    rgba(205, 65, 65, 0.07);
+
+  border:
+    1px solid
+    rgba(210, 70, 70, 0.22);
+
+  border-radius: 7px;
+
+  font-size: 9px;
+  font-weight: 900;
+
+  cursor: pointer;
+
+  white-space: nowrap;
+}
+
+
+.unlinkButton:hover:not(:disabled) {
+  color: #ffffff;
+
+  background:
+    rgba(210, 70, 70, 0.18);
+}
+
+
+.unlinkButton:disabled {
+  opacity: 0.4;
+
+  cursor: default;
+}
+
+
+.discordNotice {
+  margin-top: 14px;
+
+  padding: 12px 13px;
+
+  background: #0b0b0b;
+
+  border: 1px solid #2d2d2d;
+  border-radius: 8px;
+}
+
+
+.discordNotice strong {
+  color: #bdbdbd;
+
+  font-size: 9px;
+  font-weight: 900;
+}
+
+
+.discordNotice p {
+  margin: 6px 0 0;
+
+  color: #8f8f8f;
+
+  font-size: 9px;
+  font-weight: 500;
+
+  line-height: 1.65;
+}
+
+
+/* =====================================================
+   STATE
+===================================================== */
+
+.stateBox,
+.emptyResult {
+  margin-top: 15px;
+
+  padding: 34px;
+
+  text-align: center;
+
+  color: #a0a0a0;
+
+  background: #0f0f0f;
+
+  border: 1px dashed #343434;
+  border-radius: 10px;
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+
+.errorBox {
+  color: #e39090;
+}
+
+
+/* =====================================================
+   PAGINATION
+===================================================== */
+
+.pagination {
+  margin-top: 15px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 15px;
+}
+
+
+.pageInfo {
+  display: flex;
+
+  align-items: center;
+
+  gap: 5px;
+
+  color: #919191;
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+
+.pageInfo strong {
+  color: #d5d5d5;
+
+  font-weight: 900;
+}
+
+
+.pageControls,
+.pageNumbers {
+  display: flex;
+
+  align-items: center;
+
+  gap: 5px;
+}
+
+
+.pageControls button {
+  min-width: 36px;
+
+  height: 34px;
+
+  padding: 0 10px;
+
+  color: #b2b2b2;
+
+  background: #111111;
+
+  border: 1px solid #303030;
+  border-radius: 7px;
+
+  font-size: 9px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+
+.pageControls button:hover:not(:disabled) {
+  color: #ffffff;
+
+  background: #1a1a1a;
+
+  border-color: #474747;
+}
+
+
+.pageControls button:disabled {
+  opacity: 0.3;
+
+  cursor: default;
+}
+
+
+.pageControls .activePage {
+  color: #ffffff;
+
+  background: #5865f2;
+
+  border-color: #7580ff;
+
+  font-weight: 900;
+}
+
+
+/* =====================================================
+   MODAL
+===================================================== */
+
+.modalBackdrop {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 1000;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background:
+    rgba(0, 0, 0, 0.84);
+
+  backdrop-filter:
+    blur(7px);
+}
+
+
+.modal {
+  width:
+    min(
+      520px,
+      100%
+    );
+
+  padding: 24px;
+
+  background: #101010;
+
+  border: 1px solid #3a3a3a;
+  border-radius: 15px;
+
+  box-shadow:
+    0 30px 90px
+    rgba(0, 0, 0, 0.75);
+}
+
+
+.deleteModal {
+  width:
+    min(
+      470px,
+      100%
+    );
+}
+
+
+.modalHeader {
+  display: flex;
+
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+
+.modalHeader span {
+  color: #939393;
+
+  font-size: 8px;
+  font-weight: 900;
+
+  letter-spacing: 2px;
+}
+
+
+.modalHeader h2 {
+  margin: 7px 0 0;
+
+  color: #ffffff;
+
+  font-size: 23px;
+  font-weight: 900;
+}
+
+
+.modalClose {
+  width: 34px;
+  height: 34px;
+
+  color: #aaaaaa;
+
+  background: #171717;
+
+  border: 1px solid #343434;
+  border-radius: 7px;
+
+  font-size: 19px;
+
+  cursor: pointer;
+}
+
+
+.modalClose:hover {
+  color: #ffffff;
+}
+
+
+/* =====================================================
+   MEMBER INFO
+===================================================== */
+
+.memberIdentity,
+.newMemberInfo {
+  margin-top: 20px;
+
+  padding: 10px 12px;
+
+  background: #0a0a0a;
+
+  border: 1px solid #2d2d2d;
+  border-radius: 7px;
+
+  font-size: 10px;
+}
+
+
+.memberIdentity {
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+}
+
+
+.memberIdentity span {
+  color: #8a8a8a;
+
+  font-size: 9px;
+}
+
+
+.memberIdentity strong {
+  color: #d5d5d5;
+
+  font-size: 10px;
+  font-weight: 900;
+}
+
+
+.newMemberInfo {
+  color: #a0a0a0;
+
+  font-weight: 600;
+}
+
+
+/* =====================================================
+   FORM
+===================================================== */
+
+.editForm {
+  margin-top: 19px;
+
+  display: grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap: 14px;
+}
+
+
+.editForm label {
+  display: block;
+}
+
+
+.editForm label > span {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #b3b3b3;
+
+  font-size: 10px;
+  font-weight: 800;
+}
+
+
+.editForm input,
+.editForm select {
+  width: 100%;
+
+  height: 43px;
+
+  padding: 0 12px;
+
+  color: #eeeeee;
+
+  background: #0a0a0a;
+
+  border: 1px solid #343434;
+  border-radius: 8px;
+
+  outline: 0;
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+
+.editForm input::placeholder {
+  color: #6f6f6f;
+}
+
+
+.editForm input:focus,
+.editForm select:focus {
+  border-color: #6975ff;
+
+  box-shadow:
+    0 0 0 2px
+    rgba(88, 101, 242, 0.08);
+}
+
+
+/* =====================================================
+   FORM ERROR
+===================================================== */
+
+.saveError {
+  margin-top: 13px;
+
+  padding: 10px 12px;
+
+  color: #ef9a9a;
+
+  background:
+    rgba(200, 70, 70, 0.08);
+
+  border:
+    1px solid
+    rgba(200, 70, 70, 0.22);
+
+  border-radius: 7px;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
+/* =====================================================
+   MODAL ACTIONS
+===================================================== */
+
+.modalActions {
+  margin-top: 20px;
+
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 8px;
+}
+
+
+.cancelEditButton,
+.saveEditButton,
+.confirmDeleteButton {
+  min-height: 40px;
+
+  padding: 0 15px;
+
+  border-radius: 8px;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  cursor: pointer;
+}
+
+
+.cancelEditButton {
+  color: #b2b2b2;
+
+  background: #171717;
+
+  border: 1px solid #343434;
+}
+
+
+.saveEditButton {
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      135deg,
+      #5865f2,
+      #717bff
+    );
+
+  border: 0;
+}
+
+
+.confirmDeleteButton {
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      135deg,
+      #aa4141,
+      #d55858
+    );
+
+  border: 0;
+}
+
+
+.modalActions button:disabled {
+  opacity: 0.35;
+
+  cursor: default;
+}
+
+
+/* =====================================================
+   DELETE MODAL
+===================================================== */
+
+.deleteWarning {
+  margin-top: 21px;
+
+  padding: 17px;
+
+  background:
+    rgba(190, 60, 60, 0.065);
+
+  border:
+    1px solid
+    rgba(210, 80, 80, 0.2);
+
+  border-radius: 9px;
+}
+
+
+.deleteWarning strong {
+  color: #f2aaaa;
+
+  font-size: 15px;
+  font-weight: 900;
+}
+
+
+.deleteWarning p {
+  margin: 8px 0 0;
+
+  color: #aaa;
+
+  font-size: 10px;
+  font-weight: 500;
+
+  line-height: 1.7;
+}
+
+
+.deleteConfirmField {
+  display: block;
+
+  margin-top: 18px;
+}
+
+
+.deleteConfirmField span {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #b2b2b2;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
+.deleteConfirmField input {
+  width: 100%;
+
+  height: 43px;
+
+  padding: 0 12px;
+
+  color: #eeeeee;
+
+  background: #0a0a0a;
+
+  border: 1px solid #473030;
+  border-radius: 8px;
+
+  outline: 0;
+
+  font-size: 10px;
+}
+
+
+.deleteConfirmField input:focus {
+  border-color: #c85b5b;
+}
+
+
+.deleteConfirmField input:disabled {
+  color: #777777;
+  background: #0d0d0d;
+  border-color: #2d2d2d;
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (max-width: 850px) {
+
+  .header {
+    grid-template-columns:
+      1fr auto;
+
+    padding: 0 15px;
+  }
+
+
+  .headerCenter {
+    display: none;
+  }
+
+
+  .server {
+    display: none;
+  }
+
+
+  .content {
+    width:
+      calc(
+        100% - 28px
+      );
+
+    padding-top: 30px;
+  }
+
+
+  .titleSection {
+    display: block;
+  }
+
+
+  .titleSection h1 {
+    font-size: 32px;
+  }
+
+
+  .titleActions {
+    margin-top: 16px;
+
+    flex-wrap: wrap;
+  }
+
+
+  .summaryGrid {
+    grid-template-columns:
+      1fr 1fr;
+  }
+
+
+  .searchBox {
+    width: 100%;
+  }
+
+
+  .toolbar select {
+    flex:
+      1 1 140px;
+  }
+
+
+  .resultCount {
+    width: 100%;
+
+    margin-left: 0;
+  }
+
+
+  .tableWrap {
+    overflow-x: auto;
+  }
+
+
+  .tableHeader,
+  .tableRow {
+    min-width: 1040px;
+  }
+
+
+  .pagination {
+    flex-direction: column;
+
+    align-items: stretch;
+  }
+
+
+  .pageControls {
+    justify-content: center;
+
+    flex-wrap: wrap;
+  }
+
+
+  .editForm {
+    grid-template-columns:
+      1fr;
+  }
+
+
+  .discordMemberInfo {
+    grid-template-columns:
+      1fr 1fr;
+  }
+
+
+  .discordLinkItem {
+    grid-template-columns:
+      30px
+      minmax(0, 1fr);
+  }
+
+
+  .unlinkButton {
+    grid-column:
+      1 / -1;
+
+    width: 100%;
+  }
+
+}

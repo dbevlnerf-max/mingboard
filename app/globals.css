@@ -1,0 +1,3939 @@
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #050505;
+  color: #ffffff;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
+
+
+/* =====================================================
+   AUTH PAGE
+===================================================== */
+
+.authPage {
+  min-height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 12px;
+
+  background:
+    radial-gradient(
+      circle at 76% 47%,
+      rgba(255, 77, 155, .08),
+      transparent 27%
+    ),
+    radial-gradient(
+      circle at center,
+      #101010 0%,
+      #060606 52%,
+      #020202 100%
+    );
+}
+
+
+.authShell {
+  width:
+    min(
+      1420px,
+      calc(100vw - 24px)
+    );
+
+  min-height: 780px;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  background:
+    rgba(7, 7, 7, .97);
+
+  border:
+    1px solid #252525;
+
+  border-radius: 22px;
+
+  box-shadow:
+    0 28px 80px
+    rgba(0, 0, 0, .58);
+}
+
+
+/* =====================================================
+   AUTH HEADER
+===================================================== */
+
+.authHeader {
+  min-height: 82px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding:
+    0 32px;
+
+  border-bottom:
+    1px solid #202020;
+}
+
+.authHeaderLogo {
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.authHeaderSub {
+  margin-top: 5px;
+
+  color: #666;
+
+  font-size: 10px;
+}
+
+.authHeaderBadge {
+  padding:
+    8px 13px;
+
+  color: #777;
+
+  background: #101010;
+
+  border:
+    1px solid #292929;
+
+  border-radius: 999px;
+
+  font-size: 10px;
+
+  letter-spacing: .6px;
+}
+
+
+/* =====================================================
+   AUTH MAIN
+===================================================== */
+
+.authMain {
+  flex: 1;
+
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    280px
+    580px
+    320px;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 30px;
+
+  padding:
+    42px 34px;
+}
+
+
+/* =====================================================
+   AUTH SUPPORT
+===================================================== */
+
+.authSideLeft {
+  width: 100%;
+  min-width: 0;
+}
+
+.authSectionLabel,
+.authKicker {
+  margin-bottom: 11px;
+
+  color: #606060;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  letter-spacing: 2.4px;
+}
+
+.authSideTitle {
+  margin:
+    0 0 22px;
+
+  font-size: 24px;
+
+  letter-spacing: -1px;
+}
+
+
+/* =====================================================
+   OPERATORS
+===================================================== */
+
+.operatorGrid {
+  display: grid;
+
+  grid-template-columns:
+    1fr
+    1fr;
+
+  gap: 11px;
+}
+
+.operatorCard {
+  position: relative;
+
+  min-height: 60px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #e5e5e5;
+
+  background: #101010;
+
+  border:
+    1px solid #2b2b2b;
+
+  border-radius: 11px;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.markedOperator {
+  margin-top: 6px;
+}
+
+.operatorBadge {
+  position: absolute;
+
+  top: -12px;
+  left: 50%;
+
+  transform:
+    translateX(-50%);
+
+  z-index: 2;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 28px;
+  height: 24px;
+
+  font-size: 16px;
+
+  line-height: 1;
+
+  filter:
+    drop-shadow(
+      0 3px 6px
+      rgba(0, 0, 0, .6)
+    );
+}
+
+.crownBadge {
+  transform:
+    translateX(-50%)
+    rotate(-7deg);
+}
+
+.swordBadge {
+  transform:
+    translateX(-50%)
+    rotate(-3deg);
+}
+
+.supportNote {
+  margin-top: 18px;
+
+  color: #8b8b8b;
+
+  font-size: 11px;
+
+  font-weight: 600;
+}
+
+.supportSubNote {
+  margin-top: 8px;
+
+  color: #555;
+
+  font-size: 10px;
+}
+
+
+/* =====================================================
+   AUTH CENTER
+===================================================== */
+
+.authCenter {
+  width: 100%;
+
+  max-width: 620px;
+
+  justify-self: center;
+
+  text-align: center;
+}
+
+.authKicker {
+  margin-bottom: 14px;
+
+  color: #737373;
+}
+
+.authTitle {
+  margin: 0;
+
+  color: white;
+
+  font-size:
+    clamp(
+      76px,
+      6.7vw,
+      108px
+    );
+
+  line-height: .95;
+
+  letter-spacing: 2px;
+
+  font-weight: 900;
+}
+
+.authIdentityLine {
+  margin-top: 22px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-wrap: wrap;
+
+  gap: 11px;
+
+  color: #d2d2d2;
+
+  font-size: 13px;
+
+  font-weight: 700;
+}
+
+.identityDot {
+  color: #444;
+
+  font-size: 15px;
+}
+
+.guildNameRow {
+  margin-top: 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 9px;
+
+  color: #4e4e4e;
+
+  font-size: 12px;
+}
+
+.guildName {
+  font-weight: 900;
+}
+
+.pinkGuild {
+  color: #ff91c2;
+}
+
+.redGuild {
+  color: #ff8585;
+}
+
+.blackGuild {
+  color: #d3d3d3;
+}
+
+
+/* =====================================================
+   AUTH FEATURES
+===================================================== */
+
+.featureRow {
+  margin-top: 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-wrap: wrap;
+
+  gap: 8px;
+}
+
+.featureRow span {
+  padding:
+    8px 11px;
+
+  color: #9c9c9c;
+
+  background: #101010;
+
+  border:
+    1px solid #292929;
+
+  border-radius: 999px;
+
+  font-size: 10px;
+}
+
+
+/* =====================================================
+   AUTH BUTTON
+===================================================== */
+
+.authAction {
+  margin-top: 34px;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+}
+
+.discordAuthButton {
+  min-width: 380px;
+
+  min-height: 58px;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 11px;
+
+  padding:
+    0 28px;
+
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      135deg,
+      #5865f2,
+      #7079ff
+    );
+
+  border: 0;
+
+  border-radius: 13px;
+
+  font-size: 15px;
+
+  font-weight: 900;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 16px 36px
+    rgba(88, 101, 242, .25);
+
+  transition: .15s;
+}
+
+.discordAuthButton:hover {
+  transform:
+    translateY(-1px);
+
+  filter:
+    brightness(1.07);
+}
+
+.discordAuthIcon {
+  font-size: 18px;
+}
+
+.authSecurityText {
+  max-width: 440px;
+
+  margin-top: 13px;
+
+  color: #5c5c5c;
+
+  font-size: 10px;
+
+  line-height: 1.55;
+}
+
+.authSecurityText strong {
+  color: #777;
+}
+
+
+/* =====================================================
+   AUTH CHARACTER
+===================================================== */
+
+.authSideRight {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.characterStage {
+  position: relative;
+
+  width: 100%;
+
+  max-width: 320px;
+
+  min-height: 380px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.characterGlow {
+  position: absolute;
+
+  width: 300px;
+  height: 300px;
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(255, 82, 154, .13),
+      transparent 68%
+    );
+
+  filter:
+    blur(16px);
+}
+
+.authCharacterImage {
+  position: relative;
+
+  z-index: 2;
+
+  width: 100%;
+
+  max-width: 320px;
+
+  height: auto;
+
+  object-fit: contain;
+
+  filter:
+    drop-shadow(
+      0 24px 44px
+      rgba(0, 0, 0, .6)
+    );
+}
+
+
+/* =====================================================
+   AUTH FOOTER
+===================================================== */
+
+.authFooter {
+  min-height: 56px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding:
+    0 32px;
+
+  color: #454545;
+
+  border-top:
+    1px solid #202020;
+
+  font-size: 9px;
+}
+
+
+/* =====================================================
+   LOGIN / ACCESS
+===================================================== */
+
+.loginStatusPage {
+  min-height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background:
+    radial-gradient(
+      circle at center,
+      #101010,
+      #030303 70%
+    );
+}
+
+.loginStatusCard,
+.accessDeniedCard {
+  width:
+    min(
+      410px,
+      100%
+    );
+
+  padding: 34px;
+
+  text-align: center;
+
+  color: white;
+
+  background: #101010;
+
+  border:
+    1px solid #2b2b2b;
+
+  border-radius: 16px;
+}
+
+.loadingDot {
+  width: 12px;
+  height: 12px;
+
+  margin:
+    0 auto 15px;
+
+  background: #5865f2;
+
+  border-radius: 50%;
+}
+
+.accessDeniedIcon {
+  margin-bottom: 14px;
+
+  font-size: 30px;
+}
+
+.accessDeniedCard h2 {
+  margin:
+    0 0 10px;
+
+  font-size: 20px;
+}
+
+.accessDeniedCard p {
+  color: #888;
+
+  font-size: 12px;
+
+  line-height: 1.65;
+}
+
+.accessDeniedHelp {
+  margin-top: 10px;
+
+  color: #606060;
+
+  font-size: 10px;
+}
+
+.accessDeniedCard button {
+  margin-top: 20px;
+
+  padding:
+    9px 14px;
+
+  color: white;
+
+  background: #1a1a1a;
+
+  border:
+    1px solid #333;
+
+  border-radius: 7px;
+
+  cursor: pointer;
+}
+
+
+/* =====================================================
+   DASHBOARD
+===================================================== */
+
+.dashboard {
+  min-height: 100vh;
+
+  background:
+    radial-gradient(
+      circle at 22% 45%,
+      #191919 0%,
+      #090909 35%,
+      #020202 75%
+    );
+}
+
+
+/* =====================================================
+   TOP BAR
+===================================================== */
+
+.topBar {
+  min-height: 72px;
+
+  display: grid;
+
+  grid-template-columns:
+    230px
+    minmax(420px, 1fr)
+    auto;
+
+  align-items: center;
+
+  gap: 18px;
+
+  padding:
+    0 28px;
+
+  border-bottom:
+    1px solid #242424;
+
+  background:
+    rgba(5, 5, 5, .94);
+
+  position: sticky;
+
+  top: 0;
+
+  z-index: 100;
+}
+
+.logo {
+  font-size: 18px;
+
+  font-weight: 900;
+}
+
+.serverName {
+  margin-top: 4px;
+
+  color: #747474;
+
+  font-size: 10px;
+}
+
+
+/* =====================================================
+   DASHBOARD MENU
+===================================================== */
+
+.topMenu {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
+
+  flex-wrap: wrap;
+}
+
+.menuItem {
+  padding:
+    8px 10px;
+
+  color: #aaa;
+
+  border-radius: 7px;
+
+  font-size: 12px;
+
+  transition: .15s;
+}
+
+.menuItem:hover {
+  color: white;
+
+  background: #171717;
+}
+
+.menuItem.active {
+  color: white;
+
+  background: #1d1d1d;
+}
+
+.adminMenu {
+  border:
+    1px solid #343434;
+}
+
+
+/* =====================================================
+   USER BOX
+===================================================== */
+
+.discordUserBox {
+  justify-self: end;
+
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  height: 44px;
+
+  padding:
+    5px 8px;
+
+  background: #111;
+
+  border:
+    1px solid #333;
+
+  border-radius: 10px;
+}
+
+.discordUserBox img {
+  width: 32px;
+  height: 32px;
+
+  flex-shrink: 0;
+
+  object-fit: cover;
+
+  border-radius: 50%;
+}
+
+.discordUserBox > div {
+  min-width: 70px;
+
+  display: flex;
+  flex-direction: column;
+
+  line-height: 1.2;
+}
+
+.discordUserBox strong {
+  max-width: 120px;
+
+  overflow: hidden;
+
+  white-space: nowrap;
+
+  text-overflow: ellipsis;
+
+  font-size: 11px;
+}
+
+.discordUserBox small {
+  margin-top: 3px;
+
+  color: #888;
+
+  font-size: 8px;
+
+  font-weight: 700;
+
+  letter-spacing: .5px;
+}
+
+.discordUserBox button {
+  padding:
+    5px 7px;
+
+  color: #aaa;
+
+  background: #181818;
+
+  border:
+    1px solid #333;
+
+  border-radius: 5px;
+
+  font-size: 9px;
+
+  cursor: pointer;
+}
+
+
+/* =====================================================
+   DASHBOARD GRID
+===================================================== */
+
+.dashboardGrid {
+  min-height:
+    calc(
+      100vh - 72px
+    );
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(220px, .56fr)
+    minmax(700px, 2fr)
+    minmax(300px, .72fr);
+
+  gap: 16px;
+
+  padding: 18px 12px 22px 18px;
+}
+
+
+/* =====================================================
+   BRAND PANEL
+===================================================== */
+
+.brandingPanel {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 24px;
+
+  padding:
+    28px 8px 8px;
+}
+
+.smallTitle {
+  color: #777;
+
+  font-size: 10px;
+
+  letter-spacing: 4px;
+}
+
+.brandText h1 {
+  margin:
+    12px 0;
+
+  font-size:
+    clamp(
+      34px,
+      4vw,
+      62px
+    );
+
+  line-height: .98;
+
+  letter-spacing: -3px;
+}
+
+.brandText p {
+  color: #777;
+
+  font-size: 12px;
+
+  line-height: 1.6;
+}
+
+
+/* =====================================================
+   DASHBOARD NOTICE
+===================================================== */
+
+.noticePanel {
+  width: 100%;
+
+  padding: 15px;
+
+  background:
+    rgba(
+      13,
+      13,
+      13,
+      .94
+    );
+
+  border:
+    1px solid #272727;
+
+  border-radius: 14px;
+}
+
+.noticePanelHeader {
+  display: flex;
+
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 10px;
+
+  margin-bottom: 12px;
+}
+
+.noticeEyebrow {
+  color: #585858;
+
+  font-size: 7px;
+
+  font-weight: 900;
+
+  letter-spacing: 1.8px;
+}
+
+.noticePanelHeader h2 {
+  margin:
+    5px 0 0;
+
+  font-size: 15px;
+}
+
+.noticeCountBadge {
+  min-width: 27px;
+  height: 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #888;
+
+  background: #151515;
+
+  border:
+    1px solid #2d2d2d;
+
+  border-radius: 999px;
+
+  font-size: 8px;
+}
+
+.noticeEmpty {
+  padding:
+    18px 10px;
+
+  text-align: center;
+
+  color: #5f5f5f;
+
+  background: #0c0c0c;
+
+  border:
+    1px dashed #252525;
+
+  border-radius: 9px;
+
+  font-size: 9px;
+}
+
+.noticeError {
+  color: #b46d6d;
+}
+
+.dashboardNoticeList {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 7px;
+}
+
+.dashboardNoticeItem {
+  width: 100%;
+
+  padding:
+    11px;
+
+  text-align: left;
+
+  color: #bbb;
+
+  background: #0d0d0d;
+
+  border:
+    1px solid #262626;
+
+  border-radius: 9px;
+
+  cursor: pointer;
+
+  transition:
+    background .15s,
+    border-color .15s,
+    transform .15s;
+}
+
+.dashboardNoticeItem:hover {
+  background: #131313;
+
+  border-color: #343434;
+
+  transform:
+    translateY(-1px);
+}
+
+.dashboardNoticeItem.pinned {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(88, 101, 242, .08),
+      #0d0d0d 48%
+    );
+
+  border-color:
+    rgba(
+      104,
+      116,
+      255,
+      .28
+    );
+}
+
+.dashboardNoticeTop {
+  display: flex;
+
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 8px;
+}
+
+.dashboardNoticeTitle {
+  min-width: 0;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 5px;
+}
+
+.dashboardNoticeTitle strong {
+  min-width: 0;
+
+  overflow: hidden;
+
+  color: #d6d6d6;
+
+  font-size: 10px;
+
+  white-space: nowrap;
+
+  text-overflow: ellipsis;
+}
+
+.dashboardNoticeDate {
+  flex-shrink: 0;
+
+  color: #4f4f4f;
+
+  font-size: 7px;
+}
+
+.dashboardNoticeContent {
+  margin-top: 10px;
+
+  padding-top: 9px;
+
+  color: #898989;
+
+  border-top:
+    1px solid #222;
+
+  font-size: 9px;
+
+  line-height: 1.65;
+
+  white-space: pre-wrap;
+}
+
+.dashboardNoticeBottom {
+  margin-top: 9px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 10px;
+
+  color: #4d4d4d;
+
+  font-size: 7px;
+}
+
+
+/* =====================================================
+   GUIDE PANEL
+===================================================== */
+
+.guidePanel {
+  width: 100%;
+
+  padding: 15px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(64, 128, 89, .06),
+      rgba(13, 13, 13, .95) 46%
+    );
+
+  border:
+    1px solid
+    rgba(88, 145, 109, .18);
+
+  border-radius: 14px;
+}
+
+.guidePanelHeader {
+  display: flex;
+
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 10px;
+
+  margin-bottom: 13px;
+}
+
+.guideEyebrow {
+  color: #536158;
+
+  font-size: 7px;
+
+  font-weight: 900;
+
+  letter-spacing: 1.8px;
+}
+
+.guidePanelHeader h2 {
+  margin:
+    5px 0 0;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  color: #d7ded9;
+
+  font-size: 15px;
+}
+
+.guideCheck {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 18px;
+  height: 18px;
+
+  color: #83c69a;
+
+  background:
+    rgba(73, 156, 104, .09);
+
+  border:
+    1px solid
+    rgba(73, 156, 104, .18);
+
+  border-radius: 5px;
+
+  font-size: 10px;
+
+  font-weight: 900;
+}
+
+.guideList {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 7px;
+}
+
+.guideItem {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 7px;
+}
+
+.guideBullet {
+  margin-top: 1px;
+
+  flex-shrink: 0;
+
+  color: #5f8c70;
+
+  font-size: 10px;
+}
+
+.guideItem p {
+  margin: 0;
+
+  color: #888f8a;
+
+  font-size: 9px;
+
+  line-height: 1.65;
+}
+
+.guideEmpty {
+  padding:
+    16px 10px;
+
+  text-align: center;
+
+  color: #5c655f;
+
+  background:
+    rgba(9, 12, 10, .5);
+
+  border:
+    1px dashed
+    rgba(75, 110, 88, .18);
+
+  border-radius: 9px;
+
+  font-size: 9px;
+}
+
+
+/* =====================================================
+   DASHBOARD CENTER / INSIGHTS
+===================================================== */
+
+.dashboardCenter {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 14px;
+}
+
+.insightGrid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 14px;
+}
+
+.insightCard {
+  min-width: 0;
+  min-height: 285px;
+
+  padding: 17px;
+
+  overflow: hidden;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(88, 101, 242, .055),
+      rgba(13, 13, 13, .97) 42%
+    );
+
+  border: 1px solid #292929;
+  border-radius: 16px;
+
+  box-shadow:
+    0 18px 40px
+    rgba(0, 0, 0, .16);
+}
+
+.growthInsightCard {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 89, 166, .055),
+      rgba(13, 13, 13, .97) 42%
+    );
+}
+
+.insightHeader {
+  display: flex;
+
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 14px;
+
+  margin-bottom: 18px;
+}
+
+.insightEyebrow {
+  display: block;
+
+  margin-bottom: 6px;
+
+  color: #8b8b8b;
+
+  font-size: 8px;
+  font-weight: 900;
+
+  letter-spacing: 1.7px;
+}
+
+.insightHeader h2 {
+  margin: 0;
+
+  color: #f6f6f6;
+
+  font-size: 17px;
+  font-weight: 900;
+
+  letter-spacing: -.5px;
+}
+
+.insightTotal {
+  flex-shrink: 0;
+
+  padding: 7px 10px;
+
+  color: #dfe2ff;
+
+  background: rgba(88, 101, 242, .09);
+
+  border: 1px solid rgba(112, 125, 255, .22);
+  border-radius: 999px;
+
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.insightState {
+  min-height: 185px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 18px;
+
+  text-align: center;
+
+  color: #9a9a9a;
+
+  background: #0d0d0d;
+
+  border: 1px dashed #303030;
+  border-radius: 10px;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.insightState.error {
+  color: #e19b9b;
+}
+
+.jobDistributionList {
+  display: flex;
+  flex-direction: column;
+
+  gap: 10px;
+}
+
+.jobDistributionRow {
+  display: grid;
+
+  grid-template-columns:
+    minmax(76px, .8fr)
+    minmax(110px, 1.7fr);
+
+  align-items: center;
+
+  gap: 10px;
+}
+
+.jobDistributionMeta {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 8px;
+}
+
+.jobDistributionMeta strong {
+  overflow: hidden;
+
+  color: #dcdcdc;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.jobDistributionMeta span {
+  flex-shrink: 0;
+
+  color: #8d8d8d;
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.chartTrack {
+  position: relative;
+
+  height: 8px;
+
+  overflow: hidden;
+
+  background: #191919;
+
+  border: 1px solid #2c2c2c;
+  border-radius: 999px;
+}
+
+.chartFill {
+  position: absolute;
+
+  inset:
+    0 auto 0 0;
+
+  border-radius: inherit;
+
+  background:
+    linear-gradient(
+      90deg,
+      #5865f2,
+      #8b94ff
+    );
+
+  box-shadow:
+    0 0 16px
+    rgba(88, 101, 242, .24);
+}
+
+.growthSummary {
+  flex-shrink: 0;
+
+  text-align: right;
+}
+
+.growthSummary span {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color: #8b8b8b;
+
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.growthSummary strong {
+  color: #ffffff;
+
+  font-size: 14px;
+  font-weight: 900;
+
+  font-variant-numeric:
+    tabular-nums;
+}
+
+.growthBars {
+  height: 190px;
+
+  display: flex;
+
+  align-items: stretch;
+  justify-content: space-between;
+
+  gap: 7px;
+}
+
+.growthBarItem {
+  min-width: 0;
+  flex: 1;
+
+  display: grid;
+
+  grid-template-rows:
+    25px 1fr 38px;
+
+  align-items: end;
+
+  gap: 5px;
+}
+
+.growthBarValue {
+  text-align: center;
+
+  color: #ffffff;
+
+  font-size: 13px;
+  font-weight: 900;
+
+  line-height: 1;
+
+  text-shadow:
+    0 1px 8px
+    rgba(0, 0, 0, .9);
+
+  font-variant-numeric:
+    tabular-nums;
+}
+
+.growthBarTrack {
+  position: relative;
+
+  width: 100%;
+  height: 100%;
+
+  overflow: hidden;
+
+  background:
+    linear-gradient(
+      180deg,
+      #111,
+      #171717
+    );
+
+  border: 1px solid #292929;
+  border-radius: 7px 7px 4px 4px;
+}
+
+.growthBarTrack span {
+  position: absolute;
+
+  right: 0;
+  bottom: 0;
+  left: 0;
+
+  min-height: 8px;
+
+  border-radius: 5px 5px 3px 3px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ff73b4,
+      #a34775
+    );
+
+  box-shadow:
+    0 -7px 20px
+    rgba(255, 91, 160, .14);
+}
+
+.growthBarItem small {
+  align-self: start;
+
+  width: 100%;
+
+  overflow: visible;
+
+  text-align: center;
+
+  color: #f0f0f0;
+
+  font-size: 11px;
+  font-weight: 900;
+
+  line-height: 1.2;
+
+  white-space: nowrap;
+
+  text-overflow: clip;
+
+  letter-spacing: -.2px;
+
+  text-shadow:
+    0 1px 6px
+    rgba(0, 0, 0, .9);
+
+  font-variant-numeric:
+    tabular-nums;
+}
+
+.growthFooter {
+  margin-top: 12px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  padding-top: 10px;
+
+  border-top: 1px solid #272727;
+}
+
+.growthFooter span {
+  color: #8b8b8b;
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.growthFooter strong {
+  color: #efefef;
+
+  font-size: 11px;
+  font-weight: 900;
+
+  font-variant-numeric:
+    tabular-nums;
+}
+
+
+/* =====================================================
+   BOSS PANEL
+===================================================== */
+
+.bossPanel {
+  min-width: 0;
+  flex: 1;
+
+  padding: 20px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 184, 85, .025),
+      rgba(13, 13, 13, .97) 36%
+    );
+
+  border: 1px solid #2b2b2b;
+  border-radius: 18px;
+}
+
+.panelTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 18px;
+  margin-bottom: 12px;
+}
+
+.panelTitle h2 {
+  margin: 0;
+
+  color: #f7f7f7;
+
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.panelTitle span {
+  display: block;
+
+  margin-top: 5px;
+
+  color: #9a9a9a;
+
+  font-size: 10px;
+  font-weight: 600;
+
+  line-height: 1.55;
+}
+
+.bossPanelDescription {
+  max-width: 600px;
+}
+
+.bossClock {
+  flex-shrink: 0;
+
+  text-align: right;
+}
+
+.bossClock span {
+  margin: 0 0 3px;
+
+  color: #8d8d8d;
+
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.bossClock strong {
+  display: block;
+
+  color: #ffffff;
+
+  font-size: 17px;
+  font-weight: 900;
+
+  font-variant-numeric: tabular-nums;
+}
+
+.bossLegend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 6px;
+
+  margin-bottom: 14px;
+}
+
+.bossLegend span {
+  padding: 5px 8px;
+
+  color: #8f8f8f;
+
+  background: #111111;
+
+  border: 1px solid #292929;
+  border-radius: 999px;
+
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.bossList {
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+}
+
+.bossRow {
+  min-height: 86px;
+
+  display: grid;
+
+  grid-template-columns:
+    112px
+    minmax(240px, 1fr)
+    190px;
+
+  align-items: stretch;
+
+  gap: 14px;
+
+  padding: 0 14px 0 0;
+
+  overflow: hidden;
+
+  background: #111111;
+
+  border: 1px solid #2d2d2d;
+  border-radius: 11px;
+
+  transition: .15s ease;
+}
+
+.bossRow:hover {
+  background: #151515;
+
+  border-color: #404040;
+
+  transform: translateY(-1px);
+}
+
+.bossSpawnPrimary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  padding: 10px 8px;
+
+  text-align: center;
+
+  background:
+    linear-gradient(
+      145deg,
+      #0b0b0b,
+      #101010
+    );
+
+  border-right: 1px solid #2b2b2b;
+}
+
+.bossSpawnPrimary span {
+  margin-bottom: 4px;
+
+  color: #929292;
+
+  font-size: 8px;
+  font-weight: 800;
+}
+
+.bossSpawnPrimary strong {
+  color: #ffffff;
+
+  font-size: 18px;
+  font-weight: 900;
+
+  letter-spacing: -.3px;
+
+  font-variant-numeric: tabular-nums;
+}
+
+.bossMain {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+}
+
+.bossIcon {
+  flex-shrink: 0;
+
+  font-size: 19px;
+}
+
+.bossMain > div {
+  min-width: 0;
+}
+
+.bossMain strong {
+  display: block;
+
+  overflow: hidden;
+
+  color: #f2f2f2;
+
+  font-size: 15px;
+  font-weight: 900;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.bossBadge {
+  display: inline-block;
+
+  max-width: 100%;
+
+  margin-top: 7px;
+  padding: 4px 7px;
+
+  overflow: hidden;
+
+  color: #cfcfcf;
+
+  background: #1b1b1b;
+
+  border: 1px solid #393939;
+  border-radius: 5px;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.fixedBadge {
+  color: #dbd0b7;
+
+  border-color: rgba(215, 182, 118, .24);
+}
+
+.bossLevelInline {
+  color: #d8d8d8;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: -.1px;
+}
+
+.bossCycleText {
+  display: block;
+  margin-top: 7px;
+
+  color: #9f9f9f;
+
+  font-size: 9px;
+  font-weight: 700;
+
+  line-height: 1.35;
+}
+
+.fixedCycleText {
+  color: #c9b993;
+}
+
+.bossTimerBlock {
+  display: grid;
+  grid-template-columns: 1fr;
+
+  align-content: center;
+  justify-items: end;
+
+  min-width: 0;
+
+  padding: 10px 0;
+
+  text-align: right;
+}
+
+.bossTimerMetric,
+.bossNextSpawn {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: auto 1fr;
+
+  align-items: baseline;
+
+  column-gap: 10px;
+}
+
+.bossTimerMetric {
+  padding-bottom: 8px;
+
+  border-bottom: 1px solid #272727;
+}
+
+.bossNextSpawn {
+  padding-top: 8px;
+}
+
+.bossTimerBlock span {
+  color: #8f8f8f;
+
+  font-size: 8px;
+  font-weight: 800;
+
+  white-space: nowrap;
+}
+
+.bossTimerMetric strong {
+  color: #ffffff;
+
+  font-size: 17px;
+  font-weight: 900;
+
+  letter-spacing: .25px;
+
+  font-variant-numeric: tabular-nums;
+}
+
+.bossNextSpawn strong {
+  color: #e4e4e4;
+
+  font-size: 12px;
+  font-weight: 850;
+
+  white-space: nowrap;
+
+  font-variant-numeric: tabular-nums;
+}
+
+.fixedBoss .bossSpawnPrimary {
+  background:
+    linear-gradient(
+      145deg,
+      #0b0b0b,
+      rgba(214, 177, 105, .055)
+    );
+}
+
+
+/* =====================================================
+   DISTRIBUTION
+===================================================== */
+
+.distributionPanel {
+  min-width: 0;
+
+  margin-left: 2px;
+  padding: 18px;
+
+  overflow-y: auto;
+
+  color: #222;
+
+  background: #f5f5f5;
+
+  border-radius: 18px;
+}
+
+.distributionHeader {
+  margin-bottom: 14px;
+
+  font-size: 20px;
+
+  font-weight: 900;
+}
+
+.searchBox {
+  display: flex;
+
+  gap: 6px;
+
+  margin-bottom: 12px;
+}
+
+.searchBox input {
+  flex: 1;
+
+  min-width: 0;
+
+  height: 38px;
+
+  padding:
+    0 11px;
+
+  border:
+    1px solid #ccc;
+
+  border-radius: 6px;
+
+  outline: none;
+}
+
+.searchBox button {
+  padding:
+    0 10px;
+
+  background: white;
+
+  border:
+    1px solid #bbb;
+
+  border-radius: 6px;
+
+  cursor: pointer;
+}
+
+.emptyResult {
+  padding: 18px;
+
+  color: #777;
+
+  background: white;
+
+  border:
+    1px solid #ddd;
+
+  border-radius: 8px;
+
+  font-size: 13px;
+}
+
+.candidateButton {
+  width: 100%;
+
+  margin-bottom: 6px;
+
+  padding:
+    9px 10px;
+
+  text-align: left;
+
+  background: white;
+
+  border:
+    1px solid #ccc;
+
+  border-radius: 6px;
+
+  cursor: pointer;
+}
+
+.userCard {
+  margin-bottom: 10px;
+
+  padding: 14px;
+
+  background: white;
+
+  border:
+    1px solid #ddd;
+
+  border-radius: 10px;
+}
+
+.userCard h3 {
+  margin:
+    0 0 12px;
+
+  font-size: 19px;
+}
+
+.userMeta,
+.userStats {
+  display: grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap: 6px;
+}
+
+.userMeta {
+  margin-bottom: 10px;
+}
+
+.userMeta > div {
+  padding: 8px;
+
+  background: #f5f5f5;
+
+  border-radius: 6px;
+
+  font-size: 11px;
+}
+
+.userMeta strong {
+  display: block;
+
+  margin-top: 3px;
+
+  font-size: 13px;
+}
+
+.userStats > div {
+  padding-top: 8px;
+
+  border-top:
+    1px solid #eee;
+}
+
+.userStats span {
+  display: block;
+
+  color: #777;
+
+  font-size: 10px;
+}
+
+.userStats strong {
+  display: block;
+
+  margin-top: 3px;
+
+  font-size: 16px;
+}
+
+.categoryList {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 5px;
+
+  margin-bottom: 10px;
+}
+
+.category {
+  padding:
+    6px 8px;
+
+  background: white;
+
+  border:
+    1px solid #ccc;
+
+  border-radius: 5px;
+
+  font-size: 10px;
+
+  cursor: pointer;
+}
+
+.category span {
+  margin-left: 4px;
+
+  font-weight: 900;
+}
+
+.category.active {
+  color: white;
+
+  background: #444;
+
+  border-color: #444;
+}
+
+.distributionSummary {
+  display: flex;
+
+  gap: 8px;
+
+  margin-bottom: 8px;
+
+  padding: 8px;
+
+  background: white;
+
+  border:
+    1px solid #ddd;
+
+  border-radius: 6px;
+
+  font-size: 11px;
+}
+
+.distributionTable {
+  overflow: hidden;
+
+  background: white;
+
+  border:
+    1px solid #ddd;
+
+  border-radius: 7px;
+}
+
+.tableHeader,
+.tableRow {
+  display: grid;
+
+  grid-template-columns:
+    55px
+    1fr
+    65px
+    65px;
+
+  gap: 4px;
+
+  align-items: center;
+}
+
+.tableHeader {
+  padding:
+    7px 6px;
+
+  color: white;
+
+  background: #555;
+
+  font-size: 9px;
+
+  font-weight: 800;
+}
+
+.tableRow {
+  padding:
+    8px 6px;
+
+  border-bottom:
+    1px solid #eee;
+
+  font-size: 10px;
+}
+
+.tableRow:last-child {
+  border-bottom: 0;
+}
+
+.tableRow span:last-child {
+  text-align: right;
+}
+
+
+/* =====================================================
+   GUILD STATUS
+===================================================== */
+
+.guildSection {
+  padding:
+    0 22px 40px;
+
+  scroll-margin-top:
+    90px;
+}
+
+.guildSectionInner {
+  width: 100%;
+
+  padding: 24px;
+
+  background:
+    rgba(
+      10,
+      10,
+      10,
+      .97
+    );
+
+  border:
+    1px solid #252525;
+
+  border-radius: 18px;
+}
+
+.guildSectionHeader {
+  display: flex;
+
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 20px;
+}
+
+.guildSectionEyebrow {
+  color: #555;
+
+  font-size: 8px;
+
+  font-weight: 900;
+
+  letter-spacing: 2.2px;
+}
+
+.guildSectionHeader h2 {
+  margin:
+    7px 0 0;
+
+  font-size: 23px;
+
+  letter-spacing: -1px;
+}
+
+.guildSectionHeader p {
+  margin:
+    6px 0 0;
+
+  color: #666;
+
+  font-size: 10px;
+}
+
+.guildTotalBadge {
+  padding:
+    8px 11px;
+
+  color: #aaa;
+
+  background: #111;
+
+  border:
+    1px solid #303030;
+
+  border-radius: 999px;
+
+  font-size: 9px;
+
+  font-weight: 800;
+}
+
+
+/* =====================================================
+   GUILD SUMMARY
+===================================================== */
+
+.guildSummaryCards {
+  margin-top: 20px;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(
+        0,
+        1fr
+      )
+    );
+
+  gap: 9px;
+}
+
+.guildSummaryCard {
+  min-height: 74px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: flex-start;
+  justify-content: center;
+
+  gap: 5px;
+
+  padding:
+    12px 15px;
+
+  text-align: left;
+
+  color: #aaa;
+
+  background: #101010;
+
+  border:
+    1px solid #292929;
+
+  border-radius: 10px;
+
+  cursor: pointer;
+
+  transition:
+    .15s;
+}
+
+.guildSummaryCard:hover {
+  transform:
+    translateY(-1px);
+
+  border-color:
+    #3a3a3a;
+}
+
+.guildSummaryCard span {
+  color: #696969;
+
+  font-size: 9px;
+
+  font-weight: 700;
+}
+
+.guildSummaryCard strong {
+  color: #ddd;
+
+  font-size: 22px;
+}
+
+.guildSummaryCard.active {
+  background:
+    #171717;
+
+  border-color:
+    #555;
+}
+
+.guildSummaryCard.pink.active {
+  border-color:
+    rgba(
+      255,
+      120,
+      180,
+      .45
+    );
+}
+
+.guildSummaryCard.red.active {
+  border-color:
+    rgba(
+      255,
+      90,
+      90,
+      .45
+    );
+}
+
+.guildSummaryCard.black.active {
+  border-color:
+    rgba(
+      200,
+      200,
+      200,
+      .35
+    );
+}
+
+
+/* =====================================================
+   GUILD TOOLBAR
+===================================================== */
+
+.guildToolbar {
+  margin-top: 16px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  flex-wrap: wrap;
+}
+
+.guildSearchBox {
+  width: 250px;
+
+  min-height: 38px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  padding:
+    0 11px;
+
+  background:
+    #0d0d0d;
+
+  border:
+    1px solid #292929;
+
+  border-radius: 8px;
+}
+
+.guildSearchBox span {
+  font-size: 11px;
+}
+
+.guildSearchBox input {
+  flex: 1;
+
+  min-width: 0;
+
+  color: #ddd;
+
+  background: transparent;
+
+  border: 0;
+
+  outline: 0;
+
+  font-size: 10px;
+}
+
+.guildJobSelect,
+.guildSortSelect,
+.guildPageSizeSelect {
+  min-height: 38px;
+
+  padding:
+    0 11px;
+
+  color: #aaa;
+
+  background: #0d0d0d;
+
+  border:
+    1px solid #292929;
+
+  border-radius: 8px;
+
+  outline: 0;
+
+  font-size: 10px;
+
+  cursor: pointer;
+}
+
+.guildFilteredCount {
+  margin-left: auto;
+
+  color: #555;
+
+  font-size: 9px;
+}
+
+
+/* =====================================================
+   GUILD TABLE
+===================================================== */
+
+.guildTableWrap {
+  margin-top: 14px;
+
+  overflow: hidden;
+
+  background:
+    #0d0d0d;
+
+  border:
+    1px solid #252525;
+
+  border-radius: 11px;
+}
+
+.guildTableHeader,
+.guildTableRow {
+  display: grid;
+
+  grid-template-columns:
+    55px
+    minmax(
+      150px,
+      1.4fr
+    )
+    minmax(
+      100px,
+      1fr
+    )
+    110px
+    80px
+    80px
+    80px;
+
+  align-items: center;
+
+  gap: 10px;
+}
+
+.guildTableHeader {
+  min-height: 40px;
+
+  padding:
+    0 15px;
+
+  color: #666;
+
+  background:
+    #121212;
+
+  border-bottom:
+    1px solid #282828;
+
+  font-size: 8px;
+
+  font-weight: 800;
+}
+
+.guildTableRow {
+  min-height: 48px;
+
+  padding:
+    0 15px;
+
+  color: #858585;
+
+  border-bottom:
+    1px solid #1e1e1e;
+
+  font-size: 9px;
+
+  transition:
+    background .12s;
+}
+
+.guildTableRow:last-child {
+  border-bottom: 0;
+}
+
+.guildTableRow:hover {
+  background:
+    #121212;
+}
+
+.guildRank {
+  color: #555;
+
+  font-variant-numeric:
+    tabular-nums;
+}
+
+.guildNickname {
+  color: #d0d0d0;
+
+  font-size: 10px;
+}
+
+.guildGrowth {
+  color: #bbb;
+
+  font-variant-numeric:
+    tabular-nums;
+}
+
+.guildBadge {
+  width: fit-content;
+
+  min-width: 42px;
+
+  padding:
+    4px 7px;
+
+  text-align: center;
+
+  border-radius: 999px;
+
+  font-size: 8px;
+
+  font-weight: 900;
+}
+
+.guildBadge.pink {
+  color: #ff9fc8;
+
+  background:
+    rgba(
+      255,
+      91,
+      160,
+      .07
+    );
+
+  border:
+    1px solid
+    rgba(
+      255,
+      91,
+      160,
+      .18
+    );
+}
+
+.guildBadge.red {
+  color: #ff8888;
+
+  background:
+    rgba(
+      255,
+      77,
+      77,
+      .07
+    );
+
+  border:
+    1px solid
+    rgba(
+      255,
+      77,
+      77,
+      .18
+    );
+}
+
+.guildBadge.black {
+  color: #c5c5c5;
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      .04
+    );
+
+  border:
+    1px solid
+    rgba(
+      255,
+      255,
+      255,
+      .12
+    );
+}
+
+.guildAttendance {
+  color: #d4b95e;
+
+  font-weight: 800;
+
+  font-variant-numeric:
+    tabular-nums;
+}
+
+.guildParticipation {
+  color: #777;
+
+  font-variant-numeric:
+    tabular-nums;
+}
+
+.guildLoading,
+.guildNoResult {
+  margin-top: 14px;
+
+  padding: 30px;
+
+  text-align: center;
+
+  color: #5c5c5c;
+
+  background: #0d0d0d;
+
+  border:
+    1px dashed #292929;
+
+  border-radius: 10px;
+
+  font-size: 10px;
+}
+
+.guildError {
+  color: #b96e6e;
+}
+
+
+/* =====================================================
+   GUILD PAGINATION
+===================================================== */
+
+.guildPagination {
+  margin-top: 14px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 16px;
+
+  padding:
+    12px 2px 2px;
+}
+
+.guildPaginationInfo {
+  display: flex;
+
+  align-items: center;
+
+  gap: 5px;
+
+  color: #555;
+
+  font-size: 9px;
+}
+
+.guildPaginationInfo strong {
+  color: #aaa;
+
+  font-size: 9px;
+}
+
+.guildPaginationControls {
+  display: flex;
+
+  align-items: center;
+
+  gap: 6px;
+}
+
+.guildPaginationControls > button,
+.guildPageNumbers button {
+  min-width: 34px;
+
+  height: 32px;
+
+  padding:
+    0 9px;
+
+  color: #888;
+
+  background: #0f0f0f;
+
+  border:
+    1px solid #292929;
+
+  border-radius: 7px;
+
+  font-size: 9px;
+
+  cursor: pointer;
+
+  transition:
+    .12s;
+}
+
+.guildPaginationControls > button:hover:not(:disabled),
+.guildPageNumbers button:hover {
+  color: #fff;
+
+  background: #171717;
+
+  border-color: #3a3a3a;
+}
+
+.guildPaginationControls > button:disabled {
+  opacity: .3;
+
+  cursor: default;
+}
+
+.guildPageNumbers {
+  display: flex;
+
+  align-items: center;
+
+  gap: 4px;
+}
+
+.guildPageNumbers button.active {
+  color: #fff;
+
+  background: #5865f2;
+
+  border-color: #6975ff;
+
+  font-weight: 900;
+}
+
+
+/* =====================================================
+   AUTH RESPONSIVE
+===================================================== */
+
+@media (max-width: 1180px) {
+
+  .authShell {
+    width:
+      min(
+        1060px,
+        calc(100vw - 24px)
+      );
+
+    min-height: 720px;
+  }
+
+  .authMain {
+    grid-template-columns:
+      230px
+      500px
+      240px;
+
+    gap: 22px;
+
+    padding:
+      38px 26px;
+  }
+
+  .authTitle {
+    font-size: 68px;
+  }
+
+  .authCharacterImage {
+    max-width: 240px;
+  }
+
+  .characterStage {
+    min-height: 300px;
+  }
+
+}
+
+
+@media (max-width: 900px) {
+
+  .authPage {
+    padding: 8px;
+  }
+
+  .authShell {
+    width: 100%;
+
+    min-height: auto;
+  }
+
+  .authHeader {
+    padding:
+      15px 18px;
+  }
+
+  .authHeaderBadge {
+    display: none;
+  }
+
+  .authMain {
+    grid-template-columns:
+      1fr;
+
+    gap: 34px;
+
+    padding:
+      40px 20px;
+
+    text-align: center;
+  }
+
+  .authCenter {
+    order: 1;
+  }
+
+  .authSideLeft {
+    order: 2;
+
+    width:
+      min(
+        360px,
+        100%
+      );
+
+    justify-self: center;
+  }
+
+  .authSideRight {
+    order: 3;
+  }
+
+  .operatorGrid {
+    margin: auto;
+  }
+
+  .authIdentityLine {
+    gap: 7px;
+  }
+
+  .discordAuthButton {
+    width:
+      min(
+        380px,
+        100%
+      );
+
+    min-width: 0;
+  }
+
+  .characterStage {
+    min-height: 250px;
+  }
+
+  .authCharacterImage {
+    max-width: 230px;
+  }
+
+  .authFooter {
+    flex-direction: column;
+
+    justify-content: center;
+
+    padding:
+      12px 18px;
+  }
+
+}
+
+
+/* =====================================================
+   DASHBOARD RESPONSIVE
+===================================================== */
+
+@media (max-width: 1450px) {
+
+  .insightGrid {
+    grid-template-columns:
+      1fr;
+  }
+
+  .insightCard {
+    min-height: 250px;
+  }
+
+}
+
+
+@media (max-width: 1200px) {
+
+  .dashboardGrid {
+    grid-template-columns:
+      minmax(
+        560px,
+        1fr
+      )
+      310px;
+
+    gap: 14px;
+
+    padding-right: 10px;
+  }
+
+  .brandingPanel {
+    grid-column:
+      1 / -1;
+
+    display: grid;
+
+    grid-template-columns:
+      250px
+      minmax(
+        0,
+        1fr
+      );
+
+    align-items: start;
+
+    gap: 20px;
+
+    padding:
+      10px 0;
+  }
+
+  .brandText h1 {
+    font-size: 38px;
+  }
+
+  .topBar {
+    grid-template-columns:
+      180px
+      minmax(360px, 1fr)
+      auto;
+  }
+
+}
+
+
+@media (max-width: 900px) {
+
+  .guildSection {
+    padding:
+      0 10px 25px;
+  }
+
+  .guildSummaryCards {
+    grid-template-columns:
+      1fr 1fr;
+  }
+
+  .guildToolbar {
+    flex-wrap: wrap;
+  }
+
+  .guildSearchBox {
+    width: 100%;
+  }
+
+  .guildJobSelect,
+  .guildSortSelect,
+  .guildPageSizeSelect {
+    flex:
+      1 1 140px;
+  }
+
+  .guildFilteredCount {
+    width: 100%;
+
+    margin-left: 0;
+  }
+
+  .guildTableWrap {
+    overflow-x: auto;
+  }
+
+  .guildTableHeader,
+  .guildTableRow {
+    min-width: 800px;
+  }
+
+  .guildPagination {
+    flex-direction: column;
+
+    align-items: stretch;
+  }
+
+  .guildPaginationControls {
+    justify-content: center;
+
+    flex-wrap: wrap;
+  }
+
+}
+
+
+@media (max-width: 800px) {
+
+  .topBar {
+    position: relative;
+
+    display: block;
+
+    padding: 15px;
+  }
+
+  .topMenu {
+    justify-content: flex-start;
+
+    margin-top: 12px;
+  }
+
+  .discordUserBox {
+    width: fit-content;
+
+    margin-top: 10px;
+
+    justify-self: auto;
+  }
+
+  .dashboardGrid {
+    display: block;
+
+    padding: 10px;
+  }
+
+  .brandingPanel {
+    display: block;
+
+    padding:
+      10px 0;
+  }
+
+  .brandText {
+    margin-bottom: 18px;
+  }
+
+  .dashboardCenter {
+    margin-bottom: 12px;
+  }
+
+  .insightGrid {
+    grid-template-columns:
+      1fr;
+
+    gap: 10px;
+
+    margin-bottom: 10px;
+  }
+
+  .insightCard {
+    min-height: 0;
+  }
+
+  .jobDistributionRow {
+    grid-template-columns:
+      105px 1fr;
+  }
+
+  .growthBars {
+    height: 150px;
+  }
+
+  .bossPanel {
+    margin-bottom: 12px;
+  }
+
+  .noticePanel {
+    margin-bottom: 12px;
+  }
+
+  .bossPanelTitle {
+    align-items: flex-start;
+  }
+
+  .bossClock {
+    min-width: 110px;
+  }
+
+  .bossLegend {
+    display: none;
+  }
+
+  .bossRow {
+    grid-template-columns:
+      90px
+      minmax(0, 1fr);
+
+    gap: 10px;
+
+    padding-right: 10px;
+  }
+
+  .bossSpawnPrimary strong {
+    font-size: 16px;
+  }
+
+  .bossTimerBlock {
+    grid-column: 1 / -1;
+
+    grid-template-columns: 1fr 1fr;
+    column-gap: 14px;
+
+    justify-items: stretch;
+
+    padding: 10px 4px;
+
+    border-top: 1px solid #262626;
+  }
+
+  .bossTimerMetric {
+    padding: 0 14px 0 0;
+
+    border-right: 1px solid #272727;
+    border-bottom: 0;
+  }
+
+  .bossNextSpawn {
+    padding: 0;
+  }
+
+}
+/* =====================================================
+   DASHBOARD RANKING PANELS
+===================================================== */
+
+.overallRankingPanel {
+  padding: 15px 16px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 198, 82, .045),
+      rgba(13, 13, 13, .97) 44%
+    );
+  border: 1px solid #2d2d2d;
+  border-radius: 16px;
+}
+
+.overallRankingHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 11px;
+}
+
+.overallRankingHeader span,
+.jobRankingEyebrow {
+  display: block;
+  margin-bottom: 5px;
+  color: #8b8b8b;
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: 1.7px;
+}
+
+.overallRankingHeader h2,
+.jobRankingHeader h2 {
+  margin: 0;
+  color: #f4f4f4;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: -.35px;
+}
+
+.overallRankingHeader small {
+  color: #777;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.overallRankingGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.overallRankCard {
+  min-width: 0;
+  min-height: 68px;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  padding: 8px 9px;
+  background: #111;
+  border: 1px solid #2b2b2b;
+  border-radius: 10px;
+}
+
+.overallRankCard.first {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 198, 82, .10),
+      #111 58%
+    );
+  border-color: rgba(255, 199, 87, .30);
+}
+
+.overallRankNumber {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #d7d7d7;
+  background: #1a1a1a;
+  border: 1px solid #343434;
+  border-radius: 7px;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.overallRankCard.first .overallRankNumber {
+  color: #ffd978;
+  border-color: rgba(255, 205, 95, .34);
+}
+
+.overallRankMember {
+  min-width: 0;
+}
+
+.overallRankMember strong {
+  display: block;
+  overflow: hidden;
+  color: #f0f0f0;
+  font-size: 10px;
+  font-weight: 900;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.overallRankMember small {
+  display: block;
+  margin-top: 3px;
+  overflow: hidden;
+  color: #7e7e7e;
+  font-size: 7px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.overallRankPower {
+  grid-column: 1 / -1;
+  text-align: right;
+  color: #d8d8d8;
+  font-size: 10px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.overallRankEmpty {
+  grid-column: 1 / -1;
+  padding: 16px;
+  text-align: center;
+  color: #666;
+  font-size: 9px;
+}
+
+.jobRankingPanel {
+  width: 100%;
+  padding: 14px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(126, 111, 255, .055),
+      rgba(13, 13, 13, .95) 48%
+    );
+  border: 1px solid #292929;
+  border-radius: 14px;
+}
+
+.jobRankingHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.jobRankingNav {
+  display: flex;
+  gap: 4px;
+}
+
+.jobRankingNav button {
+  width: 25px;
+  height: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #aaa;
+  background: #151515;
+  border: 1px solid #303030;
+  border-radius: 7px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.jobRankingNav button:disabled {
+  opacity: .35;
+  cursor: default;
+}
+
+.jobRankingSelector {
+  width: 100%;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  text-align: left;
+  color: #ddd;
+  background: #111;
+  border: 1px solid #2c2c2c;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.jobRankingSelector strong {
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.jobRankingSelector span {
+  color: #6e6e6e;
+  font-size: 7px;
+}
+
+.jobRankingList {
+  margin-top: 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.jobRankingRow {
+  min-height: 34px;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 8px;
+  background: #101010;
+  border: 1px solid #262626;
+  border-radius: 8px;
+}
+
+.jobRankingPlace {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #aaa;
+  background: #181818;
+  border-radius: 6px;
+  font-size: 8px;
+  font-weight: 900;
+}
+
+.jobRankingIdentity {
+  min-width: 0;
+}
+
+.jobRankingIdentity strong {
+  display: block;
+  overflow: hidden;
+  color: #ddd;
+  font-size: 9px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.jobRankingIdentity small {
+  display: block;
+  margin-top: 2px;
+  color: #686868;
+  font-size: 7px;
+}
+
+.jobRankingPower {
+  color: #f0f0f0;
+  font-size: 9px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.jobRankingEmpty {
+  padding: 12px 8px;
+  text-align: center;
+  color: #666;
+  font-size: 8px;
+}
+
+/* =====================================================
+   BOSS DATE DIVIDER / COMPACT LIST
+===================================================== */
+
+.bossScheduleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bossDateDivider {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  margin: 5px 2px 1px;
+}
+
+.bossDateDivider span {
+  height: 1px;
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 76, 76, .72)
+    );
+}
+
+.bossDateDivider span:last-child {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255, 76, 76, .72),
+      transparent
+    );
+}
+
+.bossDateDivider strong {
+  padding: 4px 9px;
+  color: #ff9a9a;
+  background: rgba(79, 17, 17, .20);
+  border: 1px solid rgba(255, 72, 72, .23);
+  border-radius: 999px;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .2px;
+  white-space: nowrap;
+}
+
+.bossRow {
+  min-height: 76px;
+}
+
+@media (max-width: 1500px) {
+  .overallRankingGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 980px) {
+  .overallRankingGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .overallRankingGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .bossDateDivider {
+    gap: 7px;
+  }
+
+  .bossDateDivider strong {
+    font-size: 7px;
+  }
+}
+
+
+/* =====================================================
+   SHARED TOP BAR NAVIGATION
+   공통 홈 / 뒤로가기 + 계정 영역
+===================================================== */
+
+.topBrandLink {
+  min-width: 0;
+
+  display: block;
+
+  color: inherit;
+
+  text-decoration: none;
+
+  border-radius: 8px;
+}
+
+.topBrandLink:hover .logo {
+  color: #ffffff;
+
+  text-shadow:
+    0 0 18px
+    rgba(255, 255, 255, .08);
+}
+
+
+.topRightArea {
+  justify-self: end;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  min-width: 0;
+}
+
+
+.pageNavButtons {
+  display: flex;
+
+  align-items: center;
+
+  gap: 6px;
+}
+
+
+.pageNavButton {
+  width: 48px;
+  height: 44px;
+
+  display: inline-flex;
+
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 1px;
+
+  padding: 0;
+
+  color: #bdbdbd;
+
+  background: #0e0e0e;
+
+  border:
+    1px solid #303030;
+
+  border-radius: 10px;
+
+  text-decoration: none;
+
+  cursor: pointer;
+
+  transition:
+    background .15s ease,
+    border-color .15s ease,
+    color .15s ease,
+    transform .15s ease;
+}
+
+
+.pageNavButton > span {
+  color: #f2f2f2;
+
+  font-size: 15px;
+  font-weight: 900;
+
+  line-height: 1;
+}
+
+
+.pageNavButton > small {
+  color: #8f8f8f;
+
+  font-size: 8px;
+  font-weight: 800;
+
+  line-height: 1;
+
+  letter-spacing: -.1px;
+}
+
+
+.pageNavButton:hover {
+  color: #fff;
+
+  background: #171717;
+
+  border-color: #444;
+
+  transform:
+    translateY(-1px);
+}
+
+
+.pageNavButton:hover > small {
+  color: #cfcfcf;
+}
+
+
+.pageNavButton:focus-visible {
+  outline:
+    2px solid
+    rgba(88, 101, 242, .75);
+
+  outline-offset: 2px;
+}
+
+
+/* 최상단 바 고정 유지 */
+.topBar {
+  position: sticky;
+
+  top: 0;
+
+  z-index: 1000;
+
+  width: 100%;
+
+  backdrop-filter:
+    blur(12px);
+
+  -webkit-backdrop-filter:
+    blur(12px);
+}
+
+
+@media (max-width: 1100px) {
+
+  .pageNavButton {
+    width: 42px;
+  }
+
+
+  .pageNavButton > small {
+    display: none;
+  }
+
+}
+
+
+@media (max-width: 800px) {
+
+  .topBar {
+    position: sticky;
+
+    top: 0;
+  }
+
+
+  .topRightArea {
+    width: 100%;
+
+    margin-top: 10px;
+
+    justify-content: space-between;
+  }
+
+
+  .pageNavButtons {
+    flex: 0 0 auto;
+  }
+
+
+  .discordUserBox {
+    margin-top: 0;
+  }
+
+}
+

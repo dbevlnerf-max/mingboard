@@ -1,0 +1,686 @@
+.page {
+  min-height: 100vh;
+  padding: 16px;
+
+  color: #f5f5f5;
+
+  background:
+    radial-gradient(
+      circle at 75% 4%,
+      rgba(88, 101, 242, .07),
+      transparent 30%
+    ),
+    #050505;
+}
+
+
+.shell {
+  width: min(1500px, 100%);
+  min-height: calc(100vh - 32px);
+
+  margin: 0 auto;
+
+  overflow: hidden;
+
+  background: #080808;
+
+  border: 1px solid #2d2d2d;
+  border-radius: 20px;
+}
+
+
+.header {
+  min-height: 76px;
+
+  display: grid;
+  grid-template-columns:
+    220px
+    1fr
+    180px;
+
+  align-items: center;
+
+  gap: 18px;
+
+  padding: 0 28px;
+
+  border-bottom:
+    1px solid #292929;
+}
+
+
+.brand {
+  color: #fff;
+
+  font-size: 16px;
+  font-weight: 900;
+}
+
+
+.server {
+  margin-top: 5px;
+
+  color: #999;
+
+  font-size: 9px;
+  font-weight: 600;
+}
+
+
+.headerBadge {
+  justify-self: center;
+
+  padding: 7px 11px;
+
+  color: #b9bdff;
+
+  background:
+    rgba(88, 101, 242, .07);
+
+  border:
+    1px solid
+    rgba(88, 101, 242, .22);
+
+  border-radius: 999px;
+
+  font-size: 8px;
+  font-weight: 900;
+
+  letter-spacing: 1px;
+}
+
+
+.user {
+  justify-self: end;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  color: #c5c5c5;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
+.user strong {
+  color: #e0bd70;
+
+  font-size: 8px;
+  font-weight: 900;
+}
+
+
+.content {
+  width:
+    min(
+      1220px,
+      calc(100% - 50px)
+    );
+
+  margin: 0 auto;
+
+  padding:
+    44px 0
+    70px;
+}
+
+
+.hero {
+  display: flex;
+
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 20px;
+}
+
+
+.hero > div:first-child > span {
+  color: #9a9a9a;
+
+  font-size: 9px;
+  font-weight: 900;
+
+  letter-spacing: 2px;
+}
+
+
+.hero h1 {
+  margin: 8px 0 0;
+
+  color: #fff;
+
+  font-size: 40px;
+  font-weight: 900;
+
+  letter-spacing: -2px;
+}
+
+
+.hero p {
+  margin: 9px 0 0;
+
+  color: #aaa;
+
+  font-size: 11px;
+  font-weight: 500;
+}
+
+
+.heroButtons {
+  display: flex;
+
+  gap: 7px;
+}
+
+
+.heroButtons button,
+.heroButtons a {
+  min-height: 38px;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 13px;
+
+  color: #c0c0c0;
+
+  background: #111;
+
+  border: 1px solid #333;
+  border-radius: 8px;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+
+.heroButtons button:hover,
+.heroButtons a:hover {
+  color: #fff;
+
+  border-color: #4b4b4b;
+}
+
+
+.success,
+.error {
+  margin-top: 17px;
+
+  padding: 13px 15px;
+
+  border-radius: 9px;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
+.success {
+  color: #a8dfb9;
+
+  background:
+    rgba(73, 181, 111, .06);
+
+  border:
+    1px solid
+    rgba(73, 181, 111, .22);
+}
+
+
+.error {
+  color: #e69c9c;
+
+  background:
+    rgba(200, 70, 70, .06);
+
+  border:
+    1px solid
+    rgba(200, 70, 70, .22);
+}
+
+
+.sectionLabel {
+  display: block;
+
+  color: #919191;
+
+  font-size: 8px;
+  font-weight: 900;
+
+  letter-spacing: 1.6px;
+}
+
+
+.current,
+.createSection,
+.history {
+  margin-top: 30px;
+}
+
+
+.currentCard,
+.noPeriod {
+  margin-top: 10px;
+
+  min-height: 120px;
+
+  padding: 20px;
+
+  background: #111;
+
+  border:
+    1px solid #2e2e2e;
+
+  border-radius: 11px;
+}
+
+
+.currentCard {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+}
+
+
+.openBadge {
+  display: inline-flex;
+
+  padding: 4px 7px;
+
+  color: #9fe6b5;
+
+  background:
+    rgba(55, 180, 95, .07);
+
+  border:
+    1px solid
+    rgba(55, 180, 95, .24);
+
+  border-radius: 999px;
+
+  font-size: 8px;
+  font-weight: 900;
+}
+
+
+.currentCard h2 {
+  margin: 8px 0 0;
+
+  color: #fff;
+
+  font-size: 20px;
+  font-weight: 900;
+}
+
+
+.currentCard p {
+  margin: 6px 0 0;
+
+  color: #aaa;
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+
+.closeButton {
+  min-height: 40px;
+
+  padding: 0 15px;
+
+  color: #f0b1b1;
+
+  background:
+    rgba(190, 65, 65, .06);
+
+  border:
+    1px solid
+    rgba(190, 65, 65, .26);
+
+  border-radius: 8px;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  cursor: pointer;
+}
+
+
+.closeButton:hover {
+  color: #fff;
+
+  background:
+    rgba(190, 65, 65, .13);
+}
+
+
+.closeButton:disabled {
+  opacity: .5;
+
+  cursor: not-allowed;
+}
+
+
+.noPeriod {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  color: #999;
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+
+.createCard {
+  margin-top: 10px;
+
+  display: grid;
+
+  grid-template-columns:
+    1.3fr
+    .8fr
+    .8fr
+    auto;
+
+  gap: 10px;
+
+  padding: 18px;
+
+  background: #111;
+
+  border:
+    1px solid #2e2e2e;
+
+  border-radius: 11px;
+}
+
+
+.field {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 7px;
+}
+
+
+.field label {
+  color: #aaa;
+
+  font-size: 9px;
+  font-weight: 800;
+}
+
+
+.field input {
+  height: 40px;
+
+  padding: 0 11px;
+
+  color: #eee;
+
+  background: #090909;
+
+  border:
+    1px solid #343434;
+
+  border-radius: 8px;
+
+  outline: none;
+
+  font-size: 10px;
+  font-weight: 650;
+}
+
+
+.field input:focus {
+  border-color:
+    rgba(88, 101, 242, .65);
+}
+
+
+.createButton {
+  align-self: end;
+
+  height: 40px;
+
+  padding: 0 15px;
+
+  color: #fff;
+
+  background: #5865f2;
+
+  border: 0;
+  border-radius: 8px;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  cursor: pointer;
+}
+
+
+.createButton:disabled {
+  color: #858585;
+
+  background: #222;
+
+  cursor: not-allowed;
+}
+
+
+.help {
+  margin: 9px 0 0;
+
+  color: #909090;
+
+  font-size: 9px;
+
+  line-height: 1.6;
+}
+
+
+.table {
+  margin-top: 10px;
+
+  overflow: hidden;
+
+  background: #101010;
+
+  border:
+    1px solid #2e2e2e;
+
+  border-radius: 11px;
+}
+
+
+.tableHeader,
+.tableRow {
+  display: grid;
+
+  grid-template-columns:
+    90px
+    1fr
+    160px
+    160px;
+
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 0 16px;
+}
+
+
+.tableHeader {
+  min-height: 44px;
+
+  color: #a0a0a0;
+
+  background: #151515;
+
+  border-bottom:
+    1px solid #303030;
+
+  font-size: 9px;
+  font-weight: 800;
+}
+
+
+.tableRow {
+  min-height: 54px;
+
+  color: #bbb;
+
+  border-bottom:
+    1px solid #262626;
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+
+.tableRow:last-child {
+  border-bottom: 0;
+}
+
+
+.tableRow strong {
+  color: #eee;
+
+  font-weight: 850;
+}
+
+
+.statusOpen,
+.statusClosed {
+  width: fit-content;
+
+  padding: 4px 7px;
+
+  border-radius: 999px;
+
+  font-size: 8px;
+  font-weight: 900;
+}
+
+
+.statusOpen {
+  color: #9fe6b5;
+
+  background:
+    rgba(55, 180, 95, .07);
+
+  border:
+    1px solid
+    rgba(55, 180, 95, .22);
+}
+
+
+.statusClosed {
+  color: #aaa;
+
+  background: #181818;
+
+  border:
+    1px solid #333;
+}
+
+
+.empty {
+  padding: 32px;
+
+  color: #999;
+
+  text-align: center;
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+
+@media (max-width: 900px) {
+
+  .header {
+    grid-template-columns:
+      1fr auto;
+
+    padding: 0 15px;
+  }
+
+
+  .headerBadge {
+    display: none;
+  }
+
+
+  .content {
+    width:
+      calc(100% - 28px);
+  }
+
+
+  .createCard {
+    grid-template-columns:
+      1fr 1fr;
+  }
+
+
+  .createButton {
+    grid-column:
+      1 / -1;
+  }
+
+}
+
+
+@media (max-width: 600px) {
+
+  .hero {
+    display: block;
+  }
+
+
+  .heroButtons {
+    margin-top: 15px;
+  }
+
+
+  .createCard {
+    grid-template-columns:
+      1fr;
+  }
+
+
+  .createButton {
+    grid-column:
+      auto;
+  }
+
+
+  .table {
+    overflow-x: auto;
+  }
+
+
+  .tableHeader,
+  .tableRow {
+    min-width: 650px;
+  }
+
+}

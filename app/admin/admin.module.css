@@ -1,0 +1,1170 @@
+/* =========================================================
+   ADMIN PAGE
+========================================================= */
+
+.adminPage {
+  min-height: 100vh;
+
+  padding: 18px;
+
+  color: #ffffff;
+
+  background:
+    radial-gradient(
+      circle at 74% 14%,
+      rgba(88, 101, 242, .08),
+      transparent 25%
+    ),
+    radial-gradient(
+      circle at 22% 75%,
+      rgba(255, 74, 148, .05),
+      transparent 30%
+    ),
+    #050505;
+}
+
+
+.adminShell {
+  width: min(
+    1500px,
+    100%
+  );
+
+  min-height:
+    calc(100vh - 36px);
+
+  margin: 0 auto;
+
+  overflow: hidden;
+
+  background:
+    rgba(8, 8, 8, .98);
+
+  border:
+    1px solid #252525;
+
+  border-radius: 20px;
+
+  box-shadow:
+    0 30px 90px
+    rgba(0, 0, 0, .52);
+}
+
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.adminHeader {
+  min-height: 74px;
+
+  display: grid;
+
+  grid-template-columns:
+    1fr
+    auto
+    1fr;
+
+  align-items: center;
+
+  gap: 20px;
+
+  padding:
+    0 26px;
+
+  border-bottom:
+    1px solid #232323;
+
+  background:
+    rgba(8, 8, 8, .96);
+}
+
+
+.brandArea {
+  min-width: 0;
+}
+
+
+.brand {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  font-size: 16px;
+
+  font-weight: 900;
+
+  letter-spacing: -.4px;
+}
+
+
+.server {
+  margin-top: 4px;
+
+  color: #5e5e5e;
+
+  font-size: 9px;
+}
+
+
+.headerCenter {
+  display: flex;
+
+  justify-content: center;
+}
+
+
+.headerBadge {
+  padding:
+    7px 11px;
+
+  color: #747474;
+
+  background: #101010;
+
+  border:
+    1px solid #292929;
+
+  border-radius: 999px;
+
+  font-size: 9px;
+
+  letter-spacing: .7px;
+}
+
+
+.headerUser {
+  justify-self: end;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+}
+
+
+.headerUser img {
+  width: 34px;
+  height: 34px;
+
+  object-fit: cover;
+
+  border:
+    1px solid #343434;
+
+  border-radius: 50%;
+}
+
+
+.headerUserInfo {
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: flex-start;
+
+  gap: 3px;
+}
+
+
+.headerUserInfo strong {
+  max-width: 130px;
+
+  overflow: hidden;
+
+  color: #e7e7e7;
+
+  font-size: 11px;
+
+  white-space: nowrap;
+
+  text-overflow: ellipsis;
+}
+
+
+.adminRole,
+.masterRole {
+  font-size: 8px;
+
+  font-weight: 900;
+
+  letter-spacing: .8px;
+}
+
+
+.adminRole {
+  color: #8892ff;
+}
+
+
+.masterRole {
+  color: #f1c76b;
+}
+
+
+
+/* =========================================================
+   MAIN LAYOUT
+========================================================= */
+
+.adminContent {
+  min-height:
+    calc(100vh - 112px);
+
+  display: grid;
+
+  grid-template-columns:
+    220px
+    minmax(0, 1fr);
+}
+
+
+
+/* =========================================================
+   SIDEBAR
+========================================================= */
+
+.sidebar {
+  display: flex;
+
+  flex-direction: column;
+
+  padding:
+    28px 18px 20px;
+
+  background:
+    #090909;
+
+  border-right:
+    1px solid #222;
+}
+
+
+.sideTop {
+  padding:
+    0 9px;
+}
+
+
+.sideLabel {
+  margin-bottom: 8px;
+
+  color: #555;
+
+  font-size: 8px;
+
+  font-weight: 900;
+
+  letter-spacing: 2.4px;
+}
+
+
+.sideTop h2 {
+  margin: 0;
+
+  font-size: 25px;
+
+  letter-spacing: -1.5px;
+}
+
+
+.sideTop p {
+  margin:
+    10px 0 0;
+
+  color: #606060;
+
+  font-size: 10px;
+
+  line-height: 1.65;
+}
+
+
+.sideNav {
+  margin-top: 30px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 5px;
+}
+
+
+.sideNavItem {
+  min-height: 40px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  padding:
+    0 11px;
+
+  color: #777;
+
+  border:
+    1px solid transparent;
+
+  border-radius: 8px;
+
+  font-size: 10px;
+
+  font-weight: 700;
+}
+
+
+.sideNavItem:hover {
+  color: #ddd;
+
+  background: #111;
+}
+
+
+.activeNav {
+  color: #fff;
+
+  background: #141414;
+
+  border-color: #292929;
+}
+
+
+.sideBottom {
+  margin-top: auto;
+}
+
+
+.securityBox {
+  display: flex;
+
+  gap: 9px;
+
+  padding: 12px;
+
+  background:
+    #0f0f0f;
+
+  border:
+    1px solid #252525;
+
+  border-radius: 10px;
+}
+
+
+.securityIcon {
+  font-size: 14px;
+}
+
+
+.securityBox strong {
+  display: block;
+
+  color: #aaa;
+
+  font-size: 9px;
+}
+
+
+.securityBox p {
+  margin:
+    5px 0 0;
+
+  color: #555;
+
+  font-size: 8px;
+
+  line-height: 1.55;
+}
+
+
+
+/* =========================================================
+   MAIN AREA
+========================================================= */
+
+.mainArea {
+  min-width: 0;
+
+  padding:
+    34px 38px 44px;
+}
+
+
+
+/* =========================================================
+   HEADING
+========================================================= */
+
+.pageHeading {
+  display: flex;
+
+  align-items: flex-start;
+
+  justify-content: space-between;
+
+  gap: 30px;
+}
+
+
+.eyebrow {
+  margin-bottom: 8px;
+
+  color: #636363;
+
+  font-size: 8px;
+
+  font-weight: 900;
+
+  letter-spacing: 2.3px;
+}
+
+
+.pageHeading h1 {
+  margin: 0;
+
+  font-size: 34px;
+
+  letter-spacing: -2px;
+}
+
+
+.pageHeading p {
+  margin:
+    10px 0 0;
+
+  color: #6e6e6e;
+
+  font-size: 11px;
+
+  line-height: 1.65;
+}
+
+
+.permissionBadge {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  padding:
+    8px 11px;
+
+  color: #828282;
+
+  background: #101010;
+
+  border:
+    1px solid #292929;
+
+  border-radius: 999px;
+
+  font-size: 8px;
+
+  font-weight: 800;
+
+  letter-spacing: .6px;
+}
+
+
+.permissionDotAdmin,
+.permissionDotMaster {
+  width: 6px;
+  height: 6px;
+
+  border-radius: 50%;
+}
+
+
+.permissionDotAdmin {
+  background: #747fff;
+
+  box-shadow:
+    0 0 8px
+    rgba(116, 127, 255, .45);
+}
+
+
+.permissionDotMaster {
+  background: #e7bd60;
+
+  box-shadow:
+    0 0 8px
+    rgba(231, 189, 96, .45);
+}
+
+
+
+/* =========================================================
+   SUMMARY
+========================================================= */
+
+.summaryRow {
+  margin-top: 27px;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 10px;
+}
+
+
+.summaryCard {
+  min-height: 104px;
+
+  padding: 16px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+
+  background:
+    linear-gradient(
+      145deg,
+      #111,
+      #0d0d0d
+    );
+
+  border:
+    1px solid #272727;
+
+  border-radius: 12px;
+}
+
+
+.summaryCard > span {
+  color: #606060;
+
+  font-size: 9px;
+}
+
+
+.summaryCard > strong {
+  margin-top: 6px;
+
+  font-size: 25px;
+
+  line-height: 1;
+}
+
+
+.summaryCard > small {
+  margin-top: 7px;
+
+  color: #505050;
+
+  font-size: 8px;
+}
+
+
+.summaryCard .summaryText {
+  font-size: 17px;
+}
+
+
+
+/* =========================================================
+   MANAGEMENT SECTION
+========================================================= */
+
+.managementSection {
+  margin-top: 31px;
+}
+
+
+.sectionTitle {
+  margin-bottom: 14px;
+}
+
+
+.sectionTitle h2 {
+  margin: 0;
+
+  font-size: 18px;
+
+  letter-spacing: -.7px;
+}
+
+
+.sectionTitle p {
+  margin:
+    5px 0 0;
+
+  color: #5d5d5d;
+
+  font-size: 9px;
+}
+
+
+
+/* =========================================================
+   MANAGEMENT CARDS
+========================================================= */
+
+.managementGrid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+
+  gap: 11px;
+}
+
+
+.managementCard {
+  min-height: 190px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  padding: 17px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #111,
+      #0c0c0c
+    );
+
+  border:
+    1px solid #292929;
+
+  border-radius: 13px;
+
+  transition:
+    transform .15s ease,
+    border-color .15s ease,
+    background .15s ease;
+}
+
+
+.managementCard:hover {
+  transform:
+    translateY(-2px);
+
+  background:
+    #131313;
+
+  border-color:
+    #3a3a3a;
+}
+
+
+.cardTop {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+}
+
+
+.menuIcon {
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  background: #181818;
+
+  border:
+    1px solid #2c2c2c;
+
+  border-radius: 9px;
+
+  font-size: 15px;
+}
+
+
+.cardStatus {
+  padding:
+    5px 7px;
+
+  color: #555;
+
+  background: #0d0d0d;
+
+  border:
+    1px solid #252525;
+
+  border-radius: 999px;
+
+  font-size: 7px;
+}
+
+
+.managementCard h3 {
+  margin:
+    16px 0 0;
+
+  font-size: 14px;
+}
+
+
+.managementCard p {
+  margin:
+    8px 0 18px;
+
+  color: #646464;
+
+  font-size: 9px;
+
+  line-height: 1.65;
+}
+
+
+.cardBottom {
+  margin-top: auto;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  padding-top: 10px;
+
+  color: #555;
+
+  border-top:
+    1px solid #202020;
+
+  font-size: 8px;
+}
+
+
+.cardArrow {
+  font-size: 13px;
+}
+
+
+
+/* =========================================================
+   MASTER CARD
+========================================================= */
+
+.masterCard {
+  border-color:
+    rgba(230, 190, 95, .22);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(49, 40, 20, .3),
+      #0d0d0d 70%
+    );
+}
+
+
+.masterOnlyBadge {
+  padding:
+    5px 7px;
+
+  color: #d1aa59;
+
+  background:
+    rgba(209, 170, 89, .05);
+
+  border:
+    1px solid
+    rgba(209, 170, 89, .2);
+
+  border-radius: 999px;
+
+  font-size: 7px;
+
+  font-weight: 900;
+
+  letter-spacing: .6px;
+}
+
+
+
+/* =========================================================
+   NOTICE
+========================================================= */
+
+.bottomNotice {
+  margin-top: 22px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 11px;
+
+  padding: 14px 15px;
+
+  background: #0e0e0e;
+
+  border:
+    1px solid #242424;
+
+  border-radius: 10px;
+}
+
+
+.bottomNoticeIcon {
+  width: 27px;
+  height: 27px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  color: #717171;
+
+  background: #151515;
+
+  border-radius: 50%;
+
+  font-size: 10px;
+}
+
+
+.bottomNotice strong {
+  color: #8b8b8b;
+
+  font-size: 9px;
+}
+
+
+.bottomNotice p {
+  margin:
+    4px 0 0;
+
+  color: #4f4f4f;
+
+  font-size: 8px;
+}
+
+
+
+/* =========================================================
+   ACCESS DENIED
+========================================================= */
+
+.deniedPage {
+  min-height: 100vh;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 20px;
+
+  color: white;
+
+  background:
+    radial-gradient(
+      circle at center,
+      #121212,
+      #030303 65%
+    );
+}
+
+
+.deniedCard {
+  width:
+    min(
+      460px,
+      100%
+    );
+
+  padding:
+    42px 34px;
+
+  text-align: center;
+
+  background: #0d0d0d;
+
+  border:
+    1px solid #292929;
+
+  border-radius: 17px;
+
+  box-shadow:
+    0 24px 70px
+    rgba(0,0,0,.5);
+}
+
+
+.deniedIcon {
+  font-size: 31px;
+}
+
+
+.deniedBadge {
+  width: fit-content;
+
+  margin:
+    16px auto 0;
+
+  padding:
+    5px 8px;
+
+  color: #777;
+
+  background: #151515;
+
+  border:
+    1px solid #292929;
+
+  border-radius: 999px;
+
+  font-size: 7px;
+
+  font-weight: 900;
+
+  letter-spacing: 1.3px;
+}
+
+
+.deniedCard h1 {
+  margin:
+    16px 0 0;
+
+  font-size: 24px;
+
+  letter-spacing: -1.2px;
+}
+
+
+.deniedCard > p {
+  margin:
+    12px auto 0;
+
+  color: #696969;
+
+  font-size: 10px;
+
+  line-height: 1.75;
+}
+
+
+.deniedUser {
+  width: fit-content;
+
+  margin:
+    22px auto 0;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  padding:
+    8px 11px;
+
+  text-align: left;
+
+  background: #121212;
+
+  border:
+    1px solid #292929;
+
+  border-radius: 10px;
+}
+
+
+.deniedUser img {
+  width: 31px;
+  height: 31px;
+
+  object-fit: cover;
+
+  border-radius: 50%;
+}
+
+
+.deniedUser div {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+
+.deniedUser strong {
+  font-size: 10px;
+}
+
+
+.deniedUser span {
+  color: #666;
+
+  font-size: 7px;
+
+  font-weight: 800;
+
+  letter-spacing: .6px;
+}
+
+
+.backButton {
+  min-height: 38px;
+
+  margin-top: 24px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding:
+    0 15px;
+
+  color: #ddd;
+
+  background: #171717;
+
+  border:
+    1px solid #303030;
+
+  border-radius: 8px;
+
+  font-size: 10px;
+
+  font-weight: 700;
+}
+
+
+.backButton:hover {
+  background: #202020;
+}
+
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1100px) {
+
+  .managementGrid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+
+  .summaryRow {
+    grid-template-columns:
+      repeat(3, 1fr);
+  }
+
+}
+
+
+
+@media (max-width: 780px) {
+
+  .adminPage {
+    padding: 8px;
+  }
+
+
+  .adminShell {
+    min-height:
+      calc(100vh - 16px);
+  }
+
+
+  .adminHeader {
+    grid-template-columns:
+      1fr
+      auto;
+
+    padding:
+      0 16px;
+  }
+
+
+  .headerCenter {
+    display: none;
+  }
+
+
+  .server {
+    display: none;
+  }
+
+
+  .adminContent {
+    display: block;
+  }
+
+
+  .sidebar {
+    display: none;
+  }
+
+
+  .mainArea {
+    padding:
+      27px 16px 34px;
+  }
+
+
+  .pageHeading {
+    display: block;
+  }
+
+
+  .permissionBadge {
+    width: fit-content;
+
+    margin-top: 15px;
+  }
+
+
+  .summaryRow {
+    grid-template-columns: 1fr;
+  }
+
+
+  .summaryCard {
+    min-height: 90px;
+  }
+
+
+  .managementGrid {
+    grid-template-columns: 1fr;
+  }
+
+
+  .managementCard {
+    min-height: 165px;
+  }
+
+}
