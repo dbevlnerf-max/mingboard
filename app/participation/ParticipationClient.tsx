@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import AppTopBar from "@/app/components/AppTopBar";
 
 import {
   useEffect,
@@ -528,7 +528,6 @@ function eventLabel(
 
 export default function ParticipationClient({
   currentDiscordId,
-  currentUserName,
 }: Props) {
 
   // ==========================================================
@@ -1166,92 +1165,20 @@ export default function ParticipationClient({
   // ==========================================================
 
   return (
-    <main
-      className={
-        styles.page
-      }
-    >
+    <>
+      <AppTopBar />
+
+      <main
+        className={
+          styles.page
+        }
+      >
 
       <div
         className={
           styles.shell
         }
       >
-
-
-        {/* ================================================= */}
-        {/* HEADER */}
-        {/* ================================================= */}
-
-        <header
-          className={
-            styles.header
-          }
-        >
-
-          <Link
-            href="/"
-            className={
-              styles.brand
-            }
-          >
-            ⚡ 게임하는밍쨩
-          </Link>
-
-
-          <nav
-            className={
-              styles.nav
-            }
-          >
-
-            <Link href="/">
-              대시보드
-            </Link>
-
-
-            <Link href="/boss">
-              보스타임
-            </Link>
-
-
-            <Link
-              href="/participation"
-              className={
-                styles.activeNav
-              }
-            >
-              참여점수
-            </Link>
-
-
-            <Link href="/distribution-history">
-              분배조회
-            </Link>
-
-
-            <Link href="/guild">
-              길드현황
-            </Link>
-
-
-            <Link href="/admin">
-              관리자
-            </Link>
-
-          </nav>
-
-
-          <div
-            className={
-              styles.user
-            }
-          >
-            {currentUserName}
-          </div>
-
-        </header>
-
 
 
         <div
@@ -2254,6 +2181,7 @@ export default function ParticipationClient({
         )
       }
 
-    </main>
+      </main>
+    </>
   );
 }
