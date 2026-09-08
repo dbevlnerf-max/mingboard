@@ -1,19 +1,7 @@
 import { NextResponse } from "next/server";
 
-export async function GET(request) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(request.url);
-
-    const nickname =
-      searchParams.get("nickname")?.trim() || "";
-
-    if (!nickname) {
-      return NextResponse.json({
-        success: false,
-        message: "닉네임을 입력해주세요.",
-      });
-    }
-
     const googleScriptUrl =
       process.env.GOOGLE_SCRIPT_URL;
 
@@ -30,13 +18,18 @@ export async function GET(request) {
       );
     }
 
+    const separator =
+      googleScriptUrl.includes("?")
+        ? "&"
+        : "?";
+
     const url =
-      `${googleScriptUrl}` +
-      `?action=search` +
-      `&nickname=${encodeURIComponent(nickname)}`;
+      `${googleScriptUrl}${separator}` +
+      "action=distributionList";
 
     const response = await fetch(url, {
       cache: "no-store",
+      redirect: "follow",
     });
 
     if (!response.ok) {
@@ -45,10 +38,29 @@ export async function GET(request) {
       );
     }
 
-    const data =
-      await response.json();
+    const text =
+      await response.text();
 
-    return NextResponse.json(data);
+    let data: unknown;
+
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error(
+        "Google Script 응답을 읽지 못했습니다."
+      );
+    }
+
+    return NextResponse.json(
+      data,
+      {
+        headers: {
+          "Cache-Control":
+            "no-store, max-age=0",
+        },
+      }
+    );
+
   } catch (error) {
     console.error(
       "Distribution API Error:",
