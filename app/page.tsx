@@ -97,6 +97,25 @@ type BossTimer = {
 };
 
 
+type BossScheduleBoss =
+  BossTimer & {
+    fixed: boolean;
+    times: string[];
+    cycle: string;
+  };
+
+
+type BossScheduleItem = {
+  boss: BossScheduleBoss;
+  index: number;
+  target: Date;
+  spawnTarget: Date;
+  spawn: string;
+  nextTarget: Date | null;
+  missed: boolean;
+};
+
+
 function formatBossCycle(
   minutes:
     number |
@@ -2127,7 +2146,7 @@ export default function Home() {
 
   const bossSchedule =
     bossTimers
-      .flatMap(
+      .flatMap<BossScheduleItem>(
         (
           boss,
           index
