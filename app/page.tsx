@@ -2650,6 +2650,102 @@ export default function Home() {
 
 
 
+          {/* OVERALL POWER RANKING */}
+
+          <section
+            className="overallRankingPanel"
+            style={{
+              marginBottom: "14px",
+            }}
+          >
+
+            <div className="overallRankingHeader">
+              <div>
+                <span>
+                  POWER RANKING
+                </span>
+                <h2>
+                  👑 전체 성장력 TOP 5
+                </h2>
+              </div>
+
+              <small>
+                🧾길드현황 기준
+              </small>
+            </div>
+
+
+            <div
+              className="overallRankingGrid"
+              style={{
+                gridTemplateColumns: "1fr",
+              }}
+            >
+
+              {
+                overallTop5.map(
+                  (
+                    member,
+                    index
+                  ) => (
+                    <div
+                      className={
+                        index === 0
+                          ? "overallRankCard first"
+                          : "overallRankCard"
+                      }
+                      key={
+                        `${member.gid}-${member.nickname}`
+                      }
+                    >
+                      <span className="overallRankNumber">
+                        {index + 1}
+                      </span>
+
+                      <div className="overallRankMember">
+                        <strong>
+                          {member.nickname}
+                        </strong>
+                        <small>
+                          {member.job} · {member.guild}
+                        </small>
+                      </div>
+
+                      <strong
+                        className="overallRankPower"
+                        style={{
+                          gridColumn: "auto",
+                          alignSelf: "center",
+                        }}
+                      >
+                        {
+                          member
+                            .growthPowerNumber
+                            .toLocaleString()
+                        }
+                      </strong>
+                    </div>
+                  )
+                )
+              }
+
+              {
+                !guildLoading &&
+                overallTop5.length ===
+                  0 &&
+                (
+                  <div className="overallRankEmpty">
+                    성장력 랭킹 데이터가 없습니다.
+                  </div>
+                )
+              }
+
+            </div>
+
+          </section>
+
+
+
           {/* JOB RANKING */}
 
           <section className="jobRankingPanel">
@@ -2762,8 +2858,30 @@ export default function Home() {
                       key={
                         `${member.gid}-${member.nickname}`
                       }
+                      style={
+                        index === 0
+                          ? {
+                              background:
+                                "linear-gradient(145deg, rgba(255, 198, 82, .10), #111 58%)",
+                              boxShadow:
+                                "inset 0 0 0 1px rgba(255, 199, 87, .30)",
+                              borderRadius:
+                                "9px",
+                            }
+                          : undefined
+                      }
                     >
-                      <span className="jobRankingPlace">
+                      <span
+                        className="jobRankingPlace"
+                        style={
+                          index === 0
+                            ? {
+                                color:
+                                  "#ffd978",
+                              }
+                            : undefined
+                        }
+                      >
                         {index + 1}
                       </span>
 
@@ -3098,81 +3216,6 @@ export default function Home() {
           </div>
 
 
-          <section className="overallRankingPanel">
-
-            <div className="overallRankingHeader">
-              <div>
-                <span>
-                  POWER RANKING
-                </span>
-                <h2>
-                  👑 전체 성장력 TOP 5
-                </h2>
-              </div>
-
-              <small>
-                🧾길드현황 기준
-              </small>
-            </div>
-
-
-            <div className="overallRankingGrid">
-
-              {
-                overallTop5.map(
-                  (
-                    member,
-                    index
-                  ) => (
-                    <div
-                      className={
-                        index === 0
-                          ? "overallRankCard first"
-                          : "overallRankCard"
-                      }
-                      key={
-                        `${member.gid}-${member.nickname}`
-                      }
-                    >
-                      <span className="overallRankNumber">
-                        {index + 1}
-                      </span>
-
-                      <div className="overallRankMember">
-                        <strong>
-                          {member.nickname}
-                        </strong>
-                        <small>
-                          {member.job} · {member.guild}
-                        </small>
-                      </div>
-
-                      <strong className="overallRankPower">
-                        {
-                          member
-                            .growthPowerNumber
-                            .toLocaleString()
-                        }
-                      </strong>
-                    </div>
-                  )
-                )
-              }
-
-              {
-                !guildLoading &&
-                overallTop5.length ===
-                  0 &&
-                (
-                  <div className="overallRankEmpty">
-                    성장력 랭킹 데이터가 없습니다.
-                  </div>
-                )
-              }
-
-            </div>
-
-          </section>
 
 
           <section
