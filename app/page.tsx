@@ -196,40 +196,129 @@ function getNextTime(
 }
 
 
-function getNextFixedTime(
-  times: string[]
+function getNextFixedTimes(
+  times: string[],
+  now: Date,
+  count = 2
 ) {
-  const now = new Date();
+  const validTimes =
+    times
+      .map(
+        time => {
+          const [
+            hour,
+            minute,
+          ] =
+            time
+              .split(":")
+              .map(Number);
 
-  const candidates = times
-    .map(time => {
-      const [hour, minute] = time
-        .split(":")
-        .map(Number);
+          if (
+            !Number.isInteger(hour) ||
+            !Number.isInteger(minute) ||
+            hour < 0 ||
+            hour > 23 ||
+            minute < 0 ||
+            minute > 59
+          ) {
+            return null;
+          }
 
-      const target = new Date();
+          return {
+            time,
+            hour,
+            minute,
+          };
+        }
+      )
+      .filter(
+        (
+          item
+        ): item is {
+          time: string;
+          hour: number;
+          minute: number;
+        } =>
+          item !== null
+      );
+
+
+  if (
+    validTimes.length === 0
+  ) {
+    return [];
+  }
+
+
+  const candidates: Array<{
+    time: string;
+    target: Date;
+  }> = [];
+
+
+  for (
+    let dayOffset = 0;
+    candidates.length < count &&
+    dayOffset < 8;
+    dayOffset++
+  ) {
+
+    for (
+      const fixedTime of
+      validTimes
+    ) {
+
+      const target =
+        new Date(
+          now
+        );
+
+      target.setDate(
+        target.getDate() +
+        dayOffset
+      );
+
       target.setHours(
-        hour,
-        minute,
+        fixedTime.hour,
+        fixedTime.minute,
         0,
         0
       );
 
-      if (target <= now) {
-        target.setDate(
-          target.getDate() + 1
-        );
+
+      if (
+        target <= now
+      ) {
+        continue;
       }
 
-      return { time, target };
-    })
-    .sort(
+
+      candidates.push({
+        time:
+          fixedTime.time,
+        target,
+      });
+    }
+
+
+    candidates.sort(
       (a, b) =>
         a.target.getTime() -
         b.target.getTime()
     );
+  }
 
-  return candidates[0];
+
+  return candidates
+    .sort(
+      (a, b) =>
+        a.target.getTime() -
+        b.target.getTime()
+    )
+    .slice(
+      0,
+      count
+    );
 }
 
 
@@ -2038,7 +2127,7 @@ export default function Home() {
 
   const bossSchedule =
     bossTimers
-      .map(
+      .flatMap(
         (
           boss,
           index
@@ -2053,50 +2142,78 @@ export default function Home() {
             fixed
           ) {
 
-            const fixedInfo =
-              getNextFixedTime(
+            const fixedInfos =
+              getNextFixedTimes(
                 boss.fixedTimes ||
-                []
+                  [],
+                now,
+                2
               );
 
 
-            if (
-              !fixedInfo
-            ) {
-              return null;
-            }
+            return fixedInfos.map(
+              (
+                fixedInfo,
+                fixedIndex
+              ) => {
+
+                const followingInfo =
+                  getNextFixedTimes(
+                    boss.fixedTimes ||
+                      [],
+                    new Date(
+                      fixedInfo.target.getTime() +
+                        1000
+                    ),
+                    1
+                  )[0] ||
+                  null;
 
 
-            return {
-              boss: {
-                ...boss,
-                fixed: true,
-                times:
-                  boss.fixedTimes,
-                cycle: "",
-              },
+                return {
+                  boss: {
+                    ...boss,
+                    fixed: true,
+                    times:
+                      boss.fixedTimes,
+                    cycle: "",
+                  },
 
-              index,
+                  index:
+                    index *
+                      10 +
+                    fixedIndex,
 
-              target:
-                fixedInfo.target,
+                  target:
+                    fixedInfo.target,
 
-              spawn:
-                fixedInfo.time,
+                  spawnTarget:
+                    fixedInfo.target,
 
-              fixedInfo,
-            };
+                  spawn:
+                    fixedInfo.time,
+
+                  nextTarget:
+                    followingInfo
+                      ?.target ||
+                    null,
+
+                  missed:
+                    false,
+                };
+              }
+            );
           }
 
 
           if (
             !boss.nextSpawnAt
           ) {
-            return null;
+            return [];
           }
 
 
-          const target =
+          const storedTarget =
             new Date(
               boss.nextSpawnAt
             );
@@ -2104,45 +2221,179 @@ export default function Home() {
 
           if (
             Number.isNaN(
-              target.getTime()
+              storedTarget.getTime()
             )
           ) {
-            return null;
+            return [];
           }
 
 
-          return {
-            boss: {
-              ...boss,
-              fixed: false,
-              times: [],
-              cycle:
-                formatBossCycle(
-                  boss.intervalMinutes
+          const intervalMinutes =
+            Number(
+              boss.intervalMinutes ||
+              0
+            );
+
+
+          if (
+            intervalMinutes <= 0
+          ) {
+
+            return [
+              {
+                boss: {
+                  ...boss,
+                  fixed: false,
+                  times: [],
+                  cycle:
+                    formatBossCycle(
+                      boss.intervalMinutes
+                    ),
+                },
+
+                index,
+
+                target:
+                  storedTarget,
+
+                spawnTarget:
+                  storedTarget,
+
+                spawn:
+                  formatTimeOnly(
+                    storedTarget
+                  ),
+
+                nextTarget:
+                  null,
+
+                missed:
+                  storedTarget <=
+                    now,
+              },
+            ];
+          }
+
+
+          const intervalMs =
+            intervalMinutes *
+            60 *
+            1000;
+
+
+          if (
+            storedTarget >
+            now
+          ) {
+
+            const followingTarget =
+              new Date(
+                storedTarget.getTime() +
+                intervalMs
+              );
+
+
+            return [
+              {
+                boss: {
+                  ...boss,
+                  fixed: false,
+                  times: [],
+                  cycle:
+                    formatBossCycle(
+                      boss.intervalMinutes
+                    ),
+                },
+
+                index,
+
+                target:
+                  storedTarget,
+
+                spawnTarget:
+                  storedTarget,
+
+                spawn:
+                  formatTimeOnly(
+                    storedTarget
+                  ),
+
+                nextTarget:
+                  followingTarget,
+
+                missed:
+                  false,
+              },
+            ];
+          }
+
+
+          let missedTarget =
+            new Date(
+              storedTarget
+            );
+
+
+          let upcomingTarget =
+            new Date(
+              storedTarget.getTime() +
+              intervalMs
+            );
+
+
+          while (
+            upcomingTarget <=
+            now
+          ) {
+
+            missedTarget =
+              new Date(
+                upcomingTarget
+              );
+
+            upcomingTarget =
+              new Date(
+                upcomingTarget.getTime() +
+                intervalMs
+              );
+          }
+
+
+          return [
+            {
+              boss: {
+                ...boss,
+                fixed: false,
+                times: [],
+                cycle:
+                  formatBossCycle(
+                    boss.intervalMinutes
+                  ),
+              },
+
+              index,
+
+              // 정렬과 남은시간은 "앞으로 올 다음 타임" 기준.
+              target:
+                upcomingTarget,
+
+              // 화면의 소환시간은 마지막으로 지나간 미입력 타임.
+              spawnTarget:
+                missedTarget,
+
+              spawn:
+                formatTimeOnly(
+                  missedTarget
                 ),
+
+              nextTarget:
+                upcomingTarget,
+
+              missed:
+                true,
             },
-
-            index,
-
-            target,
-
-            spawn:
-              formatTimeOnly(
-                target
-              ),
-
-            fixedInfo:
-              null,
-          };
+          ];
         }
-      )
-      .filter(
-        (
-          item
-        ): item is NonNullable<
-          typeof item
-        > =>
-          item !== null
       )
       .sort(
         (
@@ -2995,7 +3246,8 @@ export default function Home() {
                       boss,
                       target,
                       spawn,
-                      fixedInfo,
+                      nextTarget,
+                      missed,
                     } =
                       schedule;
 
@@ -3047,7 +3299,7 @@ export default function Home() {
                       <div
                         className="bossScheduleGroup"
                         key={
-                          boss.id
+                          `${boss.id}-${target.toISOString()}`
                         }
                       >
 
@@ -3074,7 +3326,13 @@ export default function Home() {
                         >
 
                           <div className="bossSpawnPrimary">
-                            <span>소환</span>
+                            <span>
+                              {
+                                missed
+                                  ? "소환 · 미입력"
+                                  : "소환"
+                              }
+                            </span>
                             <strong>
                               {spawn}
                             </strong>
@@ -3143,11 +3401,11 @@ export default function Home() {
                               <span>다음 소환</span>
                               <strong>
                                 {
-                                  formatNextSpawn(
-                                    fixedInfo
-                                      ? fixedInfo.target
-                                      : target
-                                  )
+                                  nextTarget
+                                    ? formatNextSpawn(
+                                        nextTarget
+                                      )
+                                    : "-"
                                 }
                               </strong>
                             </div>
