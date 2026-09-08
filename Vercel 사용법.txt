@@ -1,0 +1,19 @@
+Vercel 사용법
+재배포(수정사항)
+cd $HOME\Desktop\ming-dashboard
+
+git status
+
+git add .
+
+git commit -m "update distribution view"
+
+git push origin main
+
+
+그냥 재실행하고싶을때
+
+Deployments
+→ 가장 최근 Production 배포 클릭
+→ 우측 상단 ⋯
+→ Redeploy
