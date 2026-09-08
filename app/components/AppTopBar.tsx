@@ -49,6 +49,12 @@ export default function AppTopBar() {
     );
 
 
+  const isDistribution =
+    pathname.startsWith(
+      "/distribution"
+    );
+
+
   function goBack() {
 
     if (
@@ -113,14 +119,6 @@ export default function AppTopBar() {
 
 
         <Link
-          href="/#boss"
-          className="menuItem"
-        >
-          보스타임
-        </Link>
-
-
-        <Link
           href="/participation"
           className={
             `menuItem ${
@@ -135,8 +133,14 @@ export default function AppTopBar() {
 
 
         <Link
-          href="/#distribution"
-          className="menuItem"
+          href="/distribution"
+          className={
+            `menuItem ${
+              isDistribution
+                ? "active"
+                : ""
+            }`
+          }
         >
           분배조회
         </Link>

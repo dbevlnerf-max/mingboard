@@ -36,22 +36,20 @@ type Guide = {
 };
 
 
-type DistributionRow = {
-  rowNumber: number;
-  date: string;
-  dateKey: string;
-  item: string;
-  category: string;
-  itemJob: string;
-  target: string;
-  diamond: number;
-  member: {
-    gid: string;
-    nickname: string;
+type DistributionUser = {
+  nickname: string;
+  job: string;
+  growthPower: string;
+  count: number;
+  totalDiamond: number;
+
+  items: Array<{
+    date: string;
+    item: string;
+    category: string;
     job: string;
-    growthPower: string;
-    guild: string;
-  } | null;
+    diamond: number;
+  }>;
 };
 
 
@@ -492,20 +490,20 @@ export default function Home() {
 
 
   const [
-    distributionRows,
-    setDistributionRows,
+    search,
+    setSearch,
   ] =
-    useState<DistributionRow[]>(
-      []
-    );
+    useState("");
 
 
   const [
-    distributionCategories,
-    setDistributionCategories,
+    user,
+    setUser,
   ] =
-    useState<string[]>(
-      []
+    useState<
+      DistributionUser | null
+    >(
+      null
     );
 
 
@@ -519,47 +517,26 @@ export default function Home() {
 
 
   const [
-    distributionSort,
-    setDistributionSort,
-  ] =
-    useState<"latest" | "oldest">(
-      "latest"
-    );
-
-
-  const [
-    distributionStartDate,
-    setDistributionStartDate,
-  ] =
-    useState("");
-
-
-  const [
-    distributionEndDate,
-    setDistributionEndDate,
-  ] =
-    useState("");
-
-
-  const [
-    distributionPage,
-    setDistributionPage,
-  ] =
-    useState(1);
-
-
-  const [
-    distributionLoading,
-    setDistributionLoading,
+    loading,
+    setLoading,
   ] =
     useState(false);
 
 
   const [
-    distributionMessage,
-    setDistributionMessage,
+    message,
+    setMessage,
   ] =
     useState("");
+
+
+  const [
+    candidates,
+    setCandidates,
+  ] =
+    useState<string[]>(
+      []
+    );
 
 
   /* =====================================================
@@ -1166,168 +1143,146 @@ export default function Home() {
 
 
   /* =====================================================
-     DISTRIBUTION LIST
+     DISTRIBUTION SEARCH
   ===================================================== */
 
-  useEffect(
-    () => {
+  async function searchUser(
+    forcedName:
+      | string
+      | null = null
+  ) {
 
-      if (
-        status !==
-        "authenticated"
-      ) {
-        return;
-      }
-
-
-      if (
-        !session?.user
-          ?.isGuildMember ||
-        !session.user
-          .hasZeusRole
-      ) {
-        return;
-      }
+    const nickname =
+      forcedName ||
+      search.trim();
 
 
-      let disposed =
-        false;
+    if (
+      !nickname
+    ) {
 
-
-      async function loadDistribution() {
-
-        setDistributionLoading(
-          true
-        );
-
-        setDistributionMessage(
-          ""
-        );
-
-
-        try {
-
-          const response =
-            await fetch(
-              "/api/distribution",
-              {
-                cache:
-                  "no-store",
-              }
-            );
-
-
-          const data =
-            await response.json();
-
-
-          if (
-            !response.ok ||
-            !data.success
-          ) {
-            throw new Error(
-              data.message ||
-              "분배내역을 불러오지 못했습니다."
-            );
-          }
-
-
-          if (
-            disposed
-          ) {
-            return;
-          }
-
-
-          setDistributionRows(
-            Array.isArray(
-              data.rows
-            )
-              ? data.rows
-              : []
-          );
-
-
-          setDistributionCategories(
-            Array.isArray(
-              data.categories
-            )
-              ? data.categories
-              : []
-          );
-
-
-        } catch (error) {
-
-          if (
-            disposed
-          ) {
-            return;
-          }
-
-
-          console.error(
-            "[분배내역 조회]",
-            error
-          );
-
-
-          setDistributionRows(
-            []
-          );
-
-
-          setDistributionMessage(
-            error instanceof Error
-              ? error.message
-              : "분배내역을 불러오지 못했습니다."
-          );
-
-        } finally {
-
-          if (
-            !disposed
-          ) {
-            setDistributionLoading(
-              false
-            );
-          }
-        }
-      }
-
-
-      loadDistribution();
-
-
-      return () => {
-        disposed =
-          true;
-      };
-
-    },
-    [
-      status,
-      session?.user
-        ?.isGuildMember,
-      session?.user
-        ?.hasZeusRole,
-    ]
-  );
-
-
-  useEffect(
-    () => {
-      setDistributionPage(
-        1
+      setMessage(
+        "닉네임을 입력해주세요."
       );
-    },
-    [
-      category,
-      distributionSort,
-      distributionStartDate,
-      distributionEndDate,
-    ]
-  );
+
+      return;
+    }
+
+
+    setLoading(
+      true
+    );
+
+    setMessage("");
+
+    setCandidates(
+      []
+    );
+
+
+    try {
+
+      const response =
+        await fetch(
+          `/api/distribution?nickname=${encodeURIComponent(
+            nickname
+          )}`,
+          {
+            cache:
+              "no-store",
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      if (
+        data.multiple &&
+        data.candidates
+      ) {
+
+        setUser(
+          null
+        );
+
+
+        setCandidates(
+          data.candidates
+        );
+
+
+        setMessage(
+          "검색 결과가 여러 개 있습니다."
+        );
+
+
+        return;
+      }
+
+
+      if (
+        !data.success
+      ) {
+
+        setUser(
+          null
+        );
+
+
+        setMessage(
+          data.message ||
+          "검색 결과가 없습니다."
+        );
+
+
+        return;
+      }
+
+
+      setUser(
+        data
+      );
+
+
+      setSearch(
+        data.nickname
+      );
+
+
+      setCategory(
+        "전체"
+      );
+
+
+      setMessage("");
+
+    } catch (
+      error
+    ) {
+
+      console.error(
+        error
+      );
+
+
+      setUser(
+        null
+      );
+
+
+      setMessage(
+        "분배 정보를 불러오지 못했습니다."
+      );
+
+    } finally {
+
+      setLoading(
+        false
+      );
+    }
+  }
 
 
   /* =====================================================
@@ -1724,143 +1679,32 @@ export default function Home() {
      DISTRIBUTION
   ===================================================== */
 
-  const filteredDistributionRows =
-    distributionRows
-      .filter(
-        row => {
-
-          const categoryMatch =
-            category ===
-              "전체" ||
-            row.category ===
-              category;
-
-
-          const startMatch =
-            !distributionStartDate ||
-            !row.dateKey ||
-            row.dateKey >=
-              distributionStartDate;
-
-
-          const endMatch =
-            !distributionEndDate ||
-            !row.dateKey ||
-            row.dateKey <=
-              distributionEndDate;
-
-
-          return (
-            categoryMatch &&
-            startMatch &&
-            endMatch
-          );
-        }
-      )
-      .sort(
-        (a, b) => {
-
-          const aKey =
-            a.dateKey ||
-            "0000-00-00";
-
-          const bKey =
-            b.dateKey ||
-            "0000-00-00";
-
-
-          const dateCompare =
-            distributionSort ===
-              "latest"
-              ? bKey.localeCompare(
-                  aKey
-                )
-              : aKey.localeCompare(
-                  bKey
-                );
-
-
-          if (
-            dateCompare !==
-            0
-          ) {
-            return dateCompare;
-          }
-
-
-          return (
-            distributionSort ===
-              "latest"
-              ? b.rowNumber -
-                a.rowNumber
-              : a.rowNumber -
-                b.rowNumber
-          );
-        }
-      );
-
-
-  const distributionPageSize =
-    20;
-
-
-  const distributionTotalPages =
-    Math.max(
-      1,
-      Math.ceil(
-        filteredDistributionRows.length /
-        distributionPageSize
-      )
-    );
-
-
-  const safeDistributionPage =
-    Math.min(
-      distributionPage,
-      distributionTotalPages
-    );
-
-
-  const distributionPageRows =
-    filteredDistributionRows.slice(
-      (
-        safeDistributionPage -
-        1
-      ) *
-        distributionPageSize,
-      safeDistributionPage *
-        distributionPageSize
-    );
+  const filteredItems =
+    !user
+      ? []
+      : category ===
+        "전체"
+      ? user.items
+      : user.items.filter(
+          item =>
+            item.category ===
+            category
+        );
 
 
   const filteredDiamond =
-    filteredDistributionRows.reduce(
-      (sum, row) =>
+    filteredItems.reduce(
+      (
+        sum,
+        item
+      ) =>
         sum +
         Number(
-          row.diamond ||
+          item.diamond ||
           0
         ),
       0
     );
-
-
-  const linkedDistributionMembers =
-    new Set(
-      filteredDistributionRows
-        .filter(
-          row =>
-            Boolean(
-              row.member
-            )
-        )
-        .map(
-          row =>
-            row.member
-              ?.gid ||
-            row.target
-        )
-    ).size;
 
 
   /* =====================================================
@@ -3333,639 +3177,338 @@ export default function Home() {
         <aside
           className="distributionPanel"
           id="distribution"
-          style={{
-            gridColumn:
-              "1 / -1",
-          }}
         >
 
           <div className="distributionHeader">
-            💎 길드 전체 분배내역
+            👤 개인 분배 조회
           </div>
 
 
-          <div className="distributionOverviewGrid">
+          <div className="searchBox">
 
-            <div className="distributionOverviewCard">
-              <span>전체 분배건수</span>
-              <strong>
-                {distributionRows.length.toLocaleString()}건
-              </strong>
-            </div>
+            <input
+              value={
+                search
+              }
 
-            <div className="distributionOverviewCard">
-              <span>현재 조회건수</span>
-              <strong>
-                {filteredDistributionRows.length.toLocaleString()}건
-              </strong>
-            </div>
+              placeholder="닉네임 입력"
 
-            <div className="distributionOverviewCard">
-              <span>조회 다이아</span>
-              <strong>
-                💎 {filteredDiamond.toLocaleString()}
-              </strong>
-            </div>
+              onChange={
+                event =>
+                  setSearch(
+                    event.target.value
+                  )
+              }
 
-            <div className="distributionOverviewCard">
-              <span>길드원 정보 연결</span>
-              <strong>
-                {linkedDistributionMembers.toLocaleString()}명
-              </strong>
-            </div>
+              onKeyDown={
+                event => {
 
-          </div>
+                  if (
+                    event.key ===
+                    "Enter"
+                  ) {
+                    searchUser();
+                  }
 
-
-          <div className="distributionFilterBar">
-
-            <label>
-              <span>분류</span>
-              <select
-                value={category}
-                onChange={
-                  event =>
-                    setCategory(
-                      event.target.value
-                    )
                 }
-              >
-                <option value="전체">
-                  전체
-                </option>
-                {
-                  distributionCategories
-                    .filter(
-                      item =>
-                        item !==
-                        "전체"
-                    )
-                    .map(
-                      item => (
-                        <option
-                          key={item}
-                          value={item}
-                        >
-                          {item}
-                        </option>
-                      )
-                    )
-                }
-              </select>
-            </label>
-
-
-            <label>
-              <span>시작일</span>
-              <input
-                type="date"
-                value={
-                  distributionStartDate
-                }
-                onChange={
-                  event =>
-                    setDistributionStartDate(
-                      event.target.value
-                    )
-                }
-              />
-            </label>
-
-
-            <label>
-              <span>종료일</span>
-              <input
-                type="date"
-                value={
-                  distributionEndDate
-                }
-                onChange={
-                  event =>
-                    setDistributionEndDate(
-                      event.target.value
-                    )
-                }
-              />
-            </label>
-
-
-            <label>
-              <span>정렬</span>
-              <select
-                value={
-                  distributionSort
-                }
-                onChange={
-                  event =>
-                    setDistributionSort(
-                      event.target.value as
-                        | "latest"
-                        | "oldest"
-                    )
-                }
-              >
-                <option value="latest">
-                  최신순
-                </option>
-                <option value="oldest">
-                  오래된순
-                </option>
-              </select>
-            </label>
+              }
+            />
 
 
             <button
-              type="button"
-              className="distributionResetButton"
-              onClick={() => {
-                setCategory(
-                  "전체"
-                );
-                setDistributionStartDate(
-                  ""
-                );
-                setDistributionEndDate(
-                  ""
-                );
-                setDistributionSort(
-                  "latest"
-                );
-              }}
+              onClick={
+                () =>
+                  searchUser()
+              }
             >
-              초기화
+              🔍 조회
             </button>
 
           </div>
 
 
           {
-            distributionLoading &&
+            loading &&
             (
+
               <div className="emptyResult">
-                분배내역을 불러오는 중...
+                조회 중...
               </div>
+
             )
           }
 
 
           {
-            !distributionLoading &&
-            distributionMessage &&
+            message &&
             (
+
               <div className="emptyResult">
-                {distributionMessage}
+                {message}
               </div>
+
             )
           }
 
 
           {
-            !distributionLoading &&
-            !distributionMessage &&
-            filteredDistributionRows.length ===
-              0 &&
-            (
-              <div className="emptyResult">
-                조건에 맞는 분배내역이 없습니다.
-              </div>
+            candidates.map(
+              name => (
+
+                <button
+                  className="candidateButton"
+
+                  key={
+                    name
+                  }
+
+                  onClick={
+                    () =>
+                      searchUser(
+                        name
+                      )
+                  }
+                >
+                  👤 {name}
+                </button>
+
+              )
             )
           }
 
 
           {
-            !distributionLoading &&
-            !distributionMessage &&
-            filteredDistributionRows.length >
-              0 &&
+            user &&
             (
+
               <>
 
-                <div className="distributionDesktopTable">
+                <div className="userCard">
 
-                  <div className="distributionDesktopHeader">
-                    <span>날짜</span>
-                    <span>아이템 / 분류</span>
-                    <span>분배대상 / 길드원정보</span>
-                    <span>다이아</span>
+                  <h3>
+                    👤 {user.nickname}
+                  </h3>
+
+
+                  <div className="userMeta">
+
+                    <div>
+
+                      ⚔️ 직업
+
+                      <strong>
+                        {user.job}
+                      </strong>
+
+                    </div>
+
+
+                    <div>
+
+                      📈 성장력
+
+                      <strong>
+                        {user.growthPower}
+                      </strong>
+
+                    </div>
+
+                  </div>
+
+
+                  <div className="userStats">
+
+                    <div>
+
+                      <span>
+                        총 분배
+                      </span>
+
+                      <strong>
+                        {user.count}건
+                      </strong>
+
+                    </div>
+
+
+                    <div>
+
+                      <span>
+                        💎 다이아
+                      </span>
+
+                      <strong>
+
+                        {
+                          Number(
+                            user.totalDiamond
+                          ).toLocaleString()
+                        }
+
+                      </strong>
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+
+
+                <div className="categoryList">
+
+                  {
+                    categories.map(
+                      item => {
+
+                        const count =
+                          item ===
+                          "전체"
+                            ? user.items.length
+                            : user.items.filter(
+                                x =>
+                                  x.category ===
+                                  item
+                              ).length;
+
+
+                        return (
+
+                          <button
+                            key={
+                              item
+                            }
+
+                            className={
+                              category ===
+                              item
+                                ? "category active"
+                                : "category"
+                            }
+
+                            onClick={
+                              () =>
+                                setCategory(
+                                  item
+                                )
+                            }
+                          >
+
+                            {item}
+
+                            <span>
+                              {count}
+                            </span>
+
+                          </button>
+
+                        );
+                      }
+                    )
+                  }
+
+                </div>
+
+
+
+                <div className="distributionSummary">
+
+                  <strong>
+                    {category}
+                  </strong>
+
+                  <span>
+                    {filteredItems.length}건
+                  </span>
+
+                  <span>
+
+                    💎{" "}
+
+                    {
+                      filteredDiamond.toLocaleString()
+                    }
+
+                  </span>
+
+                </div>
+
+
+
+                <div className="distributionTable">
+
+                  <div className="tableHeader">
+
+                    <span>
+                      날짜
+                    </span>
+
+                    <span>
+                      아이템
+                    </span>
+
+                    <span>
+                      직업
+                    </span>
+
+                    <span>
+                      다이아
+                    </span>
+
                   </div>
 
 
                   {
-                    distributionPageRows.map(
-                      row => (
+                    filteredItems.map(
+                      (
+                        item,
+                        index
+                      ) => (
+
                         <div
-                          className="distributionDesktopRow"
-                          key={`${row.rowNumber}-${row.date}-${row.target}-${row.item}`}
+                          className="tableRow"
+
+                          key={
+                            index
+                          }
                         >
-                          <span className="distributionDateCell">
-                            {row.date || "-"}
+
+                          <span>
+                            {item.date}
                           </span>
 
-                          <span className="distributionItemCell">
-                            <strong>
-                              {row.item || "-"}
-                            </strong>
-                            <small>
-                              {row.category || "미분류"}
-                              {row.itemJob
-                                ? ` · ${row.itemJob}`
-                                : ""}
-                            </small>
+                          <span>
+                            {item.item}
                           </span>
 
-                          <span className="distributionMemberCell">
-                            <strong>
-                              {row.target || "-"}
-                            </strong>
-                            <small>
-                              {
-                                row.member
-                                  ? `${row.member.job || "직업미등록"} · 성장력 ${row.member.growthPower || "-"} · ${row.member.guild}`
-                                  : "길드원 정보 미연결"
-                              }
-                            </small>
+                          <span>
+                            {item.job}
                           </span>
 
-                          <span className="distributionDiamondCell">
-                            💎 {Number(row.diamond || 0).toLocaleString()}
-                          </span>
-                        </div>
-                      )
-                    )
-                  }
+                          <span>
 
-                </div>
-
-
-                <div className="distributionMobileList">
-                  {
-                    distributionPageRows.map(
-                      row => (
-                        <article
-                          className="distributionMobileCard"
-                          key={`mobile-${row.rowNumber}-${row.date}-${row.target}-${row.item}`}
-                        >
-                          <div className="distributionMobileTop">
-                            <span>
-                              {row.date || "-"}
-                            </span>
-                            <strong>
-                              💎 {Number(row.diamond || 0).toLocaleString()}
-                            </strong>
-                          </div>
-
-                          <h3>
-                            {row.item || "-"}
-                          </h3>
-
-                          <div className="distributionMobileTags">
-                            <span>
-                              {row.category || "미분류"}
-                            </span>
                             {
-                              row.itemJob &&
-                              (
-                                <span>
-                                  {row.itemJob}
-                                </span>
-                              )
+                              Number(
+                                item.diamond
+                              ).toLocaleString()
                             }
-                          </div>
 
-                          <div className="distributionMobileMember">
-                            <strong>
-                              👤 {row.target || "-"}
-                            </strong>
-                            <small>
-                              {
-                                row.member
-                                  ? `${row.member.job || "직업미등록"} · 성장력 ${row.member.growthPower || "-"} · ${row.member.guild}`
-                                  : "길드원 정보 미연결"
-                              }
-                            </small>
-                          </div>
-                        </article>
+                          </span>
+
+                        </div>
+
                       )
                     )
                   }
-                </div>
 
-
-                <div className="distributionPagination">
-                  <button
-                    type="button"
-                    disabled={
-                      safeDistributionPage <=
-                      1
-                    }
-                    onClick={() =>
-                      setDistributionPage(
-                        page =>
-                          Math.max(
-                            1,
-                            page - 1
-                          )
-                      )
-                    }
-                  >
-                    이전
-                  </button>
-
-                  <span>
-                    {safeDistributionPage} / {distributionTotalPages}
-                    {" · "}
-                    {filteredDistributionRows.length.toLocaleString()}건
-                  </span>
-
-                  <button
-                    type="button"
-                    disabled={
-                      safeDistributionPage >=
-                      distributionTotalPages
-                    }
-                    onClick={() =>
-                      setDistributionPage(
-                        page =>
-                          Math.min(
-                            distributionTotalPages,
-                            page + 1
-                          )
-                      )
-                    }
-                  >
-                    다음
-                  </button>
                 </div>
 
               </>
+
             )
           }
 
-
-          <style jsx>{`
-            .distributionOverviewGrid {
-              display: grid;
-              grid-template-columns: repeat(4, minmax(0, 1fr));
-              gap: 10px;
-              margin: 14px 0;
-            }
-
-            .distributionOverviewCard {
-              display: flex;
-              flex-direction: column;
-              gap: 6px;
-              padding: 14px;
-              border: 1px solid rgba(255,255,255,.1);
-              border-radius: 14px;
-              background: rgba(255,255,255,.035);
-            }
-
-            .distributionOverviewCard span {
-              font-size: 12px;
-              color: #aaa;
-            }
-
-            .distributionOverviewCard strong {
-              font-size: 18px;
-              color: #f7f7f7;
-            }
-
-            .distributionFilterBar {
-              display: grid;
-              grid-template-columns: 1.2fr 1fr 1fr 1fr auto;
-              gap: 10px;
-              align-items: end;
-              margin: 14px 0 16px;
-            }
-
-            .distributionFilterBar label {
-              display: flex;
-              flex-direction: column;
-              gap: 6px;
-              min-width: 0;
-            }
-
-            .distributionFilterBar label > span {
-              font-size: 12px;
-              color: #aaa;
-            }
-
-            .distributionFilterBar select,
-            .distributionFilterBar input {
-              width: 100%;
-              min-height: 40px;
-              padding: 0 11px;
-              border: 1px solid rgba(255,255,255,.12);
-              border-radius: 10px;
-              background: rgba(255,255,255,.05);
-              color: #f5f5f5;
-            }
-
-            .distributionFilterBar option {
-              color: #111;
-            }
-
-            .distributionResetButton {
-              min-height: 40px;
-              padding: 0 15px;
-              border: 1px solid rgba(255,255,255,.12);
-              border-radius: 10px;
-              background: rgba(255,255,255,.06);
-              color: #f5f5f5;
-              cursor: pointer;
-            }
-
-            .distributionDesktopTable {
-              overflow: hidden;
-              border: 1px solid rgba(255,255,255,.09);
-              border-radius: 14px;
-            }
-
-            .distributionDesktopHeader,
-            .distributionDesktopRow {
-              display: grid;
-              grid-template-columns: 110px minmax(190px, 1.1fr) minmax(260px, 1.5fr) 130px;
-              align-items: center;
-              gap: 12px;
-              padding: 12px 14px;
-            }
-
-            .distributionDesktopHeader {
-              background: rgba(255,255,255,.06);
-              color: #aaa;
-              font-size: 12px;
-              font-weight: 700;
-            }
-
-            .distributionDesktopRow {
-              border-top: 1px solid rgba(255,255,255,.07);
-              color: #ddd;
-            }
-
-            .distributionItemCell,
-            .distributionMemberCell {
-              display: flex;
-              flex-direction: column;
-              gap: 4px;
-              min-width: 0;
-            }
-
-            .distributionItemCell strong,
-            .distributionMemberCell strong {
-              color: #f7f7f7;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              white-space: nowrap;
-            }
-
-            .distributionItemCell small,
-            .distributionMemberCell small {
-              color: #999;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              white-space: nowrap;
-            }
-
-            .distributionDiamondCell {
-              text-align: right;
-              font-weight: 800;
-              color: #fff;
-            }
-
-            .distributionMobileList {
-              display: none;
-            }
-
-            .distributionPagination {
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              gap: 12px;
-              margin-top: 16px;
-            }
-
-            .distributionPagination button {
-              min-width: 72px;
-              min-height: 38px;
-              border: 1px solid rgba(255,255,255,.12);
-              border-radius: 10px;
-              background: rgba(255,255,255,.06);
-              color: #f5f5f5;
-              cursor: pointer;
-            }
-
-            .distributionPagination button:disabled {
-              opacity: .35;
-              cursor: default;
-            }
-
-            .distributionPagination span {
-              color: #aaa;
-              font-size: 13px;
-            }
-
-            @media (max-width: 820px) {
-              .distributionOverviewGrid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-              }
-
-              .distributionFilterBar {
-                grid-template-columns: 1fr 1fr;
-              }
-
-              .distributionResetButton {
-                grid-column: 1 / -1;
-              }
-
-              .distributionDesktopTable {
-                display: none;
-              }
-
-              .distributionMobileList {
-                display: grid;
-                gap: 10px;
-              }
-
-              .distributionMobileCard {
-                padding: 14px;
-                border: 1px solid rgba(255,255,255,.09);
-                border-radius: 14px;
-                background: rgba(255,255,255,.035);
-              }
-
-              .distributionMobileTop {
-                display: flex;
-                justify-content: space-between;
-                gap: 12px;
-                color: #aaa;
-                font-size: 12px;
-              }
-
-              .distributionMobileTop strong {
-                color: #fff;
-                font-size: 14px;
-              }
-
-              .distributionMobileCard h3 {
-                margin: 10px 0 8px;
-                color: #f7f7f7;
-                font-size: 16px;
-              }
-
-              .distributionMobileTags {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 6px;
-              }
-
-              .distributionMobileTags span {
-                padding: 4px 8px;
-                border-radius: 999px;
-                background: rgba(255,255,255,.07);
-                color: #bbb;
-                font-size: 11px;
-              }
-
-              .distributionMobileMember {
-                display: flex;
-                flex-direction: column;
-                gap: 4px;
-                margin-top: 12px;
-                padding-top: 10px;
-                border-top: 1px solid rgba(255,255,255,.07);
-              }
-
-              .distributionMobileMember strong {
-                color: #f7f7f7;
-              }
-
-              .distributionMobileMember small {
-                color: #999;
-              }
-            }
-
-            @media (max-width: 520px) {
-              .distributionOverviewGrid,
-              .distributionFilterBar {
-                grid-template-columns: 1fr;
-              }
-
-              .distributionResetButton {
-                grid-column: auto;
-              }
-
-              .distributionPagination {
-                gap: 8px;
-              }
-
-              .distributionPagination button {
-                min-width: 62px;
-              }
-            }
-          `}</style>
-
         </aside>
-
 
 
       </div>

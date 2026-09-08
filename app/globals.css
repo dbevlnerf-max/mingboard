@@ -3937,3 +3937,548 @@ select {
 
 }
 
+/* =====================================================
+   GUILD DISTRIBUTION PAGE
+===================================================== */
+
+.distributionPage {
+  min-height: 100vh;
+  background:
+    radial-gradient(
+      circle at 18% 18%,
+      rgba(255, 111, 171, .08),
+      transparent 26%
+    ),
+    radial-gradient(
+      circle at 82% 28%,
+      rgba(88, 101, 242, .07),
+      transparent 24%
+    ),
+    linear-gradient(
+      180deg,
+      #080808 0%,
+      #030303 100%
+    );
+}
+
+.distributionPageShell {
+  width: min(
+    1440px,
+    calc(100vw - 40px)
+  );
+  margin: 0 auto;
+  padding: 34px 0 70px;
+}
+
+.distributionPageHero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 22px;
+  padding: 26px 28px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(20, 20, 20, .96),
+      rgba(10, 10, 10, .96)
+    );
+  border: 1px solid #292929;
+  border-radius: 18px;
+  box-shadow:
+    0 18px 48px
+    rgba(0, 0, 0, .28);
+}
+
+.distributionPageKicker {
+  margin-bottom: 8px;
+  color: #ff8dbd;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1.8px;
+}
+
+.distributionPageHero h1 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 28px;
+  letter-spacing: -.8px;
+}
+
+.distributionPageHero p {
+  margin: 10px 0 0;
+  color: #8f8f8f;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.distributionPageHero p strong {
+  color: #d8d8d8;
+}
+
+.distributionRefreshButton {
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 0 16px;
+  color: #f1f1f1;
+  background: #151515;
+  border: 1px solid #333;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.distributionRefreshButton:hover {
+  background: #1b1b1b;
+}
+
+.distributionRefreshButton:disabled {
+  opacity: .45;
+  cursor: default;
+}
+
+.distributionSummaryGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.distributionSummaryCard {
+  min-height: 92px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  padding: 18px 20px;
+  background: #0d0d0d;
+  border: 1px solid #292929;
+  border-radius: 14px;
+}
+
+.distributionSummaryCard span {
+  color: #777;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.distributionSummaryCard strong {
+  color: #f5f5f5;
+  font-size: 21px;
+  letter-spacing: -.4px;
+}
+
+.distributionFilterCard,
+.distributionResultsCard {
+  background: #0b0b0b;
+  border: 1px solid #292929;
+  border-radius: 16px;
+}
+
+.distributionFilterCard {
+  margin-bottom: 14px;
+  padding: 20px;
+}
+
+.distributionQuickRange {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.distributionQuickRange button {
+  min-height: 34px;
+  padding: 0 14px;
+  color: #c9c9c9;
+  background: #121212;
+  border: 1px solid #303030;
+  border-radius: 9px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.distributionQuickRange button:hover {
+  color: #ffffff;
+  border-color: #4a4a4a;
+}
+
+.distributionFilterGrid {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+  gap: 12px;
+}
+
+.distributionFilterGrid label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.distributionFilterGrid label > span {
+  color: #777;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.distributionFilterGrid input,
+.distributionFilterGrid select {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  color: #ededed;
+  background: #111;
+  border: 1px solid #303030;
+  border-radius: 10px;
+  outline: none;
+}
+
+.distributionFilterGrid input:focus,
+.distributionFilterGrid select:focus {
+  border-color: #5d5d5d;
+}
+
+.distributionResultsCard {
+  overflow: hidden;
+}
+
+.distributionResultsHeader {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 0 22px;
+  border-bottom: 1px solid #262626;
+}
+
+.distributionResultsHeader h2 {
+  margin: 0;
+  color: #f8f8f8;
+  font-size: 16px;
+}
+
+.distributionResultsHeader span {
+  display: block;
+  margin-top: 5px;
+  color: #666;
+  font-size: 10px;
+}
+
+.distributionResultsCount {
+  color: #ff8dbd;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.distributionState,
+.distributionStateError {
+  padding: 58px 20px;
+  text-align: center;
+  font-size: 12px;
+}
+
+.distributionState {
+  color: #777;
+}
+
+.distributionStateError {
+  color: #ff8f8f;
+}
+
+.distributionDesktopTableWrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.distributionDesktopTable {
+  width: 100%;
+  min-width: 1050px;
+  border-collapse: collapse;
+}
+
+.distributionDesktopTable th {
+  padding: 13px 14px;
+  color: #737373;
+  background: #0f0f0f;
+  border-bottom: 1px solid #282828;
+  font-size: 10px;
+  font-weight: 900;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.distributionDesktopTable td {
+  padding: 15px 14px;
+  color: #cfcfcf;
+  border-bottom: 1px solid #1f1f1f;
+  font-size: 11px;
+  vertical-align: middle;
+}
+
+.distributionDesktopTable tbody tr:hover {
+  background: #101010;
+}
+
+.distributionItemCell {
+  color: #f1f1f1 !important;
+  font-weight: 800;
+}
+
+.distributionCategoryBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 9px;
+  color: #bfbfbf;
+  background: #151515;
+  border: 1px solid #303030;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.distributionMemberInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.distributionMemberInfo strong {
+  color: #ededed;
+  font-size: 11px;
+}
+
+.distributionMemberInfo span {
+  color: #717171;
+  font-size: 9px;
+}
+
+.distributionMemberMissing {
+  color: #555;
+  font-size: 10px;
+}
+
+.distributionDiamondCell {
+  color: #ff9bc5 !important;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.distributionMobileList {
+  display: none;
+}
+
+.distributionPagination {
+  min-height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 12px 18px;
+  border-top: 1px solid #262626;
+}
+
+.distributionPagination span {
+  min-width: 74px;
+  color: #888;
+  font-size: 11px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.distributionPagination button {
+  min-width: 84px;
+  min-height: 36px;
+  color: #d7d7d7;
+  background: #121212;
+  border: 1px solid #303030;
+  border-radius: 9px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.distributionPagination button:hover:not(:disabled) {
+  background: #191919;
+  border-color: #464646;
+}
+
+.distributionPagination button:disabled {
+  opacity: .35;
+  cursor: default;
+}
+
+
+@media (max-width: 1000px) {
+
+  .distributionSummaryGrid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+  .distributionFilterGrid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+}
+
+
+@media (max-width: 720px) {
+
+  .distributionPageShell {
+    width:
+      calc(100vw - 20px);
+    padding:
+      18px 0 44px;
+  }
+
+  .distributionPageHero {
+    flex-direction: column;
+    padding: 20px;
+    border-radius: 14px;
+  }
+
+  .distributionPageHero h1 {
+    font-size: 22px;
+  }
+
+  .distributionRefreshButton {
+    width: 100%;
+  }
+
+  .distributionSummaryGrid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+    gap: 8px;
+  }
+
+  .distributionSummaryCard {
+    min-height: 80px;
+    padding: 14px;
+  }
+
+  .distributionSummaryCard strong {
+    font-size: 16px;
+  }
+
+  .distributionFilterCard {
+    padding: 14px;
+  }
+
+  .distributionFilterGrid {
+    grid-template-columns:
+      1fr;
+    gap: 10px;
+  }
+
+  .distributionResultsHeader {
+    min-height: 64px;
+    padding: 0 15px;
+  }
+
+  .distributionDesktopTableWrap {
+    display: none;
+  }
+
+  .distributionMobileList {
+    display: grid;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .distributionMobileCard {
+    padding: 15px;
+    background: #101010;
+    border: 1px solid #292929;
+    border-radius: 12px;
+  }
+
+  .distributionMobileTop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .distributionMobileTop span {
+    color: #707070;
+    font-size: 10px;
+  }
+
+  .distributionMobileTop strong {
+    color: #ff9bc5;
+    font-size: 12px;
+  }
+
+  .distributionMobileCard h3 {
+    margin: 13px 0 10px;
+    color: #f2f2f2;
+    font-size: 15px;
+  }
+
+  .distributionMobileBadges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .distributionMobileBadges span {
+    padding: 5px 8px;
+    color: #aaa;
+    background: #151515;
+    border: 1px solid #2d2d2d;
+    border-radius: 999px;
+    font-size: 9px;
+  }
+
+  .distributionMobileTarget,
+  .distributionMobileMember {
+    margin-top: 13px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding-top: 12px;
+    border-top: 1px solid #252525;
+  }
+
+  .distributionMobileTarget span,
+  .distributionMobileMember span {
+    color: #666;
+    font-size: 9px;
+    font-weight: 800;
+  }
+
+  .distributionMobileTarget strong,
+  .distributionMobileMember strong {
+    color: #e8e8e8;
+    font-size: 12px;
+  }
+
+  .distributionMobileMember small {
+    color: #777;
+    font-size: 9px;
+  }
+
+}
+
