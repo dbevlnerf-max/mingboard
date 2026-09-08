@@ -2697,16 +2697,52 @@ export default function Home() {
                       key={
                         `${member.gid}-${member.nickname}`
                       }
+                      style={{
+                        display:
+                          "flex",
+                        alignItems:
+                          "center",
+                        gap:
+                          "9px",
+                        minHeight:
+                          "58px",
+                      }}
                     >
-                      <span className="overallRankNumber">
+                      <span
+                        className="overallRankNumber"
+                        style={{
+                          flex:
+                            "0 0 24px",
+                          fontSize:
+                            "11px",
+                        }}
+                      >
                         {index + 1}
                       </span>
 
-                      <div className="overallRankMember">
-                        <strong>
+                      <div
+                        className="overallRankMember"
+                        style={{
+                          flex:
+                            "1 1 auto",
+                          minWidth:
+                            0,
+                        }}
+                      >
+                        <strong
+                          style={{
+                            fontSize:
+                              "11.5px",
+                          }}
+                        >
                           {member.nickname}
                         </strong>
-                        <small>
+                        <small
+                          style={{
+                            fontSize:
+                              "8px",
+                          }}
+                        >
                           {member.job} · {member.guild}
                         </small>
                       </div>
@@ -2714,8 +2750,18 @@ export default function Home() {
                       <strong
                         className="overallRankPower"
                         style={{
-                          gridColumn: "auto",
-                          alignSelf: "center",
+                          flex:
+                            "0 0 auto",
+                          marginLeft:
+                            "auto",
+                          alignSelf:
+                            "center",
+                          textAlign:
+                            "right",
+                          fontSize:
+                            "11.5px",
+                          whiteSpace:
+                            "nowrap",
                         }}
                       >
                         {
@@ -2878,23 +2924,44 @@ export default function Home() {
                             ? {
                                 color:
                                   "#ffd978",
+                                fontSize:
+                                  "11px",
                               }
-                            : undefined
+                            : {
+                                fontSize:
+                                  "11px",
+                              }
                         }
                       >
                         {index + 1}
                       </span>
 
                       <div className="jobRankingIdentity">
-                        <strong>
+                        <strong
+                          style={{
+                            fontSize:
+                              "11.5px",
+                          }}
+                        >
                           {member.nickname}
                         </strong>
-                        <small>
+                        <small
+                          style={{
+                            fontSize:
+                              "8px",
+                          }}
+                        >
                           {member.guild}
                         </small>
                       </div>
 
-                      <strong className="jobRankingPower">
+                      <strong
+                        className="jobRankingPower"
+                        style={{
+                          fontSize:
+                            "11.5px",
+                        }}
+                      >
                         {
                           member
                             .growthPowerNumber
