@@ -168,7 +168,7 @@ export async function DELETE(
       await fetchDepartedMembers();
 
     const member = members.find(
-      item =>
+      (item: any) =>
         String(item?.gid || "") === gid
     );
 
