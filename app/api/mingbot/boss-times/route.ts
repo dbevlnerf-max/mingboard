@@ -38,11 +38,10 @@ function getGuildId(body: Record<string, unknown>) {
   return cleanText(body.guildId || body.guild_id);
 }
 
-async function findBoss(guildId: string, name: string) {
+async function findBossByName(name: string) {
   const { data, error } = await supabaseAdmin
     .from("boss_timers")
     .select("*")
-    .eq("guild_id", guildId)
     .eq("name", name)
     .maybeSingle();
   if (error) throw error;
@@ -63,14 +62,13 @@ async function upsertBoss(body: Record<string, unknown>) {
   const level = parseNullableLevel(body.level);
   if (level === undefined) return { ok: false, status: 400, message: "보스 레벨이 올바르지 않습니다." };
 
-  const existing = await findBoss(guildId, name);
+  const existing = await findBossByName(name);
   const aliases = Array.isArray(body.aliases)
     ? cleanAliases(body.aliases)
     : Array.isArray(existing?.aliases) ? existing.aliases : [];
 
   let intervalMinutes: number | null = null;
   let fixedTimes: string[] = [];
-
   if (spawnType === "interval") {
     intervalMinutes = Number(body.intervalMinutes);
     if (!Number.isInteger(intervalMinutes) || intervalMinutes <= 0) {
@@ -89,7 +87,6 @@ async function upsertBoss(body: Record<string, unknown>) {
     : Number(existing?.sort_order ?? 0);
 
   const payload = {
-    guild_id: guildId,
     name,
     aliases,
     level,
@@ -103,7 +100,7 @@ async function upsertBoss(body: Record<string, unknown>) {
 
   const { data: boss, error } = await supabaseAdmin
     .from("boss_timers")
-    .upsert(payload, { onConflict: "guild_id,name" })
+    .upsert(payload, { onConflict: "name" })
     .select("*")
     .single();
   if (error) throw error;
@@ -114,12 +111,13 @@ async function upsertBoss(body: Record<string, unknown>) {
       .from("boss_timer_states")
       .upsert({
         boss_id: boss.id,
+        guild_id: guildId,
         last_spawn_at: null,
         next_spawn_at: nextSpawnAt,
         source: "mingbot",
         external_event_id: null,
         updated_by_discord_id: cleanText(body.actorDiscordId) || null,
-      }, { onConflict: "boss_id" });
+      }, { onConflict: "boss_id,guild_id" });
     if (stateError) throw stateError;
   }
 
@@ -131,7 +129,7 @@ async function upsertBoss(body: Record<string, unknown>) {
       created: !existing,
       boss: {
         id: boss.id,
-        guildId: boss.guild_id,
+        guildId,
         name: boss.name,
         spawnType: boss.spawn_type,
         intervalMinutes: boss.interval_minutes,
@@ -148,15 +146,16 @@ async function disableBoss(body: Record<string, unknown>) {
   if (!guildId) return { ok: false, status: 400, message: "guildId가 없습니다." };
   if (!name) return { ok: false, status: 400, message: "삭제할 보스 이름이 없습니다." };
 
-  const boss = await findBoss(guildId, name);
+  const boss = await findBossByName(name);
   if (!boss) {
     return { ok: true, status: 200, data: { success: true, alreadyDisabled: true, guildId, name } };
   }
 
-  const { error } = await supabaseAdmin.from("boss_timers").update({ enabled: false }).eq("id", boss.id);
-  if (error) throw error;
-
-  const { error: stateError } = await supabaseAdmin.from("boss_timer_states").delete().eq("boss_id", boss.id);
+  const { error: stateError } = await supabaseAdmin
+    .from("boss_timer_states")
+    .delete()
+    .eq("boss_id", boss.id)
+    .eq("guild_id", guildId);
   if (stateError) throw stateError;
 
   return { ok: true, status: 200, data: { success: true, alreadyDisabled: false, guildId, name } };
@@ -173,11 +172,11 @@ async function updateBossState(body: Record<string, unknown>) {
     return { ok: false, status: 400, message: "보스타임 갱신 정보가 부족합니다." };
   }
 
-  let boss = await findBoss(guildId, name);
+  let boss = await findBossByName(name);
   if (!boss) {
     const upsertResult = await upsertBoss(body);
     if (!upsertResult.ok) return upsertResult;
-    boss = await findBoss(guildId, name);
+    boss = await findBossByName(name);
   }
   if (!boss) return { ok: false, status: 500, message: "보스 자동 등록 후 정보를 찾지 못했습니다." };
 
@@ -185,13 +184,12 @@ async function updateBossState(body: Record<string, unknown>) {
     .from("boss_timer_states")
     .select("next_spawn_at")
     .eq("boss_id", boss.id)
+    .eq("guild_id", guildId)
     .maybeSingle();
   if (currentStateError) throw currentStateError;
 
   const currentNext = currentState?.next_spawn_at ? new Date(currentState.next_spawn_at).getTime() : null;
   const incomingNext = new Date(nextSpawnAt).getTime();
-
-  // Older state must never overwrite a newer nextSpawnAt.
   if (currentNext !== null && Number.isFinite(incomingNext) && incomingNext < currentNext) {
     return {
       ok: true,
@@ -204,16 +202,18 @@ async function updateBossState(body: Record<string, unknown>) {
     .from("boss_timer_states")
     .upsert({
       boss_id: boss.id,
+      guild_id: guildId,
       last_spawn_at: occurredAt,
       next_spawn_at: nextSpawnAt,
       source: "mingbot",
       external_event_id: externalEventId,
       updated_by_discord_id: cleanText(body.actorDiscordId) || null,
-    }, { onConflict: "boss_id" });
+    }, { onConflict: "boss_id,guild_id" });
   if (stateError) throw stateError;
 
   const { error: eventError } = await supabaseAdmin.from("boss_timer_events").insert({
     boss_id: boss.id,
+    guild_id: guildId,
     boss_name_snapshot: boss.name,
     event_type: cleanText(body.eventType) || "cut",
     occurred_at: occurredAt,
@@ -237,17 +237,16 @@ export async function GET(request: NextRequest) {
   try {
     if (!verifySecret(request)) return unauthorized();
 
-    const requestedGuildId = cleanText(request.nextUrl.searchParams.get("guildId"));
-    let query = supabaseAdmin
+    const guildId = cleanText(request.nextUrl.searchParams.get("guildId"));
+    if (!guildId) {
+      return NextResponse.json({ success: false, message: "guildId가 없습니다." }, { status: 400 });
+    }
+
+    const { data: bosses, error: bossError } = await supabaseAdmin
       .from("boss_timers")
-      .select("id,guild_id,name,level,spawn_type,interval_minutes,fixed_times,enabled,sort_order,updated_at")
-      .neq("guild_id", "legacy")
+      .select("id,name,level,spawn_type,interval_minutes,fixed_times,enabled,sort_order,updated_at")
       .order("sort_order", { ascending: true })
       .order("name", { ascending: true });
-
-    if (requestedGuildId) query = query.eq("guild_id", requestedGuildId);
-
-    const { data: bosses, error: bossError } = await query;
     if (bossError) throw bossError;
 
     const ids = (bosses || []).map(boss => boss.id);
@@ -255,7 +254,8 @@ export async function GET(request: NextRequest) {
     if (ids.length) {
       const { data, error } = await supabaseAdmin
         .from("boss_timer_states")
-        .select("boss_id,last_spawn_at,next_spawn_at,updated_at")
+        .select("boss_id,guild_id,last_spawn_at,next_spawn_at,updated_at")
+        .eq("guild_id", guildId)
         .in("boss_id", ids);
       if (error) throw error;
       states = data || [];
@@ -264,11 +264,12 @@ export async function GET(request: NextRequest) {
     const stateMap = new Map(states.map(state => [state.boss_id, state]));
     return NextResponse.json({
       success: true,
+      guildId,
       bosses: (bosses || []).map(boss => {
         const state = stateMap.get(boss.id);
         return {
           id: boss.id,
-          guildId: boss.guild_id,
+          guildId,
           name: boss.name,
           level: boss.level,
           spawnType: boss.spawn_type,
