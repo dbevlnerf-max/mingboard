@@ -11,6 +11,14 @@ declare module "next-auth" {
 
     hasZeusRole?: boolean;
 
+    hasActiveCharacterLink?: boolean;
+
+    needsCharacterLink?: boolean;
+
+    linkedGid?: string;
+
+    characterStatus?: string;
+
     isAdmin?: boolean;
 
     isMaster?: boolean;
@@ -32,6 +40,14 @@ declare module "next-auth" {
 
       hasZeusRole?: boolean;
 
+      hasActiveCharacterLink?: boolean;
+
+      needsCharacterLink?: boolean;
+
+      linkedGid?: string;
+
+      characterStatus?: string;
+
       isAdmin?: boolean;
 
       isMaster?: boolean;
@@ -49,6 +65,14 @@ declare module "next-auth/jwt" {
     isGuildMember?: boolean;
 
     hasZeusRole?: boolean;
+
+    hasActiveCharacterLink?: boolean;
+
+    needsCharacterLink?: boolean;
+
+    linkedGid?: string;
+
+    characterStatus?: string;
 
     isAdmin?: boolean;
 
