@@ -11,6 +11,7 @@ import styles from "./members.module.css";
 
 
 type GuildMember = {
+  no: string;
   gid: string;
   nickname: string;
   job: string;
@@ -1456,7 +1457,7 @@ export default function MembersManager({
 
                   <div className={styles.tableHeader}>
 
-                    <span>순위</span>
+                    <span>NO</span>
                     <span>GID</span>
                     <span>닉네임</span>
                     <span>직업</span>
@@ -1473,8 +1474,7 @@ export default function MembersManager({
                   {
                     visibleMembers.map(
                       (
-                        member,
-                        index
+                        member
                       ) => (
 
                         <div
@@ -1486,9 +1486,8 @@ export default function MembersManager({
 
                           <span className={styles.rank}>
                             {
-                              startIndex +
-                              index +
-                              1
+                              member.no ||
+                              "-"
                             }
                           </span>
 
