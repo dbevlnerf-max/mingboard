@@ -169,7 +169,7 @@ export default function MembersManager({
 
 
   /* =====================================================
-     DELETE
+     LEAVE
   ===================================================== */
 
   const [
@@ -821,7 +821,7 @@ export default function MembersManager({
 
 
   /* =====================================================
-     DELETE
+     LEAVE
   ===================================================== */
 
   function openDelete(
@@ -860,23 +860,13 @@ export default function MembersManager({
       return;
     }
 
-    const linkedDiscordCount =
-      discordLinkCounts[deletingMember.gid]?.count || 0;
-
-    if (linkedDiscordCount > 0) {
-      setDeleteError(
-        `Discord 계정이 ${linkedDiscordCount}/2 연결되어 있습니다. 연결관리에서 Discord 연결을 먼저 해제해주세요.`
-      );
-      return;
-    }
-
     if (
       deleteConfirm.trim() !==
       deletingMember.nickname
     ) {
 
       setDeleteError(
-        "삭제하려는 길드원의 닉네임을 정확히 입력해주세요."
+        "탈퇴 처리할 길드원의 닉네임을 정확히 입력해주세요."
       );
 
       return;
@@ -908,11 +898,19 @@ export default function MembersManager({
 
         throw new Error(
           data.message ||
-          "길드원 삭제에 실패했습니다."
+          "길드원 탈퇴처리에 실패했습니다."
         );
       }
 
-      await loadMembers();
+      if (
+        data.warning
+      ) {
+        window.alert(
+          `탈퇴처리는 완료됐지만 확인할 항목이 있습니다.\n\n${data.warning}`
+        );
+      }
+
+      await refreshAll();
 
       setDeletingMember(null);
 
@@ -925,7 +923,7 @@ export default function MembersManager({
       setDeleteError(
         err instanceof Error
           ? err.message
-          : "길드원을 삭제하지 못했습니다."
+          : "길드원 탈퇴처리를 완료하지 못했습니다."
       );
 
     } finally {
@@ -1155,7 +1153,7 @@ export default function MembersManager({
               </h1>
 
               <p>
-                핑뚝 · 빨뚝 · 검뚝 길드원을 추가, 수정, 삭제합니다.
+                핑뚝 · 빨뚝 · 검뚝 길드원을 추가, 수정, 탈퇴처리합니다.
               </p>
 
             </div>
@@ -1599,7 +1597,7 @@ export default function MembersManager({
                                   )
                               }
                             >
-                              삭제
+                              탈퇴
                             </button>
 
                           </div>
@@ -1985,7 +1983,7 @@ export default function MembersManager({
       }
 
 
-      {/* DELETE MODAL */}
+      {/* LEAVE MODAL */}
 
       {
         deletingMember &&
@@ -2004,11 +2002,11 @@ export default function MembersManager({
                 <div>
 
                   <span>
-                    DELETE MEMBER
+                    MEMBER LEAVE
                   </span>
 
                   <h2>
-                    길드원 삭제
+                    길드원 탈퇴처리
                   </h2>
 
                 </div>
@@ -2031,14 +2029,15 @@ export default function MembersManager({
                 </strong>
 
                 <p>
+                  이 캐릭터를 탈퇴 상태로 변경합니다.
+                  <br />
+                  캐릭터 정보와 과거 참여·분배 기록은 삭제하지 않습니다.
                   {
-                    (discordLinkCounts[deletingMember.gid]?.count || 0) > 0
-                      ? `Discord 계정이 ${discordLinkCounts[deletingMember.gid]?.count || 0}/2 연결되어 있어 삭제할 수 없습니다. 연결관리를 먼저 진행해주세요.`
-                      : <>
-                          이 길드원을 목록에서 삭제합니다.
-                          <br />
-                          Google Sheet의 길드현황 데이터에도 반영됩니다.
-                        </>
+                    (discordLinkCounts[deletingMember.gid]?.count || 0) > 0 &&
+                    <>
+                      <br />
+                      연결된 Discord 계정 {discordLinkCounts[deletingMember.gid]?.count || 0}개의 제우스 역할을 회수하고 밍보드 접근을 차단합니다.
+                    </>
                   }
                 </p>
 
@@ -2048,16 +2047,13 @@ export default function MembersManager({
               <label className={styles.deleteConfirmField}>
 
                 <span>
-                  삭제 확인을 위해 닉네임을 그대로 입력하세요.
+                  탈퇴 확인을 위해 닉네임을 그대로 입력하세요.
                 </span>
 
                 <input
                   value={deleteConfirm}
                   placeholder={
                     deletingMember.nickname
-                  }
-                  disabled={
-                    (discordLinkCounts[deletingMember.gid]?.count || 0) > 0
                   }
                   onChange={
                     event =>
@@ -2095,15 +2091,14 @@ export default function MembersManager({
                   onClick={deleteMember}
                   disabled={
                     deleting ||
-                    (discordLinkCounts[deletingMember.gid]?.count || 0) > 0 ||
                     deleteConfirm.trim() !==
                     deletingMember.nickname
                   }
                 >
                   {
                     deleting
-                      ? "삭제 중..."
-                      : "길드원 삭제"
+                      ? "탈퇴처리 중..."
+                      : "탈퇴처리"
                   }
                 </button>
 

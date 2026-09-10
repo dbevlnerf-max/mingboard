@@ -11,8 +11,8 @@ import {
 } from "@/lib/audit";
 
 import {
-  supabaseAdmin,
-} from "@/lib/supabase/admin";
+  setMemberLifecycleStatus,
+} from "@/lib/member-lifecycle";
 
 
 type RouteContext = {
@@ -156,57 +156,6 @@ async function getCurrentMember(
 
     return null;
   }
-}
-
-
-async function getDiscordLinkCount(
-  gid: string
-) {
-
-  const numericGid =
-    Number(gid);
-
-
-  if (
-    !Number.isSafeInteger(
-      numericGid
-    ) ||
-    numericGid <= 0
-  ) {
-
-    throw new Error(
-      "올바른 GID가 아닙니다."
-    );
-  }
-
-
-  const {
-    count,
-    error,
-  } =
-    await supabaseAdmin
-      .from(
-        "guild_member_discord_links"
-      )
-      .select(
-        "id",
-        {
-          count: "exact",
-          head: true,
-        }
-      )
-      .eq(
-        "gid",
-        numericGid
-      );
-
-
-  if (error) {
-    throw error;
-  }
-
-
-  return count || 0;
 }
 
 
@@ -505,6 +454,9 @@ export async function PATCH(
 
 // =====================================================
 // DELETE
+//
+// 기존 관리자 UI의 DELETE 호출은 유지하되
+// 물리삭제가 아니라 "탈퇴처리"로 동작한다.
 // =====================================================
 
 export async function DELETE(
@@ -592,7 +544,7 @@ export async function DELETE(
         {
           success: false,
           message:
-            "삭제할 길드원 정보를 찾지 못했습니다.",
+            "탈퇴 처리할 길드원 정보를 찾지 못했습니다.",
         },
         {
           status: 404,
@@ -601,93 +553,116 @@ export async function DELETE(
     }
 
 
-    const discordLinkCount =
-      await getDiscordLinkCount(
-        cleanGid
-      );
+    /*
+      1) Supabase 접근상태와 Discord 연결을 먼저 회수한다.
+      Discord 역할 제거가 실패해도 revoked_at 때문에
+      밍보드 접근은 차단된다.
+    */
+
+    const lifecycle =
+      await setMemberLifecycleStatus({
+        gid:
+          cleanGid,
+        status:
+          "left",
+        actorDiscordId:
+          String(
+            authResult.session
+              .user.discordId ||
+            ""
+          ),
+        reason:
+          "admin_member_leave",
+      });
 
 
-    if (
-      discordLinkCount > 0
+    /*
+      2) Google Sheet는 v2 매크로의 기존 deleteGuildMember 호출을 사용한다.
+      v2에서는 이 호출이 행 삭제가 아니라 상태=탈퇴로 동작한다.
+    */
+
+    let sheetSynced =
+      false;
+
+    let sheetWarning:
+      string | null =
+      null;
+
+
+    try {
+      const response =
+        await fetch(
+          googleScriptUrl,
+          {
+            method:
+              "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body:
+              JSON.stringify({
+                action:
+                  "deleteGuildMember",
+
+                secret,
+
+                gid:
+                  cleanGid,
+              }),
+
+            cache:
+              "no-store",
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      sheetSynced =
+        response.ok &&
+        Boolean(
+          data.success
+        );
+
+
+      if (
+        !sheetSynced
+      ) {
+        sheetWarning =
+          data.message ||
+          "Google Sheet 탈퇴 상태 반영에 실패했습니다.";
+      }
+
+    } catch (
+      error
     ) {
-
-      return NextResponse.json(
-        {
-          success: false,
-          message:
-            `Discord 계정이 ${discordLinkCount}/2 연결되어 있어 길드원을 삭제할 수 없습니다. 먼저 Discord 연결을 해제해주세요.`,
-          code:
-            "DISCORD_LINK_EXISTS",
-          discordLinkCount,
-          discordLinkMax: 2,
-        },
-        {
-          status: 409,
-        }
-      );
+      sheetWarning =
+        error instanceof Error
+          ? error.message
+          : "Google Sheet 탈퇴 상태 반영에 실패했습니다.";
     }
 
 
-    const response =
-      await fetch(
-        googleScriptUrl,
-        {
-          method:
-            "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-
-          body:
-            JSON.stringify({
-              action:
-                "deleteGuildMember",
-
-              secret,
-
-              gid:
-                cleanGid,
-            }),
-
-          cache:
-            "no-store",
-        }
+    const failedRoles =
+      lifecycle.roleResults.filter(
+        result =>
+          !result.success
       );
-
-
-    const data =
-      await response.json();
-
-
-    if (
-      !response.ok ||
-      !data.success
-    ) {
-
-      return NextResponse.json(
-        {
-          success: false,
-          message:
-            data.message ||
-            "길드원 삭제 실패",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
 
 
     const auditResult =
       await writeAuditLog({
 
         action:
-          "DELETE",
+          "UPDATE",
 
         targetType:
-          "guild_member",
+          "guild_member_status",
 
         targetId:
           cleanGid,
@@ -716,12 +691,33 @@ export async function DELETE(
         beforeData:
           beforeMember,
 
-        afterData:
-          null,
+        afterData: {
+          status:
+            "left",
+          linksRevoked:
+            lifecycle.linksRevoked,
+          roleResults:
+            lifecycle.roleResults,
+          sheetSynced,
+        },
 
         description:
-          `${beforeMember.nickname} 길드원 삭제`,
+          `${beforeMember.nickname} 길드원 탈퇴처리`,
       });
+
+
+    const warnings = [
+      sheetWarning,
+      failedRoles.length >
+      0
+        ? `Discord 제우스 역할 회수 ${failedRoles.length}건 실패. 밍보드 접근은 이미 차단했습니다.`
+        : null,
+      auditResult.success
+        ? null
+        : auditResult.message,
+    ].filter(
+      Boolean
+    );
 
 
     return NextResponse.json({
@@ -729,16 +725,33 @@ export async function DELETE(
       success: true,
 
       message:
-        data.message ||
-        "길드원을 삭제했습니다.",
+        `${beforeMember.nickname}님을 탈퇴 처리했습니다.`,
+
+      status:
+        "left",
+
+      linksRevoked:
+        lifecycle.linksRevoked,
+
+      discordRoleRemoved:
+        failedRoles.length ===
+        0,
+
+      roleResults:
+        lifecycle.roleResults,
+
+      sheetSynced,
 
       auditSaved:
         auditResult.success,
 
-      auditWarning:
-        auditResult.success
-          ? null
-          : auditResult.message,
+      warning:
+        warnings.length >
+        0
+          ? warnings.join(
+              " / "
+            )
+          : null,
     });
 
 
@@ -747,7 +760,7 @@ export async function DELETE(
   ) {
 
     console.error(
-      "DELETE MEMBER ERROR:",
+      "LEAVE MEMBER ERROR:",
       error
     );
 
@@ -756,7 +769,9 @@ export async function DELETE(
       {
         success: false,
         message:
-          "길드원 삭제 중 오류가 발생했습니다.",
+          error instanceof Error
+            ? error.message
+            : "길드원 탈퇴처리 중 오류가 발생했습니다.",
       },
       {
         status: 500,
