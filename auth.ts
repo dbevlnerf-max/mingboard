@@ -1,6 +1,10 @@
 import NextAuth from "next-auth";
 import Discord from "next-auth/providers/discord";
 
+import {
+  supabaseAdmin,
+} from "@/lib/supabase/admin";
+
 
 const guildId =
   process.env.DISCORD_GUILD_ID!;
@@ -65,6 +69,114 @@ async function getDiscordMember(
 
 
 /* =========================================
+   활성 캐릭터 연결 조회
+========================================= */
+
+async function getActiveCharacterLink(
+  discordId: string
+) {
+  try {
+    const {
+      data: link,
+      error: linkError,
+    } =
+      await supabaseAdmin
+        .from(
+          "guild_member_discord_links"
+        )
+        .select(
+          "gid"
+        )
+        .eq(
+          "discord_id",
+          discordId
+        )
+        .is(
+          "revoked_at",
+          null
+        )
+        .maybeSingle();
+
+
+    if (
+      linkError
+    ) {
+      throw linkError;
+    }
+
+
+    if (
+      !link
+    ) {
+      return {
+        active: false,
+        gid: null,
+        status: null,
+      };
+    }
+
+
+    const {
+      data: state,
+      error: stateError,
+    } =
+      await supabaseAdmin
+        .from(
+          "guild_member_states"
+        )
+        .select(
+          "status"
+        )
+        .eq(
+          "gid",
+          Number(
+            link.gid
+          )
+        )
+        .maybeSingle();
+
+
+    if (
+      stateError
+    ) {
+      throw stateError;
+    }
+
+
+    const status =
+      String(
+        state?.status ||
+        "active"
+      );
+
+
+    return {
+      active:
+        status ===
+        "active",
+      gid:
+        String(
+          link.gid
+        ),
+      status,
+    };
+
+  } catch (error) {
+    console.error(
+      "Character access lookup error:",
+      error
+    );
+
+    return {
+      active: false,
+      gid: null,
+      status: "error",
+    };
+  }
+}
+
+
+/* =========================================
    Auth.js
 ========================================= */
 
@@ -89,7 +201,7 @@ export const {
   callbacks: {
 
     /* =====================================
-       JWT 생성
+       JWT 생성 / 갱신
     ===================================== */
 
     async jwt({
@@ -109,73 +221,107 @@ export const {
           };
 
 
-        const discordId =
-          String(
-            discordProfile.id || ""
-          );
-
-
         token.discordId =
-          discordId;
-
-
-        /* MASTER */
-
-        token.isMaster =
-          discordId ===
-          masterUserId;
-
-
-        /* Discord 서버 멤버 조회 */
-
-        const member =
-          await getDiscordMember(
-            discordId
+          String(
+            discordProfile.id ||
+            ""
           );
-
-
-        token.isGuildMember =
-          Boolean(member);
-
-
-        const roles:
-          string[] =
-          member &&
-          Array.isArray(
-            member.roles
-          )
-            ? member.roles
-            : [];
-
-
-        /* 제우스 역할 */
-
-        token.hasZeusRole =
-          roles.includes(
-            zeusRoleId
-          );
-
-
-        /* 관리자 역할 */
-
-        token.isAdmin =
-          roles.includes(
-            adminRoleId
-          );
-
-
-        /*
-          마스터는 관리자 권한도 가짐.
-          단, 웹 입장 자체는 제우스 역할이 있어야 함.
-        */
-
-        if (
-          token.isMaster
-        ) {
-          token.isAdmin =
-            true;
-        }
       }
+
+
+      const discordId =
+        String(
+          token.discordId ||
+          ""
+        );
+
+
+      if (
+        !discordId
+      ) {
+        return token;
+      }
+
+
+      /* MASTER */
+
+      token.isMaster =
+        discordId ===
+        masterUserId;
+
+
+      /* Discord 서버 멤버/역할을 세션 접근 시 다시 확인 */
+
+      const member =
+        await getDiscordMember(
+          discordId
+        );
+
+
+      token.isGuildMember =
+        Boolean(member);
+
+
+      const roles:
+        string[] =
+        member &&
+        Array.isArray(
+          member.roles
+        )
+          ? member.roles
+          : [];
+
+
+      /* 제우스 역할: 기존 의미 그대로 유지 */
+
+      token.hasZeusRole =
+        roles.includes(
+          zeusRoleId
+        );
+
+
+      /* 관리자 역할 */
+
+      token.isAdmin =
+        roles.includes(
+          adminRoleId
+        );
+
+
+      if (
+        token.isMaster
+      ) {
+        token.isAdmin =
+          true;
+      }
+
+
+      /* 활성 캐릭터 연결 */
+
+      const characterAccess =
+        await getActiveCharacterLink(
+          discordId
+        );
+
+
+      token.hasActiveCharacterLink =
+        characterAccess.active;
+
+      token.linkedGid =
+        characterAccess.gid ||
+        undefined;
+
+      token.characterStatus =
+        characterAccess.status ||
+        undefined;
+
+      token.needsCharacterLink =
+        Boolean(
+          token.isGuildMember &&
+          token.hasZeusRole &&
+          !token.hasActiveCharacterLink &&
+          !token.isMaster
+        );
 
 
       return token;
@@ -197,7 +343,8 @@ export const {
 
         session.user.discordId =
           String(
-            token.discordId || ""
+            token.discordId ||
+            ""
           );
 
 
@@ -211,6 +358,34 @@ export const {
           Boolean(
             token.hasZeusRole
           );
+
+
+        session.user.hasActiveCharacterLink =
+          Boolean(
+            token.hasActiveCharacterLink
+          );
+
+
+        session.user.needsCharacterLink =
+          Boolean(
+            token.needsCharacterLink
+          );
+
+
+        session.user.linkedGid =
+          token.linkedGid
+            ? String(
+                token.linkedGid
+              )
+            : undefined;
+
+
+        session.user.characterStatus =
+          token.characterStatus
+            ? String(
+                token.characterStatus
+              )
+            : undefined;
 
 
         session.user.isAdmin =
