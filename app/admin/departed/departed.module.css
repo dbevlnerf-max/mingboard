@@ -1,0 +1,287 @@
+.page {
+  min-height: 100vh;
+  background: #080808;
+  color: #f5f5f5;
+  padding: 28px;
+}
+
+.shell {
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.header,
+.titleRow,
+.toolbar,
+.tableWrap,
+.modal {
+  background: #111;
+  border: 1px solid #2a2a2a;
+  border-radius: 14px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 20px;
+  margin-bottom: 18px;
+}
+
+.brand {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 800;
+}
+
+.header p {
+  margin: 6px 0 0;
+  color: #888;
+  font-size: 13px;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #aaa;
+}
+
+.headerRight strong {
+  color: #ffd166;
+  font-size: 12px;
+}
+
+.titleRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px;
+  margin-bottom: 16px;
+}
+
+.eyebrow {
+  font-size: 12px;
+  letter-spacing: .14em;
+  color: #777;
+  margin-bottom: 8px;
+}
+
+.titleRow h1 {
+  margin: 0;
+  font-size: 30px;
+}
+
+.titleRow p {
+  margin: 10px 0 0;
+  color: #999;
+  line-height: 1.6;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.actions button,
+.actions a,
+.modalActions button,
+.modalHeader button {
+  border: 1px solid #333;
+  background: #171717;
+  color: #eee;
+  border-radius: 9px;
+  padding: 10px 14px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.toolbar input,
+.confirmField input {
+  flex: 1;
+  min-width: 240px;
+  border: 1px solid #333;
+  background: #0b0b0b;
+  color: #fff;
+  border-radius: 9px;
+  padding: 11px 13px;
+}
+
+.countBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #aaa;
+}
+
+.countBox strong {
+  color: #fff;
+  font-size: 20px;
+}
+
+.stateBox,
+.empty {
+  border: 1px solid #2a2a2a;
+  background: #111;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  color: #aaa;
+}
+
+.errorBox,
+.modalError {
+  color: #ff8e8e;
+}
+
+.tableWrap {
+  overflow: hidden;
+}
+
+.tableHeader,
+.tableRow {
+  display: grid;
+  grid-template-columns: .65fr 1.15fr 1fr 1fr .8fr 1.35fr .8fr;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 16px;
+}
+
+.tableHeader {
+  color: #777;
+  font-size: 12px;
+  border-bottom: 1px solid #252525;
+}
+
+.tableRow {
+  border-bottom: 1px solid #1f1f1f;
+}
+
+.tableRow:last-child {
+  border-bottom: 0;
+}
+
+.gid {
+  color: #777;
+}
+
+.deleteButton,
+.confirmDelete {
+  border: 1px solid #6d2929;
+  background: #291111;
+  color: #ff9e9e;
+  border-radius: 8px;
+  padding: 9px 12px;
+  cursor: pointer;
+}
+
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .72);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  z-index: 1000;
+}
+
+.modal {
+  width: min(520px, 100%);
+  padding: 22px;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.modalHeader span {
+  font-size: 11px;
+  color: #777;
+  letter-spacing: .12em;
+}
+
+.modalHeader h2 {
+  margin: 7px 0 0;
+}
+
+.modalHeader button {
+  padding: 6px 10px;
+}
+
+.warning {
+  margin: 20px 0;
+  padding: 16px;
+  border: 1px solid #512323;
+  background: #1b0f0f;
+  border-radius: 10px;
+}
+
+.warning strong {
+  color: #ffb0b0;
+}
+
+.warning p {
+  color: #c8a8a8;
+  line-height: 1.6;
+  margin: 8px 0 0;
+}
+
+.confirmField {
+  display: grid;
+  gap: 8px;
+}
+
+.confirmField span {
+  color: #aaa;
+  font-size: 13px;
+}
+
+.modalError {
+  margin-top: 12px;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.confirmDelete:disabled,
+.actions button:disabled,
+.modalActions button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+  .page {
+    padding: 14px;
+  }
+
+  .titleRow {
+    flex-direction: column;
+  }
+
+  .tableWrap {
+    overflow-x: auto;
+  }
+
+  .tableHeader,
+  .tableRow {
+    min-width: 900px;
+  }
+}
