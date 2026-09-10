@@ -201,13 +201,31 @@ export default async function AdminPage() {
         "길드원 관리",
 
       description:
-        "길드원 정보와 Discord 계정 연결을 관리합니다.",
+        "활동 중인 길드원 정보와 Discord 계정 연결을 관리합니다.",
 
       status:
         "사용 가능",
 
       href:
         "/admin/members",
+    },
+
+
+    {
+      icon:
+        "📦",
+
+      title:
+        "탈퇴 인원 관리",
+
+      description:
+        "탈퇴처리된 길드원을 확인하고 필요 시 영구삭제합니다.",
+
+      status:
+        "사용 가능",
+
+      href:
+        "/admin/departed",
     },
 
 
