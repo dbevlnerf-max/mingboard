@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { clearPortalCache, readPortalCache, writePortalCache } from "./portal-cache";
 import { fetchPortalJson, PortalRequestError } from "./portal-request";
 
-type Result = { success: boolean; message?: string; retryable?: boolean };
+type Result = { success: boolean; message?: string; retryable?: boolean; sourceUpdatedAt?: string; stale?: boolean };
 type Snapshot<T> = {
   key: string;
   data?: T;
@@ -58,7 +58,7 @@ export function usePortalQuery<T extends Result>(
       timer = setTimeout(run, delay);
     };
 
-    async function run() {
+    async function run(fresh = false) {
       if (disposed || running || blocked) return;
       clearTimeout(timer);
       if (!navigator.onLine) {
@@ -77,11 +77,14 @@ export function usePortalQuery<T extends Result>(
       publish({ refreshing: true, offline: false });
       let delay = intervalMs;
       try {
-        const data = await fetchPortalJson<T>(url!, {
+        const requestUrl = fresh ? `${url}${url!.includes("?") ? "&" : "?"}fresh=1` : url!;
+        const data = await fetchPortalJson<T>(requestUrl, {
           signal: controller.signal, arrayField, allowDomainFailure,
         });
         if (disposed) return;
         failures = 0;
+        if (current.data?.sourceUpdatedAt && data.sourceUpdatedAt &&
+            Date.parse(data.sourceUpdatedAt) < Date.parse(current.data.sourceUpdatedAt)) return;
         const updatedAt = Date.now();
         writePortalCache(key, data, updatedAt);
         publish({ data, updatedAt, error: "", retrying: false });
@@ -114,7 +117,7 @@ export function usePortalQuery<T extends Result>(
     refreshRef.current = () => {
       blocked = false;
       failures = 0;
-      void run();
+      void run(true);
     };
     // Defer the first state update and allow StrictMode cleanup to cancel it.
     schedule(0);
@@ -145,6 +148,8 @@ export function usePortalQuery<T extends Result>(
     retrying: current?.retrying ?? false,
     offline: current?.offline ?? false,
     updatedAt: current?.updatedAt ?? (cached ? cached.updatedAt : undefined),
+    sourceUpdatedAt: data?.sourceUpdatedAt ? Date.parse(data.sourceUpdatedAt) : undefined,
+    stale: Boolean(data?.stale),
     refresh,
   };
 }

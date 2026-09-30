@@ -1,3 +1,4 @@
+import { invalidatePortalSheetReads } from "@/lib/sheet-read";
 import {
   NextRequest,
   NextResponse,
@@ -251,6 +252,8 @@ export async function DELETE(
         { status: 400 }
       );
     }
+
+    invalidatePortalSheetReads();
 
     let stateWarning: string | null = null;
 

@@ -46,6 +46,16 @@ export default auth(
       return NextResponse.next();
     }
 
+    if (session.user.authVerificationPending && pathname.startsWith("/api/")) {
+      return NextResponse.json({
+        success: false, retryable: true, code: "AUTH_CHECK_UNAVAILABLE",
+        message: "인증 서버 연결을 다시 확인하고 있습니다. 잠시만 기다려주세요.",
+      }, { status: 503, headers: { "Cache-Control": "private, no-store" } });
+    }
+
+    // A DB outage is not evidence that the member needs a new character link.
+    if (session.user.authVerificationPending) return NextResponse.next();
+
 
     if (
       session.user.isMaster

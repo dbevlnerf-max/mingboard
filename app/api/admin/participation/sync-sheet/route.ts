@@ -1,3 +1,4 @@
+import { invalidatePortalSheetReads } from "@/lib/sheet-read";
 import {
   NextRequest,
   NextResponse,
@@ -212,6 +213,7 @@ async function callGoogleScript(
   }
 
 
+  invalidatePortalSheetReads();
   return data;
 }
 

@@ -357,6 +357,16 @@ export default function DistributionPage() {
     );
 
 
+  if (session.user.authVerificationPending) {
+    return (
+      <main className="loginStatusPage">
+        <div className="loginStatusCard" role="status">
+          인증 서버 연결을 다시 확인하고 있습니다. 잠시만 기다려주세요.
+        </div>
+      </main>
+    );
+  }
+
   if (
     !canAccess
   ) {
