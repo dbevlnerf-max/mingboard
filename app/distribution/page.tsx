@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -12,6 +11,8 @@ import {
 } from "next-auth/react";
 
 import AppTopBar from "@/app/components/AppTopBar";
+import DataStatus from "@/app/components/DataStatus";
+import { usePortalQuery } from "@/lib/use-portal-query";
 
 
 type DistributionRow = {
@@ -214,337 +215,27 @@ export default function DistributionPage() {
     );
 
 
-  const [
-    categories,
-    setCategories,
-  ] =
-    useState<string[]>(
-      []
-    );
-
-
-  const [
-    rows,
-    setRows,
-  ] =
-    useState<DistributionRow[]>(
-      []
-    );
-
-
-  const [
-    totalCount,
-    setTotalCount,
-  ] =
-    useState(
-      0
-    );
-
-
-  const [
-    filteredCount,
-    setFilteredCount,
-  ] =
-    useState(
-      0
-    );
-
-
-  const [
-    filteredDiamond,
-    setFilteredDiamond,
-  ] =
-    useState(
-      0
-    );
-
-
-  const [
-    totalPages,
-    setTotalPages,
-  ] =
-    useState(
-      1
-    );
-
-
-  const [
-    loading,
-    setLoading,
-  ] =
-    useState(
-      false
-    );
-
-
-  const [
-    error,
-    setError,
-  ] =
-    useState(
-      ""
-    );
-
-
-  const [
-    refreshKey,
-    setRefreshKey,
-  ] =
-    useState(
-      0
-    );
-
-
-  useEffect(
-    () => {
-
-      setPage(
-        1
-      );
-
-    },
-    [
-      startDate,
-      endDate,
-      category,
-      sort,
-    ]
+  const canRead = status === "authenticated" && Boolean(
+    (session?.user?.isGuildMember && session.user.hasZeusRole) ||
+    session?.user?.isAdmin || session?.user?.isMaster
   );
-
-
-  useEffect(
-    () => {
-
-      if (
-        status !==
-        "authenticated"
-      ) {
-        return;
-      }
-
-
-      if (
-        !session?.user
-      ) {
-        return;
-      }
-
-
-      const canAccess =
-        Boolean(
-          (
-            session.user
-              .isGuildMember &&
-            session.user
-              .hasZeusRole
-          ) ||
-          session.user
-            .isAdmin ||
-          session.user
-            .isMaster
-        );
-
-
-      if (
-        !canAccess
-      ) {
-        return;
-      }
-
-
-      let disposed =
-        false;
-
-
-      async function loadDistribution() {
-
-        setLoading(
-          true
-        );
-
-        setError(
-          ""
-        );
-
-
-        try {
-
-          const params =
-            new URLSearchParams({
-              startDate,
-              endDate,
-              category,
-              sort,
-              page:
-                String(
-                  page
-                ),
-              pageSize:
-                "20",
-            });
-
-
-          const response =
-            await fetch(
-              `/api/distribution?${params.toString()}`,
-              {
-                cache:
-                  "no-store",
-              }
-            );
-
-
-          const data =
-            await response
-              .json() as
-              DistributionResponse;
-
-
-          if (
-            !response.ok ||
-            !data.success
-          ) {
-            throw new Error(
-              data.message ||
-              "분배내역을 불러오지 못했습니다."
-            );
-          }
-
-
-          if (
-            disposed
-          ) {
-            return;
-          }
-
-
-          setRows(
-            Array.isArray(
-              data.rows
-            )
-              ? data.rows
-              : []
-          );
-
-
-          setCategories(
-            Array.isArray(
-              data.categories
-            )
-              ? data.categories
-              : []
-          );
-
-
-          setTotalCount(
-            Number(
-              data.totalCount ||
-              0
-            )
-          );
-
-
-          setFilteredCount(
-            Number(
-              data.filteredCount ||
-              0
-            )
-          );
-
-
-          setFilteredDiamond(
-            Number(
-              data.filteredDiamond ||
-              0
-            )
-          );
-
-
-          setTotalPages(
-            Math.max(
-              1,
-              Number(
-                data.totalPages ||
-                1
-              )
-            )
-          );
-
-
-          if (
-            data.query?.page &&
-            data.query.page !==
-              page
-          ) {
-            setPage(
-              data.query.page
-            );
-          }
-
-
-        } catch (
-          loadError
-        ) {
-
-          if (
-            disposed
-          ) {
-            return;
-          }
-
-
-          console.error(
-            "[길드 전체 분배조회]",
-            loadError
-          );
-
-
-          setRows(
-            []
-          );
-
-
-          setError(
-            loadError instanceof
-              Error
-              ? loadError.message
-              : "분배내역을 불러오지 못했습니다."
-          );
-
-        } finally {
-
-          if (
-            !disposed
-          ) {
-            setLoading(
-              false
-            );
-          }
-        }
-      }
-
-
-      loadDistribution();
-
-
-      return () => {
-        disposed =
-          true;
-      };
-
-    },
-    [
-      status,
-      session?.user,
-      startDate,
-      endDate,
-      category,
-      sort,
-      page,
-      refreshKey,
-    ]
+  const params = new URLSearchParams({
+    startDate, endDate, category, sort, page: String(page), pageSize: "20",
+  });
+  const distributionQuery = usePortalQuery<DistributionResponse>(
+    canRead ? `/api/distribution?${params.toString()}` : null,
+    { arrayField: "rows" },
   );
-
+  const data = distributionQuery.data;
+  const categories = data?.categories ?? [];
+  const rows = data?.rows ?? [];
+  const totalCount = Number(data?.totalCount ?? 0);
+  const filteredCount = Number(data?.filteredCount ?? 0);
+  const filteredDiamond = Number(data?.filteredDiamond ?? 0);
+  const totalPages = Math.max(1, Number(data?.totalPages ?? 1));
+  const displayPage = data?.query?.page ?? page;
+  const loading = distributionQuery.loading || distributionQuery.refreshing;
+  const error = data ? "" : distributionQuery.error;
 
   function setPresetToday() {
 
@@ -553,6 +244,7 @@ export default function DistributionPage() {
         new Date()
       );
 
+    setPage(1);
     setStartDate(
       today
     );
@@ -573,6 +265,7 @@ export default function DistributionPage() {
         )
       );
 
+    setPage(1);
     setStartDate(
       yesterday
     );
@@ -588,6 +281,7 @@ export default function DistributionPage() {
     const today =
       new Date();
 
+    setPage(1);
     setStartDate(
       localDateKey(
         shiftDate(
@@ -729,11 +423,7 @@ export default function DistributionPage() {
             }
             onClick={
               () =>
-                setRefreshKey(
-                  value =>
-                    value +
-                    1
-                )
+                distributionQuery.refresh()
             }
           >
             ↻ 새로고침
@@ -742,7 +432,9 @@ export default function DistributionPage() {
         </div>
 
 
-        <div className="distributionSummaryGrid">
+        <DataStatus {...distributionQuery} />
+
+        <div className="distributionSummaryGrid" aria-busy={loading}>
 
           <div className="distributionSummaryCard">
             <span>
@@ -751,10 +443,7 @@ export default function DistributionPage() {
 
             <strong>
               {
-                filteredCount
-                  .toLocaleString(
-                    "ko-KR"
-                  )
+                (data ? filteredCount.toLocaleString("ko-KR") : "—")
               }
               건
             </strong>
@@ -769,10 +458,7 @@ export default function DistributionPage() {
             <strong>
               💎{" "}
               {
-                filteredDiamond
-                  .toLocaleString(
-                    "ko-KR"
-                  )
+                (data ? filteredDiamond.toLocaleString("ko-KR") : "—")
               }
             </strong>
           </div>
@@ -785,10 +471,7 @@ export default function DistributionPage() {
 
             <strong>
               {
-                totalCount
-                  .toLocaleString(
-                    "ko-KR"
-                  )
+                (data ? totalCount.toLocaleString("ko-KR") : "—")
               }
               건
             </strong>
@@ -801,7 +484,7 @@ export default function DistributionPage() {
             </span>
 
             <strong>
-              {page} / {totalPages}
+              {displayPage} / {totalPages}
             </strong>
           </div>
 
@@ -855,10 +538,10 @@ export default function DistributionPage() {
                   startDate
                 }
                 onChange={
-                  event =>
-                    setStartDate(
-                      event.target.value
-                    )
+                  event => {
+                    setPage(1);
+                    setStartDate(event.target.value);
+                  }
                 }
               />
             </label>
@@ -875,10 +558,10 @@ export default function DistributionPage() {
                   endDate
                 }
                 onChange={
-                  event =>
-                    setEndDate(
-                      event.target.value
-                    )
+                  event => {
+                    setPage(1);
+                    setEndDate(event.target.value);
+                  }
                 }
               />
             </label>
@@ -894,15 +577,19 @@ export default function DistributionPage() {
                   category
                 }
                 onChange={
-                  event =>
-                    setCategory(
-                      event.target.value
-                    )
+                  event => {
+                    setPage(1);
+                    setCategory(event.target.value);
+                  }
                 }
               >
                 <option value="전체">
                   전체
                 </option>
+
+                {category !== "전체" && !categories.includes(category) && (
+                  <option value={category}>{category}</option>
+                )}
 
                 {
                   categories
@@ -940,14 +627,10 @@ export default function DistributionPage() {
                   sort
                 }
                 onChange={
-                  event =>
-                    setSort(
-                      event
-                        .target
-                        .value as
-                        "latest" |
-                        "oldest"
-                    )
+                  event => {
+                    setPage(1);
+                    setSort(event.target.value as "latest" | "oldest");
+                  }
                 }
               >
                 <option value="latest">
@@ -982,7 +665,7 @@ export default function DistributionPage() {
 
             <div className="distributionResultsCount">
               {
-                loading
+                !data
                   ? "조회 중..."
                   : `${filteredCount.toLocaleString("ko-KR")}건`
               }
@@ -1002,7 +685,7 @@ export default function DistributionPage() {
 
 
           {
-            !error &&
+            !data && !error &&
             loading &&
             rows.length ===
               0 &&
@@ -1016,7 +699,7 @@ export default function DistributionPage() {
 
           {
             !error &&
-            !loading &&
+            data &&
             rows.length ===
               0 &&
             (
@@ -1224,19 +907,12 @@ export default function DistributionPage() {
               type="button"
               disabled={
                 loading ||
-                page <=
+                displayPage <=
                   1
               }
               onClick={
                 () =>
-                  setPage(
-                    value =>
-                      Math.max(
-                        1,
-                        value -
-                          1
-                      )
-                  )
+                  setPage(Math.max(1, displayPage - 1))
               }
             >
               ← 이전
@@ -1244,7 +920,7 @@ export default function DistributionPage() {
 
 
             <span>
-              {page} / {totalPages}
+              {displayPage} / {totalPages}
             </span>
 
 
@@ -1252,19 +928,12 @@ export default function DistributionPage() {
               type="button"
               disabled={
                 loading ||
-                page >=
+                displayPage >=
                   totalPages
               }
               onClick={
                 () =>
-                  setPage(
-                    value =>
-                      Math.min(
-                        totalPages,
-                        value +
-                          1
-                      )
-                  )
+                  setPage(Math.min(totalPages, displayPage + 1))
               }
             >
               다음 →
