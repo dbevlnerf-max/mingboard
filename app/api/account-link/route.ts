@@ -133,6 +133,15 @@ async function requireDiscordLogin() {
   }
 
 
+  if (session.user.authVerificationPending) {
+    return {
+      ok: false as const,
+      response: NextResponse.json({ success: false, retryable: true,
+        message: "인증 서버 연결을 다시 확인하고 있습니다. 잠시 후 다시 시도해주세요." },
+        { status: 503, headers: { "Cache-Control": "private, no-store" } }),
+    };
+  }
+
   const discordId =
     stringValue(
       session.user.discordId

@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:portal": "node tests/portal-request.test.mjs"
+    "test:portal": "node --test tests/*.test.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.6",

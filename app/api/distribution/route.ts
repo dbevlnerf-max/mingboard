@@ -4,6 +4,10 @@ import { readSheet, sheetJson, sheetReadError } from "@/lib/sheet-read";
 export async function GET(request: Request) {
   try {
     const session = await auth();
+    if (session?.user?.authVerificationPending) {
+      return sheetJson({ success: false, retryable: true, code: "AUTH_CHECK_UNAVAILABLE",
+        message: "인증 서버 연결을 다시 확인하고 있습니다." }, 503);
+    }
     if (!session?.user) {
       return sheetJson({ success: false, message: "로그인이 필요합니다." }, 401);
     }
@@ -33,6 +37,7 @@ export async function GET(request: Request) {
     }
     const data = await readSheet(
       googleScriptUrl, params, request.signal, nickname ? "items" : "rows",
+      searchParams.get("fresh") === "1",
     );
     return sheetJson(data);
   } catch (error) {

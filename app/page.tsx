@@ -1056,6 +1056,18 @@ export default function Home() {
      SERVER CHECK
   ===================================================== */
 
+  if (session.user.authVerificationPending) {
+    return (
+      <main className="loginStatusPage">
+        <div className="loginStatusCard" role="status">
+          <div className="loadingDot" />
+          <strong>인증 서버 연결을 다시 확인하고 있습니다.</strong>
+          <p>잠시만 기다려주세요. 로그인은 유지되고 자동으로 다시 확인합니다.</p>
+        </div>
+      </main>
+    );
+  }
+
   if (
     !session.user
       .isGuildMember

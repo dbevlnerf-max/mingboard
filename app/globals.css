@@ -16,6 +16,15 @@
   font-size: 12px;
 }
 
+.authRecoveryNotice {
+  padding: 10px 16px;
+  background: #251d16;
+  border-bottom: 1px solid #4a3928;
+  color: #dfc49d;
+  font-size: 13px;
+  text-align: center;
+}
+
 .portalDataStatus > div {
   display: flex;
   flex-wrap: wrap;

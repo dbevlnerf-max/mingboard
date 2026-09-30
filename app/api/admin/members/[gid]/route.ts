@@ -1,3 +1,4 @@
+import { invalidatePortalSheetReads } from "@/lib/sheet-read";
 import {
   NextResponse,
 } from "next/server";
@@ -350,6 +351,8 @@ export async function PATCH(
     }
 
 
+    invalidatePortalSheetReads();
+
     const auditResult =
       await writeAuditLog({
 
@@ -629,6 +632,8 @@ export async function DELETE(
           data.success
         );
 
+
+      if (sheetSynced) invalidatePortalSheetReads();
 
       if (
         !sheetSynced

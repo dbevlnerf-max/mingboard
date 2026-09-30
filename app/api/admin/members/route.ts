@@ -1,3 +1,4 @@
+import { invalidatePortalSheetReads } from "@/lib/sheet-read";
 import {
   NextResponse,
 } from "next/server";
@@ -210,6 +211,8 @@ export async function POST(
       );
     }
 
+
+    invalidatePortalSheetReads();
 
     const auditResult =
       await writeAuditLog({
