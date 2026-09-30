@@ -5,9 +5,9 @@ import {
   useState,
 } from "react";
 
-import Link from "next/link";
-
 import AppTopBar from "@/app/components/AppTopBar";
+import DataStatus from "@/app/components/DataStatus";
+import { usePortalQuery } from "@/lib/use-portal-query";
 
 import {
   signIn,
@@ -573,47 +573,13 @@ export default function Home() {
 
 
   const [
-    bossTimers,
-    setBossTimers,
-  ] =
-    useState<
-      BossTimer[]
-    >(
-      []
-    );
-
-
-  const [
-    bossLoading,
-    setBossLoading,
-  ] =
-    useState(true);
-
-
-  const [
-    bossError,
-    setBossError,
-  ] =
-    useState("");
-
-
-  const [
     search,
     setSearch,
   ] =
     useState("");
 
 
-  const [
-    user,
-    setUser,
-  ] =
-    useState<
-      DistributionUser | null
-    >(
-      null
-    );
-
+  const [activeNickname, setActiveNickname] = useState("");
 
   const [
     category,
@@ -625,51 +591,8 @@ export default function Home() {
 
 
   const [
-    loading,
-    setLoading,
-  ] =
-    useState(false);
-
-
-  const [
     message,
     setMessage,
-  ] =
-    useState("");
-
-
-  const [
-    candidates,
-    setCandidates,
-  ] =
-    useState<string[]>(
-      []
-    );
-
-
-  /* =====================================================
-     NOTICE
-  ===================================================== */
-
-  const [
-    notices,
-    setNotices,
-  ] =
-    useState<Notice[]>(
-      []
-    );
-
-
-  const [
-    noticesLoading,
-    setNoticesLoading,
-  ] =
-    useState(false);
-
-
-  const [
-    noticeError,
-    setNoticeError,
   ] =
     useState("");
 
@@ -683,80 +606,54 @@ export default function Home() {
     );
 
 
-  /* =====================================================
-     GUIDE
-  ===================================================== */
+  const canReadGuild = status === "authenticated" &&
+    Boolean(session?.user?.isGuildMember && session.user.hasZeusRole);
+  const canReadDistribution = status === "authenticated" && Boolean(
+    canReadGuild || session?.user?.isAdmin || session?.user?.isMaster
+  );
+  const guildQuery = usePortalQuery<{
+    success: boolean; members: GuildMember[]; counts?: GuildCounts; jobs?: string[];
+  }>(canReadGuild ? "/api/guild" : null, { arrayField: "members" });
+  const guildMembers = guildQuery.data?.members ?? [];
+  const guildCounts = guildQuery.data?.counts ?? { total: 0, pink: 0, red: 0, black: 0 };
+  const guildJobs = guildQuery.data?.jobs ?? [];
+  const guildLoading = guildQuery.loading;
+  const guildError = guildQuery.data ? "" : guildQuery.error;
 
-  const [
-    guide,
-    setGuide,
-  ] =
-    useState<Guide | null>(
-      null
-    );
+  const noticesQuery = usePortalQuery<{ success: boolean; notices: Notice[] }>(
+    canReadGuild ? "/api/notices" : null, { intervalMs: 60000, arrayField: "notices" },
+  );
+  const notices = noticesQuery.data?.notices ?? [];
+  const noticesLoading = noticesQuery.loading;
+  const noticeError = noticesQuery.data ? "" : noticesQuery.error;
 
+  const guideQuery = usePortalQuery<{ success: boolean; guide: Guide | null }>(
+    canReadGuild ? "/api/dashboard-guide" : null, { intervalMs: 60000 },
+  );
+  const guide = guideQuery.data?.guide ?? null;
+  const guideLoading = guideQuery.loading;
+  const guideError = guideQuery.data ? "" : guideQuery.error;
 
-  const [
-    guideLoading,
-    setGuideLoading,
-  ] =
-    useState(false);
+  const bossQuery = usePortalQuery<{ success: boolean; bosses: BossTimer[] }>(
+    status === "authenticated" ? "/api/boss-times" : null,
+    { intervalMs: 15000, arrayField: "bosses" },
+  );
+  const bossTimers = bossQuery.data?.bosses ?? [];
+  const bossLoading = bossQuery.loading;
+  const bossError = bossQuery.data ? "" : bossQuery.error;
 
-
-  const [
-    guideError,
-    setGuideError,
-  ] =
-    useState("");
-
-
-  /* =====================================================
-     GUILD
-  ===================================================== */
-
-  const [
-    guildMembers,
-    setGuildMembers,
-  ] =
-    useState<GuildMember[]>(
-      []
-    );
-
-
-  const [
-    guildCounts,
-    setGuildCounts,
-  ] =
-    useState<GuildCounts>({
-      total: 0,
-      pink: 0,
-      red: 0,
-      black: 0,
-    });
-
-
-  const [
-    guildJobs,
-    setGuildJobs,
-  ] =
-    useState<string[]>(
-      []
-    );
-
-
-  const [
-    guildLoading,
-    setGuildLoading,
-  ] =
-    useState(false);
-
-
-  const [
-    guildError,
-    setGuildError,
-  ] =
-    useState("");
-
+  const personalQuery = usePortalQuery<Partial<DistributionUser> & {
+    success: boolean; message?: string; multiple?: boolean; candidates?: string[];
+  }>(canReadDistribution && activeNickname
+    ? `/api/distribution?nickname=${encodeURIComponent(activeNickname)}` : null,
+    { allowDomainFailure: true, arrayField: "items" },
+  );
+  const user = personalQuery.data?.success ? personalQuery.data as DistributionUser : null;
+  const candidates = personalQuery.data?.candidates ?? [];
+  const loading = personalQuery.loading;
+  const personalMessage = message || (personalQuery.data?.multiple
+    ? "검색 결과가 여러 개 있습니다."
+    : personalQuery.data?.success === false ? personalQuery.data.message || "검색 결과가 없습니다." : "");
 
   const [
     guildFilter,
@@ -841,557 +738,23 @@ export default function Home() {
 
 
   /* =====================================================
-     LIVE BOSS TIME
-  ===================================================== */
-
-  useEffect(
-    () => {
-
-      if (
-        status !==
-        "authenticated"
-      ) {
-        return;
-      }
-
-
-      if (
-        !session?.user
-      ) {
-        return;
-      }
-
-
-      let disposed =
-        false;
-
-
-      async function loadBossTimes() {
-
-        try {
-
-          const response =
-            await fetch(
-              "/api/boss-times",
-              {
-                cache:
-                  "no-store",
-              }
-            );
-
-
-          const data =
-            await response.json();
-
-
-          if (
-            !response.ok ||
-            !data.success
-          ) {
-
-            throw new Error(
-              data.message ||
-              "보스타임을 불러오지 못했습니다."
-            );
-          }
-
-
-          if (
-            disposed
-          ) {
-            return;
-          }
-
-
-          setBossTimers(
-            Array.isArray(
-              data.bosses
-            )
-              ? data.bosses
-              : []
-          );
-
-          setBossError("");
-
-
-        } catch (
-          error
-        ) {
-
-          if (
-            disposed
-          ) {
-            return;
-          }
-
-
-          console.error(
-            "[보스타임 조회]",
-            error
-          );
-
-
-          setBossError(
-            error instanceof Error
-              ? error.message
-              : "보스타임을 불러오지 못했습니다."
-          );
-
-        } finally {
-
-          if (
-            !disposed
-          ) {
-            setBossLoading(
-              false
-            );
-          }
-        }
-      }
-
-
-      loadBossTimes();
-
-
-      // 밍봇 .컷 결과를 별도 새로고침 없이 반영
-      // 15초 간격이면 운영 부하가 매우 낮으면서 충분히 빠릅니다.
-      const timer =
-        window.setInterval(
-          loadBossTimes,
-          15000
-        );
-
-
-      return () => {
-
-        disposed =
-          true;
-
-        window.clearInterval(
-          timer
-        );
-      };
-
-    },
-    [
-      status,
-      session?.user,
-    ]
-  );
-
-
-  /* =====================================================
-     LOAD
-  ===================================================== */
-
-  useEffect(
-    () => {
-
-      if (
-        status !==
-        "authenticated"
-      ) {
-        return;
-      }
-
-
-      if (
-        !session?.user
-          ?.isGuildMember ||
-        !session.user
-          .hasZeusRole
-      ) {
-        return;
-      }
-
-
-      async function loadNotices() {
-
-        setNoticesLoading(
-          true
-        );
-
-        setNoticeError("");
-
-
-        try {
-
-          const response =
-            await fetch(
-              "/api/notices",
-              {
-                cache:
-                  "no-store",
-              }
-            );
-
-
-          const data =
-            await response.json();
-
-
-          if (
-            !response.ok ||
-            !data.success
-          ) {
-
-            throw new Error(
-              data.message ||
-              "공지사항을 불러오지 못했습니다."
-            );
-          }
-
-
-          setNotices(
-            data.notices ||
-            []
-          );
-
-        } catch (
-          error
-        ) {
-
-          console.error(
-            error
-          );
-
-
-          setNoticeError(
-            "공지사항을 불러오지 못했습니다."
-          );
-
-        } finally {
-
-          setNoticesLoading(
-            false
-          );
-        }
-      }
-
-
-      async function loadGuide() {
-
-        setGuideLoading(
-          true
-        );
-
-        setGuideError("");
-
-
-        try {
-
-          const response =
-            await fetch(
-              "/api/dashboard-guide",
-              {
-                cache:
-                  "no-store",
-              }
-            );
-
-
-          const data =
-            await response.json();
-
-
-          if (
-            !response.ok ||
-            !data.success
-          ) {
-
-            throw new Error(
-              data.message ||
-              "안내사항을 불러오지 못했습니다."
-            );
-          }
-
-
-          setGuide(
-            data.guide ||
-            null
-          );
-
-        } catch (
-          error
-        ) {
-
-          console.error(
-            error
-          );
-
-
-          setGuideError(
-            "안내사항을 불러오지 못했습니다."
-          );
-
-        } finally {
-
-          setGuideLoading(
-            false
-          );
-        }
-      }
-
-
-      async function loadGuild() {
-
-        setGuildLoading(
-          true
-        );
-
-        setGuildError("");
-
-
-        try {
-
-          const response =
-            await fetch(
-              "/api/guild",
-              {
-                cache:
-                  "no-store",
-              }
-            );
-
-
-          const data =
-            await response.json();
-
-
-          if (
-            !response.ok ||
-            !data.success
-          ) {
-
-            throw new Error(
-              data.message ||
-              "길드현황을 불러오지 못했습니다."
-            );
-          }
-
-
-          setGuildMembers(
-            data.members ||
-            []
-          );
-
-
-          setGuildCounts(
-            data.counts || {
-              total: 0,
-              pink: 0,
-              red: 0,
-              black: 0,
-            }
-          );
-
-
-          setGuildJobs(
-            data.jobs ||
-            []
-          );
-
-        } catch (
-          error
-        ) {
-
-          console.error(
-            error
-          );
-
-
-          setGuildError(
-            "길드현황을 불러오지 못했습니다."
-          );
-
-        } finally {
-
-          setGuildLoading(
-            false
-          );
-        }
-      }
-
-
-      loadNotices();
-      loadGuide();
-      loadGuild();
-
-    },
-    [
-      status,
-      session?.user
-        ?.isGuildMember,
-      session?.user
-        ?.hasZeusRole,
-    ]
-  );
-
-
-  /* =====================================================
-     FILTER 변경시 1페이지
-  ===================================================== */
-
-  useEffect(
-    () => {
-
-      setCurrentPage(
-        1
-      );
-
-    },
-    [
-      guildFilter,
-      jobFilter,
-      guildSearch,
-      guildSort,
-      pageSize,
-    ]
-  );
-
-
-  /* =====================================================
      DISTRIBUTION SEARCH
   ===================================================== */
 
-  async function searchUser(
-    forcedName:
-      | string
-      | null = null
-  ) {
-
-    const nickname =
-      forcedName ||
-      search.trim();
-
-
-    if (
-      !nickname
-    ) {
-
-      setMessage(
-        "닉네임을 입력해주세요."
-      );
-
+  function searchUser(forcedName: string | null = null) {
+    const nickname = forcedName || search.trim();
+    if (!nickname) {
+      setMessage("닉네임을 입력해주세요.");
       return;
     }
-
-
-    setLoading(
-      true
-    );
-
     setMessage("");
-
-    setCandidates(
-      []
-    );
-
-
-    try {
-
-      const response =
-        await fetch(
-          `/api/distribution?nickname=${encodeURIComponent(
-            nickname
-          )}`,
-          {
-            cache:
-              "no-store",
-          }
-        );
-
-
-      const data =
-        await response.json();
-
-
-      if (
-        data.multiple &&
-        data.candidates
-      ) {
-
-        setUser(
-          null
-        );
-
-
-        setCandidates(
-          data.candidates
-        );
-
-
-        setMessage(
-          "검색 결과가 여러 개 있습니다."
-        );
-
-
-        return;
-      }
-
-
-      if (
-        !data.success
-      ) {
-
-        setUser(
-          null
-        );
-
-
-        setMessage(
-          data.message ||
-          "검색 결과가 없습니다."
-        );
-
-
-        return;
-      }
-
-
-      setUser(
-        data
-      );
-
-
-      setSearch(
-        data.nickname
-      );
-
-
-      setCategory(
-        "전체"
-      );
-
-
-      setMessage("");
-
-    } catch (
-      error
-    ) {
-
-      console.error(
-        error
-      );
-
-
-      setUser(
-        null
-      );
-
-
-      setMessage(
-        "분배 정보를 불러오지 못했습니다."
-      );
-
-    } finally {
-
-      setLoading(
-        false
-      );
+    if (nickname === activeNickname) {
+      personalQuery.refresh();
+    } else {
+      setActiveNickname(nickname);
+      setCategory("전체");
     }
   }
-
 
   /* =====================================================
      SESSION LOADING
@@ -3299,7 +2662,7 @@ export default function Home() {
                 </h2>
 
                 <span className="bossPanelDescription">
-                  밍봇과 실시간 연동된 보스타임입니다. 왼쪽은 소환 시각, 오른쪽은 남은시간과 다음 소환 일정을 표시합니다.
+                  밍봇과 연동된 보스타임입니다. 왼쪽은 소환 시각, 오른쪽은 남은시간과 다음 소환 일정을 표시합니다.
                 </span>
 
               </div>
@@ -3330,6 +2693,8 @@ export default function Home() {
 
 
             <div className="bossList">
+
+              <DataStatus {...bossQuery} />
 
               {
                 bossLoading &&
@@ -3571,6 +2936,8 @@ export default function Home() {
           </div>
 
 
+          {activeNickname && <DataStatus {...personalQuery} />}
+
           <div className="searchBox">
 
             <input
@@ -3627,11 +2994,11 @@ export default function Home() {
 
 
           {
-            message &&
+            personalMessage &&
             (
 
               <div className="emptyResult">
-                {message}
+                {personalMessage}
               </div>
 
             )
@@ -3943,6 +3310,8 @@ export default function Home() {
 
 
 
+          <DataStatus {...guildQuery} />
+
           {/* 길드 필터 */}
 
           <div className="guildSummaryCards">
@@ -3957,10 +3326,12 @@ export default function Home() {
               }
 
               onClick={
-                () =>
+                () => {
+                  setCurrentPage(1);
                   setGuildFilter(
                     "전체"
-                  )
+                  );
+                }
               }
             >
 
@@ -3985,10 +3356,12 @@ export default function Home() {
               }
 
               onClick={
-                () =>
+                () => {
+                  setCurrentPage(1);
                   setGuildFilter(
                     "핑뚝"
-                  )
+                  );
+                }
               }
             >
 
@@ -4013,10 +3386,12 @@ export default function Home() {
               }
 
               onClick={
-                () =>
+                () => {
+                  setCurrentPage(1);
                   setGuildFilter(
                     "빨뚝"
-                  )
+                  );
+                }
               }
             >
 
@@ -4041,10 +3416,12 @@ export default function Home() {
               }
 
               onClick={
-                () =>
+                () => {
+                  setCurrentPage(1);
                   setGuildFilter(
                     "검뚝"
-                  )
+                  );
+                }
               }
             >
 
@@ -4082,10 +3459,12 @@ export default function Home() {
                 placeholder="닉네임 검색"
 
                 onChange={
-                  event =>
+                  event => {
+                    setCurrentPage(1);
                     setGuildSearch(
                       event.target.value
-                    )
+                    );
+                  }
                 }
               />
 
@@ -4101,10 +3480,12 @@ export default function Home() {
               }
 
               onChange={
-                event =>
+                event => {
+                  setCurrentPage(1);
                   setJobFilter(
                     event.target.value
-                  )
+                  );
+                }
               }
             >
 
@@ -4145,10 +3526,12 @@ export default function Home() {
               }
 
               onChange={
-                event =>
+                event => {
+                  setCurrentPage(1);
                   setGuildSort(
                     event.target.value
-                  )
+                  );
+                }
               }
             >
 
@@ -4184,12 +3567,14 @@ export default function Home() {
               }
 
               onChange={
-                event =>
+                event => {
+                  setCurrentPage(1);
                   setPageSize(
                     Number(
                       event.target.value
                     )
-                  )
+                  );
+                }
               }
             >
 
@@ -4232,7 +3617,7 @@ export default function Home() {
             guildLoading &&
             (
 
-              <div className="guildLoading">
+              <div className="guildLoading portalSkeleton" role="status">
                 길드현황을 불러오는 중...
               </div>
 
@@ -4255,8 +3640,7 @@ export default function Home() {
 
 
           {
-            !guildLoading &&
-            !guildError &&
+            guildQuery.data &&
             (
 
               <>

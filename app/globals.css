@@ -2,6 +2,79 @@
   box-sizing: border-box;
 }
 
+.portalDataStatus {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px solid #292329;
+  border-radius: 10px;
+  background: #100e10;
+  color: #bdb4bb;
+  font-size: 12px;
+}
+
+.portalDataStatus > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+
+.portalDataStatus small {
+  color: #988d95;
+  font-size: 11px;
+}
+
+.portalStatusDot {
+  flex: 0 0 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #d393b4;
+}
+
+.portalDataStatus[data-state="waiting"] .portalStatusDot {
+  background: #c9ab75;
+}
+
+.portalDataStatus button {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border: 1px solid #4a3542;
+  border-radius: 7px;
+  background: #21151c;
+  color: #e2b2cb;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.portalDataStatus button:disabled {
+  opacity: .55;
+  cursor: default;
+}
+
+.portalSkeleton {
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(110deg, #151115 25%, #211921 50%, #151115 75%);
+  background-size: 200% 100%;
+  animation: portalLoading 1.8s ease-in-out infinite;
+}
+
+@keyframes portalLoading {
+  to { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .portalSkeleton { animation: none; }
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -4481,4 +4554,3 @@ select {
   }
 
 }
-
