@@ -59,6 +59,9 @@ function verifyAccess(discordId: string) {
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [Discord({
     clientId: process.env.AUTH_DISCORD_ID!, clientSecret: process.env.AUTH_DISCORD_SECRET!,
+    // RFC 9207: Discord can send iss=https://discord.com in the OAuth callback.
+    // Without an explicit issuer, Auth.js compares it to https://authjs.dev and rejects login.
+    issuer: "https://discord.com",
   })],
   callbacks: {
     async jwt({ token, account, profile, trigger }) {
