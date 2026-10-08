@@ -4,6 +4,7 @@ import {
 } from "next/server";
 
 import { auth } from "@/auth";
+import { includeUnreturnedGuilds } from "@/lib/guild-roster";
 
 import {
   supabaseAdmin,
@@ -320,7 +321,7 @@ async function getGuildMembers():
   }
 
 
-  return sourceRows
+  const parsedMembers: GuildMember[] = sourceRows
     .map(
       (
         member:
@@ -404,6 +405,7 @@ async function getGuildMembers():
         member.gid &&
         member.nickname
     );
+  return (await includeUnreturnedGuilds(parsedMembers)).members;
 }
 
 
