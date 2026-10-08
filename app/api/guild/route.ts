@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { readSheet, sheetJson, sheetReadError } from "@/lib/sheet-read";
+import { includeUnreturnedGuilds, type RosterMember } from "@/lib/guild-roster";
 
 export async function GET(request: Request) {
   try {
@@ -24,7 +25,30 @@ export async function GET(request: Request) {
       googleScriptUrl, new URLSearchParams({ action: "guild" }), request.signal, "members",
       new URL(request.url).searchParams.get("fresh") === "1",
     );
-    return sheetJson(data);
+    if (!data.success || !Array.isArray(data.members)) return sheetJson(data);
+
+    const { members, supplementalUpdatedAt } = await includeUnreturnedGuilds(
+      data.members as RosterMember[]
+    );
+    const count = (name: string) =>
+      members.filter(member => member.guild === name).length;
+    const jobs = [...new Set(members.map(member => member.job).filter(Boolean))].sort();
+
+    return sheetJson({
+      ...data,
+      members,
+      jobs,
+      counts: {
+        total: members.length,
+        pink: count("핑뚝"),
+        red: count("빨뚝"),
+        black: count("검뚝"),
+        teon: count("테온"),
+        jigok: count("지옥소녀"),
+        heaven: count("헤븐"),
+      },
+      supplementalUpdatedAt,
+    });
   } catch (error) {
     console.error("Guild API Error:", error);
     return sheetReadError(error, "길드현황을 불러오지 못했습니다.");
