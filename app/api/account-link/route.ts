@@ -438,6 +438,7 @@ async function getMyDiscordLink(
         "discord_id",
         discordId
       )
+      .is("revoked_at", null)
       .maybeSingle();
 
 
@@ -455,27 +456,28 @@ async function getMyDiscordLink(
 // ============================================================
 
 async function getLinkCounts() {
-  const {
-    data,
-    error,
-  } =
-    await supabaseAdmin.rpc(
-      "get_guild_member_discord_link_counts"
-    );
+  // 해제된 계정은 신규 계정 연결 한도를 차지하지 않습니다.
+  const { data, error } = await supabaseAdmin
+    .from("guild_member_discord_links")
+    .select("gid, account_type")
+    .is("revoked_at", null);
+  if (error) throw error;
 
-
-  if (error) {
-    throw error;
+  const counts = new Map<string, LinkCountRow>();
+  for (const row of data ?? []) {
+    const gid = String(row.gid);
+    const entry = counts.get(gid) ?? {
+      gid, link_count: 0, primary_count: 0, additional_count: 0,
+    };
+    entry.link_count = Number(entry.link_count) + 1;
+    if (row.account_type === "primary") {
+      entry.primary_count = Number(entry.primary_count) + 1;
+    } else {
+      entry.additional_count = Number(entry.additional_count) + 1;
+    }
+    counts.set(gid, entry);
   }
-
-
-  return (
-    Array.isArray(
-      data
-    )
-      ? data
-      : []
-  ) as LinkCountRow[];
+  return [...counts.values()];
 }
 
 
@@ -910,7 +912,8 @@ export async function POST(
         .eq(
           "gid",
           gid
-        );
+        )
+        .is("revoked_at", null);
 
 
     if (
