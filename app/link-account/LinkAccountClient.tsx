@@ -166,7 +166,7 @@ function guildBadgeStyle(
 
   if (
     guild ===
-    "빨뚝"
+    "테온"
   ) {
     return {
       color:
@@ -183,7 +183,7 @@ function guildBadgeStyle(
 
   if (
     guild ===
-    "검뚝"
+    "지옥소녀"
   ) {
     return {
       color:
@@ -198,15 +198,17 @@ function guildBadgeStyle(
   }
 
 
+  if (guild === "헤븐") {
+    return {
+      color: "#e4d8f8",
+      border: "1px solid rgba(200, 175, 238, 0.28)",
+      background: "rgba(160, 123, 220, 0.08)",
+    };
+  }
   return {
-    color:
-      "#ddd",
-
-    border:
-      "1px solid #444",
-
-    background:
-      "#171717",
+    color: "#ddd",
+    border: "1px solid #444",
+    background: "#171717",
   };
 }
 
