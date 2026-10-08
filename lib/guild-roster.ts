@@ -14,7 +14,7 @@ export type RosterMember = {
 };
 
 type SupplementalSnapshot = {
-  payload: { members?: RosterMember[] } | null;
+  payload: { members?: RosterMember[]; excludedGids?: string[]; overrideGids?: string[] } | null;
   fetched_at: string;
 };
 
@@ -50,19 +50,36 @@ export async function includeUnreturnedGuilds<T extends RosterMember>(
       return { members: upstream, supplementalUpdatedAt: null };
     }
 
-    const upstreamGuilds = new Set(upstream.map(member => member.guild));
-    const usedGids = new Set(upstream.map(member => String(member.gid)));
-    const members = [...upstream];
+    // The owner may retire a member or temporarily clear their guild even
+    // while the upstream Apps Script still serves its previous cached row.
+    const excludedGids = new Set((snapshot?.payload?.excludedGids ?? []).map(String));
+    const overrideGids = new Set((snapshot?.payload?.overrideGids ?? []).map(String));
+    const overrides = new Map(
+      supplemental
+        .filter(member => member && overrideGids.has(String(member.gid)))
+        .map(member => [String(member.gid), member]),
+    );
+
+    const currentUpstream = upstream
+      .filter(member => !excludedGids.has(String(member.gid)))
+      .map(member => {
+        const changed = overrides.get(String(member.gid));
+        return changed ? { ...member, ...changed } as T : member;
+      });
+
+    const upstreamGuilds = new Set(currentUpstream.map(member => member.guild));
+    const usedGids = new Set(currentUpstream.map(member => String(member.gid)));
+    const members = [...currentUpstream];
 
     for (const member of supplemental) {
-      if (!member || !EXTRA_GUILDS.has(member.guild)) continue;
-      // When the upstream Apps Script supports that guild, use its live
-      // roster instead of retaining static supplemental rows.
-      if (upstreamGuilds.has(member.guild)) continue;
+      // No-guild members must stay on the overall roster but are not
+      // counted toward the four representative guilds.
+      if (!member || !(EXTRA_GUILDS.has(member.guild) || member.guild === "")) continue;
+      if (member.guild && upstreamGuilds.has(member.guild)) continue;
 
       const gid = String(member.gid ?? "").trim();
       const nickname = String(member.nickname ?? "").trim();
-      if (!/^\d+$/.test(gid) || !nickname || usedGids.has(gid)) continue;
+      if (!/^\d+$/.test(gid) || !nickname || usedGids.has(gid) || excludedGids.has(gid)) continue;
 
       usedGids.add(gid);
       members.push({ ...member, gid, nickname } as T);
