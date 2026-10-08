@@ -554,6 +554,37 @@ function buildGrowthBuckets(members: GuildMember[]) {
   return buckets;
 }
 
+
+const PRIMARY_GUILDS = [
+  { name: "핑뚝", style: "pink" },
+  { name: "테온", style: "teon" },
+  { name: "지옥소녀", style: "jigok" },
+  { name: "헤븐", style: "heaven" },
+] as const;
+
+const GUILD_CONTACTS = [
+  { guild: "테온", contact: "디오스신" },
+  { guild: "지옥소녀", contact: "은연우" },
+  { guild: "헤븐", contact: "채린" },
+] as const;
+
+function GuildContactList({ compact = false }: { compact?: boolean }) {
+  return (
+    <section className={compact ? "guildContactList compact" : "guildContactList"} aria-label="길드별 문의담당자">
+      <h3>길드별 문의담당자</h3>
+      <div className="guildContactItems">
+        {GUILD_CONTACTS.map(({ guild, contact }) => (
+          <div key={guild} className="guildContactItem">
+            <span>{guild}</span>
+            <strong>{contact}</strong>
+          </div>
+        ))}
+      </div>
+      {!compact && <p>핑뚝 문의는 위 운영진에게 연락해주세요.</p>}
+    </section>
+  );
+}
+
 export default function Home() {
 
   const {
@@ -615,7 +646,7 @@ export default function Home() {
     success: boolean; members: GuildMember[]; counts?: GuildCounts; jobs?: string[];
   }>(canReadGuild ? "/api/guild" : null, { arrayField: "members" });
   const guildMembers = guildQuery.data?.members ?? [];
-  const guildCounts = guildQuery.data?.counts ?? { total: 0, pink: 0, red: 0, black: 0 };
+  const guildCounts = { total: guildMembers.length };
   const guildJobs = guildQuery.data?.jobs ?? [];
   const guildLoading = guildQuery.loading;
   const guildError = guildQuery.data ? "" : guildQuery.error;
@@ -875,7 +906,7 @@ export default function Home() {
 
 
                 <div className="operatorCard">
-                  김삐삐
+                  머리꽃단년
                 </div>
 
               </div>
@@ -889,6 +920,7 @@ export default function Home() {
               <div className="supportSubNote">
                 디스코드 및 대시보드 관련문의 · 좌심방
               </div>
+              <GuildContactList />
 
             </aside>
 
@@ -924,27 +956,12 @@ export default function Home() {
 
 
               <div className="guildNameRow">
-
-                <span className="guildName pinkGuild">
-                  핑뚝
-                </span>
-
-                <span>
-                  ·
-                </span>
-
-                <span className="guildName redGuild">
-                  빨뚝
-                </span>
-
-                <span>
-                  ·
-                </span>
-
-                <span className="guildName blackGuild">
-                  검뚝
-                </span>
-
+                {PRIMARY_GUILDS.map(({ name, style }, index) => (
+                  <span key={name} className={`guildName ${style}Guild`}>
+                    {index > 0 && <span className="guildSeparator">·</span>}
+                    {name}
+                  </span>
+                ))}
               </div>
 
 
@@ -1038,7 +1055,7 @@ export default function Home() {
             </span>
 
             <span>
-              아프로디테 2 · 핑뚝 / 빨뚝 / 검뚝
+              아프로디테 2 · 핑뚝 / 테온 / 지옥소녀 / 헤븐
             </span>
 
           </footer>
@@ -1841,9 +1858,9 @@ export default function Home() {
             </h1>
 
             <p>
-              핑뚝 · 빨뚝 · 검뚝
+              핑뚝 · 테온 · 지옥소녀 · 헤븐
               <br />
-              3개 길드 통합 관리 대시보드
+              4개 길드 통합 관리 대시보드
             </p>
 
           </div>
@@ -3308,8 +3325,9 @@ export default function Home() {
 
 
               <p>
-                핑뚝 · 빨뚝 · 검뚝 통합 길드원 현황
+                핑뚝 · 테온 · 지옥소녀 · 헤븐 통합 길드원 현황
               </p>
+              <GuildContactList compact />
 
             </div>
 
@@ -3359,94 +3377,14 @@ export default function Home() {
 
 
 
-            <button
-              className={
-                guildFilter ===
-                "핑뚝"
-                  ? "guildSummaryCard pink active"
-                  : "guildSummaryCard pink"
-              }
-
-              onClick={
-                () => {
-                  setCurrentPage(1);
-                  setGuildFilter(
-                    "핑뚝"
-                  );
-                }
-              }
-            >
-
-              <span>
-                핑뚝
-              </span>
-
-              <strong>
-                {guildCounts.pink}
-              </strong>
-
-            </button>
-
-
-
-            <button
-              className={
-                guildFilter ===
-                "빨뚝"
-                  ? "guildSummaryCard red active"
-                  : "guildSummaryCard red"
-              }
-
-              onClick={
-                () => {
-                  setCurrentPage(1);
-                  setGuildFilter(
-                    "빨뚝"
-                  );
-                }
-              }
-            >
-
-              <span>
-                빨뚝
-              </span>
-
-              <strong>
-                {guildCounts.red}
-              </strong>
-
-            </button>
-
-
-
-            <button
-              className={
-                guildFilter ===
-                "검뚝"
-                  ? "guildSummaryCard black active"
-                  : "guildSummaryCard black"
-              }
-
-              onClick={
-                () => {
-                  setCurrentPage(1);
-                  setGuildFilter(
-                    "검뚝"
-                  );
-                }
-              }
-            >
-
-              <span>
-                검뚝
-              </span>
-
-              <strong>
-                {guildCounts.black}
-              </strong>
-
-            </button>
-
+            {PRIMARY_GUILDS.map(({ name, style }) => (
+              <button key={name}
+                className={`guildSummaryCard ${style}${guildFilter === name ? " active" : ""}`}
+                onClick={() => { setCurrentPage(1); setGuildFilter(name); }}>
+                <span>{name}</span>
+                <strong>{guildMembers.filter(member => member.guild === name).length}</strong>
+              </button>
+            ))}
 
           </div>
 
@@ -3742,13 +3680,7 @@ export default function Home() {
 
                           <span
                             className={
-                              member.guild ===
-                              "핑뚝"
-                                ? "guildBadge pink"
-                                : member.guild ===
-                                  "빨뚝"
-                                ? "guildBadge red"
-                                : "guildBadge black"
+                              `guildBadge ${PRIMARY_GUILDS.find(guild => guild.name === member.guild)?.style ?? "black"}`
                             }
                           >
                             {member.guild}
