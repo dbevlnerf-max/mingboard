@@ -78,7 +78,8 @@ export async function includeUnreturnedGuilds<T extends RosterMember>(
       // No-guild members must stay on the overall roster but are not
       // counted toward the four representative guilds.
       if (!member || !(EXTRA_GUILDS.has(member.guild) || member.guild === "" || forceIncludeGids.has(String(member.gid)))) continue;
-      if (member.guild && upstreamGuilds.has(member.guild)) continue;
+      if (member.guild && upstreamGuilds.has(member.guild) &&
+          !forceIncludeGids.has(String(member.gid))) continue;
 
       const gid = String(member.gid ?? "").trim();
       const nickname = String(member.nickname ?? "").trim();
