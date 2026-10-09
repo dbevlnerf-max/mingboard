@@ -201,16 +201,21 @@ export async function POST(request: NextRequest) {
       if (error) return fail(error.message.slice(0, 280), 409);
       const previousIds: string[] = data.previousDiscordIds || [];
       const removeRoleFor: string[] = [];
+      const warnings: string[] = [];
       for (const discordId of previousIds) {
-        const { count } = await supabaseAdmin.from("guild_member_discord_links")
+        const { count, error: remainingError } = await supabaseAdmin.from("guild_member_discord_links")
           .select("*", { count: "exact", head: true })
           .eq("discord_id", discordId).is("revoked_at", null);
-        if (!count) removeRoleFor.push(discordId);
+        if (remainingError) {
+          warnings.push("기존 계정의 다른 캐릭터 연결 여부를 확인하지 못했습니다. /계정이전 동기화 재실행 필요");
+        } else if (count === 0) {
+          removeRoleFor.push(discordId);
+        }
       }
       return NextResponse.json({ success: true, request: {
         id, gid: data.gid, nickname: data.nickname, guild: member.guild,
         buyerDiscordId: data.buyerDiscordId,
-        oldDiscordIds: previousIds, removeRoleFor, state: "approved",
+        oldDiscordIds: previousIds, removeRoleFor, warnings, state: "approved",
       } });
     }
     return fail("지원하지 않는 작업입니다.");
