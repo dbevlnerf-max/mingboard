@@ -41,12 +41,12 @@ type Check = {
 };
 const checks = new Map<string, { until: number; promise: Promise<Check> }>();
 
-function verifyAccess(discordId: string) {
+function verifyAccess(discordId: string, forceRefresh = false) {
   const key = `${context}:${discordId}`;
   const now = Date.now();
   for (const [key, entry] of checks) if (entry.until <= now) checks.delete(key);
   const current = checks.get(key);
-  if (current) return current.promise;
+  if (current && !forceRefresh) return current.promise;
   const entry = { until: now + 10000, promise: Promise.all([
     verifyDiscordAccess(discordId, { guildId, zeusRoleId, adminRoleId, botToken }),
     verifyCharacter(discordId),
@@ -76,7 +76,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           Object.assign(token, reuseAccess(previous, context, isMaster, Date.now()));
         }
       } else {
-        const result = await verifyAccess(discordId);
+        // An explicit session.update() must bypass the short-lived Discord verification cache.
+        const result = await verifyAccess(discordId, trigger === "update");
         const next = mergeVerifiedAccess(previous, result.discord, result.character, context, isMaster, Date.now());
         if (result.discord.verified) next.discordVerifiedAt = result.checkedAt;
         if (result.character.verified) next.characterVerifiedAt = result.checkedAt;
