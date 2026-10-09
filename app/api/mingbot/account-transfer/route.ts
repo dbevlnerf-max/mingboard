@@ -39,9 +39,22 @@ async function discordMember(discordId: string) {
 async function requireOperator(discordId: string) {
   const m = await discordMember(discordId);
   if (!m) return false;
-  return discordId === process.env.DISCORD_MASTER_USER_ID ||
+  if (discordId === process.env.DISCORD_MASTER_USER_ID ||
     (Boolean(process.env.DISCORD_ADMIN_ROLE_ID) &&
-      m.roles.includes(process.env.DISCORD_ADMIN_ROLE_ID!));
+      m.roles.includes(process.env.DISCORD_ADMIN_ROLE_ID!))) return true;
+  // A Discord server administrator need not also have our custom admin role.
+  const guildId = process.env.DISCORD_GUILD_ID;
+  const botToken = process.env.DISCORD_BOT_TOKEN;
+  if (!guildId || !botToken) return false;
+  const response = await fetch(`https://discord.com/api/v10/guilds/${guildId}/roles`, {
+    headers: { Authorization: `Bot ${botToken}` },
+    cache: "no-store",
+    signal: AbortSignal.timeout(7000),
+  });
+  if (!response.ok) return false;
+  const roles = await response.json() as Array<{ id: string; permissions: string }>;
+  return Array.isArray(roles) && roles.some(role =>
+    m.roles.includes(role.id) && (BigInt(role.permissions || "0") & 8n) !== 0n);
 }
 async function guildRoster() {
   const script = process.env.GOOGLE_SCRIPT_URL;
@@ -90,6 +103,11 @@ export async function POST(request: NextRequest) {
         .select("id").eq("guild_id", process.env.DISCORD_GUILD_ID!)
         .eq("gid", gid).eq("state", "pending").limit(1);
       if (other?.length) return fail("같은 캐릭터의 승인 대기 신청이 있습니다.", 409);
+      const { count: pendingCount } = await supabaseAdmin.from("guild_account_transfer_requests")
+        .select("*", { count: "exact", head: true })
+        .eq("guild_id", process.env.DISCORD_GUILD_ID!).eq("buyer_discord_id", actor)
+        .eq("state", "pending");
+      if ((pendingCount ?? 0) >= 2) return fail("승인 대기 신청은 계정당 최대 2건입니다.", 429);
       const { data, error } = await supabaseAdmin.from("guild_account_transfer_requests").insert({
         guild_id: process.env.DISCORD_GUILD_ID!, gid,
         character_nickname: member.nickname, buyer_discord_id: actor,
