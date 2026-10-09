@@ -54,7 +54,7 @@ async function requireOperator(discordId: string) {
   if (!response.ok) return false;
   const roles = await response.json() as Array<{ id: string; permissions: string }>;
   return Array.isArray(roles) && roles.some(role =>
-    m.roles.includes(role.id) && (BigInt(role.permissions || "0") & BigInt(8)) !== 0n);
+    m.roles.includes(role.id) && (BigInt(role.permissions || "0") & BigInt(8)) !== BigInt(0));
 }
 async function guildRoster() {
   const script = process.env.GOOGLE_SCRIPT_URL;
