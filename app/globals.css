@@ -4686,3 +4686,24 @@ select {
   .guildFontSizeButton { flex: 1 1 140px; }
   .guildTableHeader, .guildTableRow { min-width: 930px; }
 }
+
+/* Discord access verification: clarify the current OAuth account and allow a fresh check. */
+.accessDeniedCard { width: min(480px, 100%); }
+.accessDeniedCard .accessAccountInfo {
+  margin: 16px 0 0;
+  padding: 12px 14px;
+  border: 1px solid #333;
+  border-radius: 9px;
+  background: #171717;
+  color: #c7c7c7;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.accessAccountInfo strong { color: #fff; font-weight: 800; }
+.accessAccountInfo span { display: block; margin-top: 7px; color: #aaa; font-size: 12px; }
+.accessDeniedCard .accessDeniedHelp { font-size: 12px; color: #a9a9a9; }
+.accessDeniedCard .accessRetryMessage { font-size: 12px; color: #e5c389; margin-top: 13px; }
+.accessDeniedActions { display: flex; align-items: stretch; justify-content: center; gap: 9px; flex-wrap: wrap; margin-top: 16px; }
+.accessDeniedCard .accessDeniedActions button { margin: 0; padding: 11px 13px; font-size: 13px; font-weight: 800; }
+.accessDeniedActions button:first-child { border-color: #75604d; background: #272017; }
+.accessDeniedActions button:disabled { opacity: .65; cursor: wait; }
