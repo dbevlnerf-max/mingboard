@@ -4707,3 +4707,41 @@ select {
 .accessDeniedCard .accessDeniedActions button { margin: 0; padding: 11px 13px; font-size: 13px; font-weight: 800; }
 .accessDeniedActions button:first-child { border-color: #75604d; background: #272017; }
 .accessDeniedActions button:disabled { opacity: .65; cursor: wait; }
+
+/* Distribution history: larger text, full-period selection and pagination size. */
+.distributionPage .distributionPageHero p { font-size: 14px; color: #ababab; }
+.distributionPage .distributionSummaryCard span { font-size: 13px; color: #a8a8a8; }
+.distributionPage .distributionQuickRange button { min-height: 42px; padding: 0 16px; font-size: 14px; color: #ddd; }
+.distributionPage .distributionQuickRange button.active { background: #2b1c26; border-color: #b16d91; color: #ffe1f0; }
+.distributionPage .distributionQuickRange button.allTime { font-weight: 900; border-color: #705361; }
+.distributionPage .distributionQuickRange button.allTime span { font-size: 18px; margin-right: 4px; }
+.distributionAllTimeHint { margin: -4px 0 17px; font-size: 13px; line-height: 1.6; color: #d5b5c5; }
+.distributionPage .distributionFilterGrid label > span { font-size: 12px; color: #b2b2b2; }
+.distributionPage .distributionFilterGrid input,
+.distributionPage .distributionFilterGrid select { min-height: 44px; font-size: 14px; color: #e5e5e5; }
+.distributionPage .distributionFilterGrid input:disabled { opacity: .48; cursor: not-allowed; }
+.distributionPageSizeControl { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 15px; color: #b5b5b5; font-size: 13px; }
+.distributionPageSizeControl select { min-height: 40px; padding: 0 12px; background: #151515; color: #f0f0f0; border: 1px solid #444; border-radius: 8px; font-size: 13px; }
+.distributionPage .distributionResultsHeader span { font-size: 13px; color: #aaa; }
+.distributionPage .distributionDesktopTable th { padding: 15px 14px; font-size: 12px; color: #b0b0b0; }
+.distributionPage .distributionDesktopTable td { padding: 16px 14px; font-size: 14px; line-height: 1.55; color: #e0e0e0; }
+.distributionPage .distributionDesktopTable { min-width: 1130px; }
+.distributionPage .distributionCategoryBadge { font-size: 12px; min-height: 28px; }
+.distributionPage .distributionMemberInfo strong { font-size: 13px; }
+.distributionPage .distributionMemberInfo span { font-size: 12px; color: #b7b7b7; }
+.distributionPage .distributionMemberMissing { font-size: 12px; color: #aaa; }
+.distributionPage .distributionPagination span,
+.distributionPage .distributionPagination button { font-size: 13px; }
+.distributionPage .distributionPagination button { min-height: 42px; }
+@media (max-width: 720px) {
+  .distributionPage .distributionMobileTop span { font-size: 12px; color: #aaa; }
+  .distributionPage .distributionMobileTop strong { font-size: 15px; }
+  .distributionPage .distributionMobileCard h3 { font-size: 17px; }
+  .distributionPage .distributionMobileBadges span { font-size: 12px; }
+  .distributionPage .distributionMobileTarget span,
+  .distributionPage .distributionMobileMember span { font-size: 12px; color: #aaa; }
+  .distributionPage .distributionMobileTarget strong,
+  .distributionPage .distributionMobileMember strong { font-size: 15px; }
+  .distributionPage .distributionMobileMember small { font-size: 12px; color: #aaa; }
+  .distributionPage .distributionQuickRange button { flex: 1 1 auto; }
+}

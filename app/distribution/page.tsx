@@ -184,6 +184,9 @@ export default function DistributionPage() {
       initialToday
     );
 
+  const [rangeMode, setRangeMode] = useState<"today" | "yesterday" | "week" | "custom" | "all">("today");
+  const [pageSize, setPageSize] = useState(20);
+
 
   const [
     category,
@@ -220,8 +223,14 @@ export default function DistributionPage() {
     session?.user?.isAdmin || session?.user?.isMaster
   );
   const params = new URLSearchParams({
-    startDate, endDate, category, sort, page: String(page), pageSize: "20",
+    category, sort, page: String(page), pageSize: String(pageSize),
   });
+  if (rangeMode === "all") {
+    params.set("mode", "all");
+  } else {
+    params.set("startDate", startDate);
+    params.set("endDate", endDate);
+  }
   const distributionQuery = usePortalQuery<DistributionResponse>(
     canRead ? `/api/distribution?${params.toString()}` : null,
     { arrayField: "rows" },
@@ -238,6 +247,7 @@ export default function DistributionPage() {
   const error = data ? "" : distributionQuery.error;
 
   function setPresetToday() {
+    setRangeMode("today");
 
     const today =
       localDateKey(
@@ -256,6 +266,7 @@ export default function DistributionPage() {
 
 
   function setPresetYesterday() {
+    setRangeMode("yesterday");
 
     const yesterday =
       localDateKey(
@@ -277,6 +288,7 @@ export default function DistributionPage() {
 
 
   function setPresetSevenDays() {
+    setRangeMode("week");
 
     const today =
       new Date();
@@ -420,7 +432,7 @@ export default function DistributionPage() {
 
             <p>
               Google Sheet <strong>🪙분배내역</strong>을 기준으로 조회합니다.
-              기본 조회기간은 오늘입니다.
+              기본 조회기간은 오늘이며, 전체를 누르면 모든 기간을 조회할 수 있습니다.
             </p>
           </div>
 
@@ -448,7 +460,7 @@ export default function DistributionPage() {
 
           <div className="distributionSummaryCard">
             <span>
-              선택기간 분배건수
+              {rangeMode === "all" ? "전체 기간 분배건수" : "선택기간 분배건수"}
             </span>
 
             <strong>
@@ -462,7 +474,7 @@ export default function DistributionPage() {
 
           <div className="distributionSummaryCard">
             <span>
-              선택기간 다이아
+              {rangeMode === "all" ? "전체 기간 다이아" : "선택기간 다이아"}
             </span>
 
             <strong>
@@ -503,36 +515,23 @@ export default function DistributionPage() {
 
         <section className="distributionFilterCard">
 
-          <div className="distributionQuickRange">
-
-            <button
-              type="button"
-              onClick={
-                setPresetToday
-              }
-            >
-              오늘
+          <div className="distributionQuickRange" role="group" aria-label="분배내역 조회기간">
+            <button type="button" className={rangeMode === "today" ? "active" : ""}
+              aria-pressed={rangeMode === "today"} onClick={setPresetToday}>오늘</button>
+            <button type="button" className={rangeMode === "yesterday" ? "active" : ""}
+              aria-pressed={rangeMode === "yesterday"} onClick={setPresetYesterday}>어제</button>
+            <button type="button" className={rangeMode === "week" ? "active" : ""}
+              aria-pressed={rangeMode === "week"} onClick={setPresetSevenDays}>최근 7일</button>
+            <button type="button" className={rangeMode === "all" ? "active allTime" : "allTime"}
+              aria-pressed={rangeMode === "all"} onClick={() => { setRangeMode("all"); setPage(1); }}>
+              <span aria-hidden="true">∞</span> 전체
             </button>
-
-            <button
-              type="button"
-              onClick={
-                setPresetYesterday
-              }
-            >
-              어제
-            </button>
-
-            <button
-              type="button"
-              onClick={
-                setPresetSevenDays
-              }
-            >
-              최근 7일
-            </button>
-
           </div>
+          {rangeMode === "all" && (
+            <p className="distributionAllTimeHint" role="status">
+              전체 기간의 분배 기록을 조회합니다. 기록이 많아도 페이지를 넘겨 모두 확인할 수 있습니다.
+            </p>
+          )}
 
 
           <div className="distributionFilterGrid">
@@ -544,15 +543,13 @@ export default function DistributionPage() {
 
               <input
                 type="date"
-                value={
-                  startDate
-                }
-                onChange={
-                  event => {
-                    setPage(1);
-                    setStartDate(event.target.value);
-                  }
-                }
+                value={rangeMode === "all" ? "" : startDate}
+                disabled={rangeMode === "all"}
+                onChange={event => {
+                  setRangeMode("custom");
+                  setPage(1);
+                  setStartDate(event.target.value);
+                }}
               />
             </label>
 
@@ -564,15 +561,13 @@ export default function DistributionPage() {
 
               <input
                 type="date"
-                value={
-                  endDate
-                }
-                onChange={
-                  event => {
-                    setPage(1);
-                    setEndDate(event.target.value);
-                  }
-                }
+                value={rangeMode === "all" ? "" : endDate}
+                disabled={rangeMode === "all"}
+                onChange={event => {
+                  setRangeMode("custom");
+                  setPage(1);
+                  setEndDate(event.target.value);
+                }}
               />
             </label>
 
@@ -654,6 +649,17 @@ export default function DistributionPage() {
             </label>
 
           </div>
+          <div className="distributionPageSizeControl">
+            <label htmlFor="distribution-page-size">한 페이지 표시</label>
+            <select id="distribution-page-size" value={pageSize} onChange={event => {
+              setPage(1);
+              setPageSize(Number(event.target.value));
+            }}>
+              <option value={20}>20건</option>
+              <option value={50}>50건</option>
+              <option value={100}>100건</option>
+            </select>
+          </div>
 
         </section>
 
@@ -668,7 +674,7 @@ export default function DistributionPage() {
               </h2>
 
               <span>
-                {startDate} ~ {endDate}
+                {rangeMode === "all" ? "전체 기간 · 모든 분배 기록" : `${startDate} ~ ${endDate}`}
               </span>
             </div>
 

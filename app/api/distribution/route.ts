@@ -30,7 +30,18 @@ export async function GET(request: Request) {
     if (nickname) {
       params.set("nickname", nickname);
     } else {
-      for (const key of ["startDate", "endDate", "category", "sort", "page", "pageSize"]) {
+      // The upstream Apps Script defaults absent dates to today's window.
+      // Send explicit wide boundaries when the user selects full history.
+      if (searchParams.get("mode") === "all") {
+        params.set("startDate", "1900-01-01");
+        params.set("endDate", "2100-12-31");
+      } else {
+        for (const key of ["startDate", "endDate"]) {
+          const value = (searchParams.get(key) || "").trim();
+          if (value) params.set(key, value);
+        }
+      }
+      for (const key of ["category", "sort", "page", "pageSize"]) {
         const value = (searchParams.get(key) || "").trim();
         if (value) params.set(key, value);
       }
