@@ -14,7 +14,7 @@ export type RosterMember = {
 };
 
 type SupplementalSnapshot = {
-  payload: { members?: RosterMember[]; excludedGids?: string[]; overrideGids?: string[] } | null;
+  payload: { members?: RosterMember[]; excludedGids?: string[]; overrideGids?: string[]; forceIncludeGids?: string[] } | null;
   fetched_at: string;
 };
 
@@ -54,6 +54,9 @@ export async function includeUnreturnedGuilds<T extends RosterMember>(
     // while the upstream Apps Script still serves its previous cached row.
     const excludedGids = new Set((snapshot?.payload?.excludedGids ?? []).map(String));
     const overrideGids = new Set((snapshot?.payload?.overrideGids ?? []).map(String));
+    // Newly registered Ping guild members may be missing from the legacy
+    // Apps Script response. Include only explicitly vetted GIDs.
+    const forceIncludeGids = new Set((snapshot?.payload?.forceIncludeGids ?? []).map(String));
     const overrides = new Map(
       supplemental
         .filter(member => member && overrideGids.has(String(member.gid)))
@@ -74,8 +77,9 @@ export async function includeUnreturnedGuilds<T extends RosterMember>(
     for (const member of supplemental) {
       // No-guild members must stay on the overall roster but are not
       // counted toward the four representative guilds.
-      if (!member || !(EXTRA_GUILDS.has(member.guild) || member.guild === "")) continue;
-      if (member.guild && upstreamGuilds.has(member.guild)) continue;
+      if (!member || !(EXTRA_GUILDS.has(member.guild) || member.guild === "" || forceIncludeGids.has(String(member.gid)))) continue;
+      if (member.guild && upstreamGuilds.has(member.guild) &&
+          !forceIncludeGids.has(String(member.gid))) continue;
 
       const gid = String(member.gid ?? "").trim();
       const nickname = String(member.nickname ?? "").trim();
