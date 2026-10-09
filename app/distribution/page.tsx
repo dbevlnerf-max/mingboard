@@ -531,7 +531,7 @@ export default function DistributionPage() {
             <p className="distributionAllTimeHint" role="status">
               전체 기간의 분배 기록을 조회합니다. 기록이 많아도 페이지를 넘겨 모두 확인할 수 있습니다.
             </p>
-          )}>
+          )}
 
 
           <div className="distributionFilterGrid">
