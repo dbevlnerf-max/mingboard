@@ -4590,3 +4590,99 @@ select {
   .guildSummaryCards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .guildContactList.compact .guildContactItems { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* Guild roster readability upgrade: isolated from other dashboard tables. */
+.guildSectionHeader p { font-size: 12px; color: #a0a0a0; }
+.guildTotalBadge { font-size: 12px; color: #d4d4d4; }
+.guildSummaryCard span { font-size: 13px; color: #aaa; }
+.guildSummaryCard strong { font-size: 26px; }
+.guildSearchBox,
+.guildJobSelect,
+.guildSortSelect,
+.guildPageSizeSelect { min-height: 44px; }
+.guildSearchBox input,
+.guildJobSelect,
+.guildSortSelect,
+.guildPageSizeSelect { font-size: 14px; color: #e1e1e1; }
+.guildSearchBox input::placeholder { color: #999; }
+.guildFilteredCount { font-size: 12px; color: #aaa; }
+.guildFontSizeButton {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid #505050;
+  border-radius: 8px;
+  background: #1b1b1b;
+  color: #e8e8e8;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.guildFontSizeButton:hover,
+.guildFontSizeButton:focus-visible {
+  background: #303030;
+  border-color: #777;
+  outline-offset: 3px;
+}
+.guildFontSizeButton.active { border-color: #c49e66; color: #f5d4a1; }
+.guildTableWrap { overflow-x: auto; }
+.guildTableHeader,
+.guildTableRow {
+  grid-template-columns: 60px minmax(170px, 1.6fr) minmax(125px, 1fr)
+    minmax(105px, .8fr) minmax(96px, .72fr)
+    minmax(98px, .75fr) minmax(87px, .65fr);
+  gap: 14px;
+}
+.guildTableHeader {
+  min-height: 48px;
+  padding: 0 20px;
+  color: #ababab;
+  font-size: 12px;
+  letter-spacing: .01em;
+}
+.guildTableRow {
+  min-height: 62px;
+  padding: 9px 20px;
+  color: #c6c6c6;
+  font-size: 14px;
+  line-height: 1.45;
+}
+.guildRank { font-size: 13px; color: #a7a7a7; }
+.guildNickname {
+  font-size: 16px;
+  font-weight: 800;
+  color: #f2f2f2;
+  overflow-wrap: anywhere;
+}
+.guildGrowth { color: #ededed; font-size: 15px; font-weight: 800; }
+.guildBadge { min-width: 68px; padding: 6px 10px; font-size: 12px; }
+.guildAttendance { font-size: 14px; }
+.guildParticipation { font-size: 14px; color: #bbb; }
+.guildSection.guildTextLarge .guildTableHeader { font-size: 14px; min-height: 55px; }
+.guildSection.guildTextLarge .guildTableRow {
+  min-height: 74px;
+  font-size: 17px;
+}
+.guildSection.guildTextLarge .guildRank { font-size: 15px; }
+.guildSection.guildTextLarge .guildNickname { font-size: 19px; }
+.guildSection.guildTextLarge .guildGrowth { font-size: 18px; }
+.guildSection.guildTextLarge .guildBadge { font-size: 14px; min-width: 80px; padding: 7px 11px; }
+.guildSection.guildTextLarge .guildAttendance,
+.guildSection.guildTextLarge .guildParticipation { font-size: 17px; }
+.guildSection.guildTextLarge .guildTableHeader,
+.guildSection.guildTextLarge .guildTableRow {
+  grid-template-columns: 68px minmax(205px, 1.6fr) minmax(158px, 1fr)
+    minmax(128px, .8fr) minmax(112px, .72fr)
+    minmax(116px, .75fr) minmax(104px, .65fr);
+}
+@media (max-width: 1100px) {
+  /* Preserve text size; horizontally scroll rather than crush the columns. */
+  .guildTableHeader,
+  .guildTableRow { min-width: 930px; }
+  .guildSection.guildTextLarge .guildTableHeader,
+  .guildSection.guildTextLarge .guildTableRow { min-width: 1110px; }
+}
+@media (max-width: 900px) {
+  .guildFontSizeButton { flex: 1 1 140px; }
+  .guildTableHeader, .guildTableRow { min-width: 930px; }
+}

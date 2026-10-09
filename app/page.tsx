@@ -733,6 +733,9 @@ export default function Home() {
   ] =
     useState(1);
 
+  // Large enough by default for desktop; optional larger text for readability.
+  const [guildLargeText, setGuildLargeText] = useState(false);
+
 
   const [
     jobRankIndex,
@@ -3303,7 +3306,7 @@ export default function Home() {
       ================================================= */}
 
       <section
-        className="guildSection"
+        className={`guildSection${guildLargeText ? " guildTextLarge" : ""}`}
         id="guild"
       >
 
@@ -3543,6 +3546,15 @@ export default function Home() {
             </select>
 
 
+
+            <button
+              type="button"
+              className={`guildFontSizeButton${guildLargeText ? " active" : ""}`}
+              aria-pressed={guildLargeText}
+              onClick={() => setGuildLargeText(value => !value)}
+            >
+              {guildLargeText ? "기본 글씨" : "글씨 더 크게"}
+            </button>
 
             <span className="guildFilteredCount">
 
