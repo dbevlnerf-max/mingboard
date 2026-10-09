@@ -590,8 +590,32 @@ export default function Home() {
   const {
     data: session,
     status,
+    update: updateSession,
   } =
     useSession();
+
+  const [accessRechecking, setAccessRechecking] = useState(false);
+  const [accessRecheckMessage, setAccessRecheckMessage] = useState("");
+
+  const recheckDiscordMembership = async () => {
+    if (accessRechecking) return;
+    setAccessRechecking(true);
+    setAccessRecheckMessage("");
+    try {
+      const refreshed = await updateSession();
+      if (!refreshed) {
+        setAccessRecheckMessage("로그인 세션을 확인할 수 없습니다. 로그아웃 후 다시 로그인해주세요.");
+      } else if (!refreshed.user?.isGuildMember) {
+        setAccessRecheckMessage("다시 확인했지만 이 Discord 계정은 서버 가입자로 확인되지 않습니다. 아래 계정 ID를 확인해주세요.");
+      } else if (!refreshed.user?.hasZeusRole) {
+        setAccessRecheckMessage("서버 가입은 확인됐지만 제우스 역할이 확인되지 않습니다.");
+      }
+    } catch {
+      setAccessRecheckMessage("인증 확인에 실패했습니다. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setAccessRechecking(false);
+    }
+  };
 
 
   const [
@@ -1108,17 +1132,29 @@ export default function Home() {
           </h2>
 
           <p>
-            게임하는밍쨩 Discord 서버 참가자만 이용할 수 있습니다.
+            현재 로그인한 Discord 계정이 게임하는밍쨩 서버 가입자로 확인되지 않았습니다.
           </p>
-
-          <button
-            onClick={
-              () =>
-                signOut()
-            }
-          >
-            로그아웃
-          </button>
+          <p className="accessAccountInfo">
+            로그인 계정: <strong>{session.user.name || "Discord 사용자"}</strong>
+            {session.user.discordId && (
+              <span>Discord ID: {session.user.discordId}</span>
+            )}
+          </p>
+          <p className="accessDeniedHelp">
+            서버에 가입한 계정과 위 계정이 동일한지 확인해주세요.
+            다른 계정으로 계속 로그인된다면 시크릿 창에서 밍보드를 열어주세요.
+          </p>
+          {accessRecheckMessage && (
+            <p className="accessRetryMessage" role="status">{accessRecheckMessage}</p>
+          )}
+          <div className="accessDeniedActions">
+            <button type="button" onClick={recheckDiscordMembership} disabled={accessRechecking}>
+              {accessRechecking ? "인증 확인 중..." : "서버 인증 다시 확인"}
+            </button>
+            <button type="button" onClick={() => signOut({ callbackUrl: "/" })}>
+              로그아웃
+            </button>
+          </div>
 
         </div>
 
@@ -1161,14 +1197,23 @@ export default function Home() {
 
           </p>
 
-          <button
-            onClick={
-              () =>
-                signOut()
-            }
-          >
-            로그아웃
-          </button>
+          <p className="accessAccountInfo">
+            로그인 계정: <strong>{session.user.name || "Discord 사용자"}</strong>
+            {session.user.discordId && (
+              <span>Discord ID: {session.user.discordId}</span>
+            )}
+          </p>
+          {accessRecheckMessage && (
+            <p className="accessRetryMessage" role="status">{accessRecheckMessage}</p>
+          )}
+          <div className="accessDeniedActions">
+            <button type="button" onClick={recheckDiscordMembership} disabled={accessRechecking}>
+              {accessRechecking ? "인증 확인 중..." : "제우스 역할 다시 확인"}
+            </button>
+            <button type="button" onClick={() => signOut({ callbackUrl: "/" })}>
+              로그아웃
+            </button>
+          </div>
 
         </div>
 
