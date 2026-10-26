@@ -4745,3 +4745,17 @@ select {
   .distributionPage .distributionMobileMember small { font-size: 12px; color: #aaa; }
   .distributionPage .distributionQuickRange button { flex: 1 1 auto; }
 }
+
+/* Fixed growth distribution: retain four readable ranges on desktop/mobile. */
+.growthRangeNote {
+  margin: 12px 0 4px;
+  color: #bfb4bd;
+  font-size: 12px;
+  line-height: 1.6;
+  text-align: center;
+}
+.growthBarTrack span[style*="height: 0%"] { min-height: 0; box-shadow: none; }
+@media (max-width: 680px) {
+  .growthBarItem small { font-size: 11px; white-space: normal; line-height: 1.3; }
+  .growthBars { gap: 5px; }
+}
