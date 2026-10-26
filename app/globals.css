@@ -4567,9 +4567,9 @@ select {
 /* Four representative guilds and their support contacts */
 .guildNameRow { flex-wrap: wrap; row-gap: 6px; }
 .guildSeparator { display: inline-block; margin-right: 9px; color: #656565; }
-.teonGuild { color: #c7b1e2; }
+.asgardGuild { color: #c7b1e2; }
 .jigokGuild { color: #e3c18e; }
-.heavenGuild { color: #e4d8f8; }
+.cheonjeGuild { color: #e4d8f8; }
 .guildContactList { margin-top: 18px; padding: 13px 14px; border: 1px solid #2b2b2b; border-radius: 11px; background: #0e0e0e; }
 .guildContactList h3 { margin: 0 0 10px; color: #c7c7c7; font-size: 11px; font-weight: 800; }
 .guildContactItems { display: grid; gap: 8px; }
@@ -4580,12 +4580,12 @@ select {
 .guildContactList.compact .guildContactItems { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .guildContactList.compact .guildContactItem { display: flex; flex-direction: column; gap: 3px; }
 .guildSummaryCards { grid-template-columns: repeat(5, minmax(0, 1fr)); }
-.guildSummaryCard.teon.active { border-color: rgba(199, 177, 226, .45); }
+.guildSummaryCard.asgard.active { border-color: rgba(199, 177, 226, .45); }
 .guildSummaryCard.jigok.active { border-color: rgba(227, 193, 142, .45); }
-.guildSummaryCard.heaven.active { border-color: rgba(228, 216, 248, .45); }
-.guildBadge.teon { color: #c7b1e2; background: rgba(199, 177, 226, 0.06); border: 1px solid rgba(199, 177, 226, .26); }
+.guildSummaryCard.cheonje.active { border-color: rgba(228, 216, 248, .45); }
+.guildBadge.asgard { color: #c7b1e2; background: rgba(199, 177, 226, 0.06); border: 1px solid rgba(199, 177, 226, .26); }
 .guildBadge.jigok { color: #e3c18e; background: rgba(227, 193, 142, 0.06); border: 1px solid rgba(227, 193, 142, .26); }
-.guildBadge.heaven { color: #e4d8f8; background: rgba(228, 216, 248, 0.06); border: 1px solid rgba(228, 216, 248, .26); }
+.guildBadge.cheonje { color: #e4d8f8; background: rgba(228, 216, 248, 0.06); border: 1px solid rgba(228, 216, 248, .26); }
 @media (max-width: 900px) {
   .guildSummaryCards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .guildContactList.compact .guildContactItems { grid-template-columns: repeat(2, minmax(0, 1fr)); }
