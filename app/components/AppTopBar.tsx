@@ -92,7 +92,7 @@ export default function AppTopBar() {
         </div>
 
         <div className="serverName">
-          아프로디테 2 · 핑뚝 / 테온 / 지옥소녀 / 헤븐
+          아프로디테 2 · 핑뚝 / 아스가르드 / 천제 / 지옥소녀
         </div>
 
       </Link>
