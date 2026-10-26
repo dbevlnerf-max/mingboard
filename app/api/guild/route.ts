@@ -43,9 +43,9 @@ export async function GET(request: Request) {
         pink: count("핑뚝"),
         red: count("빨뚝"),
         black: count("검뚝"),
-        teon: count("테온"),
+        asgard: count("아스가르드"),
+        cheonje: count("천제"),
         jigok: count("지옥소녀"),
-        heaven: count("헤븐"),
       },
       supplementalUpdatedAt,
     });

@@ -557,15 +557,16 @@ function buildGrowthBuckets(members: GuildMember[]) {
 
 const PRIMARY_GUILDS = [
   { name: "핑뚝", style: "pink" },
-  { name: "테온", style: "teon" },
+  { name: "아스가르드", style: "asgard" },
+  { name: "천제", style: "cheonje" },
   { name: "지옥소녀", style: "jigok" },
-  { name: "헤븐", style: "heaven" },
 ] as const;
 
 const GUILD_CONTACTS = [
-  { guild: "테온", contact: "디오스신" },
+  { guild: "핑뚝", contact: "머리꽃단년" },
+  { guild: "아스가르드", contact: "운영진 확인 중" },
+  { guild: "천제", contact: "운영진 확인 중" },
   { guild: "지옥소녀", contact: "은연우" },
-  { guild: "헤븐", contact: "채린" },
 ] as const;
 
 function GuildContactList({ compact = false }: { compact?: boolean }) {
@@ -580,7 +581,7 @@ function GuildContactList({ compact = false }: { compact?: boolean }) {
           </div>
         ))}
       </div>
-      {!compact && <p>핑뚝 문의는 위 운영진에게 연락해주세요.</p>}
+      {!compact && <p>길드별 담당자 정보는 확정되는 대로 업데이트됩니다.</p>}
     </section>
   );
 }
@@ -1082,7 +1083,7 @@ export default function Home() {
             </span>
 
             <span>
-              아프로디테 2 · 핑뚝 / 테온 / 지옥소녀 / 헤븐
+              아프로디테 2 · 핑뚝 / 아스가르드 / 천제 / 지옥소녀
             </span>
 
           </footer>
@@ -1906,7 +1907,7 @@ export default function Home() {
             </h1>
 
             <p>
-              핑뚝 · 테온 · 지옥소녀 · 헤븐
+              핑뚝 · 아스가르드 · 천제 · 지옥소녀
               <br />
               4개 길드 통합 관리 대시보드
             </p>
@@ -3373,7 +3374,7 @@ export default function Home() {
 
 
               <p>
-                핑뚝 · 테온 · 지옥소녀 · 헤븐 통합 길드원 현황
+                핑뚝 · 아스가르드 · 천제 · 지옥소녀 통합 길드원 현황
               </p>
               <GuildContactList compact />
 

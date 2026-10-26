@@ -14,7 +14,7 @@ export type RosterMember = {
 };
 
 type SupplementalSnapshot = {
-  payload: { members?: RosterMember[]; excludedGids?: string[]; overrideGids?: string[]; forceIncludeGids?: string[] } | null;
+  payload: { mode?: string; members?: RosterMember[]; excludedGids?: string[]; overrideGids?: string[]; forceIncludeGids?: string[] } | null;
   fetched_at: string;
 };
 
@@ -22,7 +22,7 @@ type SupplementalSnapshot = {
 // Rows in this private Supabase snapshot are taken from the owner's full
 // guild roster sheet. When Apps Script begins supplying a guild itself,
 // that live guild replaces this snapshot to avoid keeping former members.
-const EXTRA_GUILDS = new Set(["테온", "지옥소녀", "헤븐"]);
+const EXTRA_GUILDS = new Set(["아스가르드", "천제", "지옥소녀"]);
 
 export async function includeUnreturnedGuilds<T extends RosterMember>(
   upstream: T[]
@@ -48,6 +48,22 @@ export async function includeUnreturnedGuilds<T extends RosterMember>(
     const supplemental = snapshot?.payload?.members;
     if (!Array.isArray(supplemental)) {
       return { members: upstream, supplementalUpdatedAt: null };
+    }
+
+    // After the 2026-10-26 reorganization, the curated full roster is the
+    // only authoritative member list. The old Apps Script still returns
+    // legacy Ping/Red names and must not reintroduce departed characters.
+    // Preserve each confirmed GID for authentication, history, and transfers.
+    if (snapshot?.payload?.mode === "authoritative") {
+      const members = supplemental.filter(member => member &&
+        /^\d+$/.test(String(member.gid)) &&
+        Boolean(String(member.nickname || "").trim()));
+      const uniqueIds = new Set(members.map(member => String(member.gid)));
+      if (members.length !== supplemental.length || uniqueIds.size !== members.length) {
+        console.error("Authoritative guild roster has invalid GIDs");
+        return { members: [], supplementalUpdatedAt: snapshot.fetched_at };
+      }
+      return { members: members as T[], supplementalUpdatedAt: snapshot.fetched_at };
     }
 
     // The owner may retire a member or temporarily clear their guild even
