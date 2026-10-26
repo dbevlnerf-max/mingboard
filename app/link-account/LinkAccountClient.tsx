@@ -166,7 +166,7 @@ function guildBadgeStyle(
 
   if (
     guild ===
-    "테온"
+    "아스가르드"
   ) {
     return {
       color:
@@ -198,7 +198,7 @@ function guildBadgeStyle(
   }
 
 
-  if (guild === "헤븐") {
+  if (guild === "천제") {
     return {
       color: "#e4d8f8",
       border: "1px solid rgba(200, 175, 238, 0.28)",
