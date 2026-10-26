@@ -477,81 +477,28 @@ function parsePercent(
 
 
 
-function formatCompactNumber(value: number) {
-  if (value >= 100000) {
-    return `${Math.round(value / 1000)}K`;
-  }
-
-  if (value >= 10000) {
-    return `${(value / 1000).toFixed(0)}K`;
-  }
-
-  return value.toLocaleString("ko-KR");
-}
-
 function buildGrowthBuckets(members: GuildMember[]) {
   const values = members
     .map(member => Number(member.growthPowerNumber || 0))
     .filter(value => Number.isFinite(value) && value > 0);
 
-  if (values.length === 0) {
-    return [];
-  }
+  if (values.length === 0) return [];
 
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const targetBucketCount = Math.min(5, Math.max(1, values.length));
+  // Use mutually exclusive fixed intervals. Boundary values (70k, 90k,
+  // 110k) belong to the range beginning at that value, never both.
+  const ranges = [
+    { label: "5만~7만", min: 50000, max: 70000 },
+    { label: "7만~9만", min: 70000, max: 90000 },
+    { label: "9만~11만", min: 90000, max: 110000 },
+    { label: "11만 이상", min: 110000, max: Infinity },
+  ];
 
-  if (min === max) {
-    return [
-      {
-        label: formatCompactNumber(min),
-        min,
-        max,
-        count: values.length,
-      },
-    ];
-  }
-
-  const rawStep = (max - min) / targetBucketCount;
-  const magnitude = 10 ** Math.floor(Math.log10(rawStep));
-  const normalized = rawStep / magnitude;
-  const niceFactor =
-    normalized <= 1
-      ? 1
-      : normalized <= 2
-      ? 2
-      : normalized <= 5
-      ? 5
-      : 10;
-  const step = Math.max(1000, niceFactor * magnitude);
-  const start = Math.floor(min / step) * step;
-  const end = Math.ceil((max + 1) / step) * step;
-  const buckets: Array<{
-    label: string;
-    min: number;
-    max: number;
-    count: number;
-  }> = [];
-
-  for (let current = start; current < end; current += step) {
-    const upper = current + step;
-    const isLast = upper >= end;
-    const count = values.filter(value =>
-      isLast
-        ? value >= current && value <= upper
-        : value >= current && value < upper
-    ).length;
-
-    buckets.push({
-      label: `${formatCompactNumber(current)}~${formatCompactNumber(upper)}`,
-      min: current,
-      max: upper,
-      count,
-    });
-  }
-
-  return buckets;
+  return ranges.map(range => ({
+    ...range,
+    count: values.filter(value =>
+      value >= range.min && value < range.max
+    ).length,
+  }));
 }
 
 
@@ -1514,6 +1461,12 @@ export default function Home() {
         value > 0
       );
 
+
+  const growthBelow50kCount =
+    validGrowthValues.filter(value => value < 50000).length;
+
+  const missingGrowthCount =
+    guildMembers.length - validGrowthValues.length;
 
   const averageGrowth =
     validGrowthValues.length > 0
@@ -2673,12 +2626,12 @@ export default function Home() {
                                 <span
                                   style={{
                                     height:
-                                      `${Math.max(
-                                        10,
-                                        (bucket.count /
-                                          maxGrowthBucketCount) *
-                                          100
-                                      )}%`,
+                                      bucket.count === 0
+                                        ? "0%"
+                                        : `${Math.max(
+                                            10,
+                                            (bucket.count / maxGrowthBucketCount) * 100
+                                          )}%`,
                                   }}
                                 />
                               </div>
@@ -2694,6 +2647,13 @@ export default function Home() {
                       }
 
                     </div>
+
+                    {(growthBelow50kCount > 0 || missingGrowthCount > 0) && (
+                      <p className="growthRangeNote">
+                        5만 미만 {growthBelow50kCount}명 ·
+                        성장력 미입력 {missingGrowthCount}명은 위 4개 구간에 포함되지 않습니다.
+                      </p>
+                    )}
 
                     <div className="growthFooter">
                       <span>
