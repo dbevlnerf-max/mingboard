@@ -17,11 +17,9 @@ export async function GET() {
   if (session?.user?.authVerificationPending) {
     return NextResponse.json({ success: false, message: "인증 상태를 확인 중입니다." }, { status: 503 });
   }
-  if (!session?.user || !(
-    (session.user.isGuildMember && session.user.hasZeusRole) ||
-    session.user.isAdmin || session.user.isMaster
-  )) {
-    return NextResponse.json({ success: false, message: "길드 인증이 필요합니다." }, { status: 403 });
+  if (!session?.user || !(session.user.isAdmin || session.user.isMaster)) {
+    return NextResponse.json({ success: false, message: "관리자 권한이 필요합니다." },
+      { status: 403, headers: { "Cache-Control": "private, no-store" } });
   }
 
   try {
