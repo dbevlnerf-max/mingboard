@@ -1,0 +1,92 @@
+import { auth } from "@/auth";
+import { supabaseAdmin } from "@/lib/supabase/admin";
+import { NextResponse } from "next/server";
+
+type Member = {
+  gid: string; nickname: string; sourceNickname: string; guild: string;
+  job: string; growthPower: string;
+  slots: Array<{ slot: string; item: string; enhancement: string; personal: boolean }>;
+};
+type History = {
+  row: number; date: string; item: string; category: string;
+  job: string; target: string; diamond: string; notes: string;
+};
+
+export async function GET() {
+  const session = await auth();
+  if (session?.user?.authVerificationPending) {
+    return NextResponse.json({ success: false, message: "인증 상태를 확인 중입니다." }, { status: 503 });
+  }
+  if (!session?.user || !(
+    (session.user.isGuildMember && session.user.hasZeusRole) ||
+    session.user.isAdmin || session.user.isMaster
+  )) {
+    return NextResponse.json({ success: false, message: "길드 인증이 필요합니다." }, { status: 403 });
+  }
+
+  try {
+    const guildId = process.env.DISCORD_GUILD_ID;
+    if (!guildId) throw new Error("Missing configured guild");
+    const [equipment, roster] = await Promise.all([
+      supabaseAdmin.from("portal_sheet_snapshots")
+        .select("payload,fetched_at")
+        .eq("guild_id", guildId).eq("source_key", "manual-equipment-inventory")
+        .eq("query_key", "v1").maybeSingle(),
+      supabaseAdmin.from("portal_sheet_snapshots")
+        .select("payload").eq("guild_id", guildId)
+        .eq("source_key", "manual-guild-roster").eq("query_key", "v1").maybeSingle(),
+    ]);
+    if (equipment.error) throw equipment.error;
+    if (roster.error) throw roster.error;
+
+    const payload = equipment.data?.payload as {
+      members?: Member[]; history?: History[]; sourceSummary?: Record<string, number>;
+    } | null;
+    const sourceMembers = payload?.members;
+    if (!Array.isArray(sourceMembers)) {
+      return NextResponse.json({
+        success: false,
+        message: "장비 현황이 아직 동기화되지 않았습니다.",
+      }, { status: 503 });
+    }
+    const rosterPayload = roster.data?.payload as {
+      members?: Array<{ gid: string | number; nickname?: string; job?: string; guild?: string; growthPower?: string }>;
+    } | null;
+    const currentRoster = Array.isArray(rosterPayload?.members) ? rosterPayload.members : [];
+    const rosterByGid = new Map(currentRoster.map(m => [String(m.gid), m]));
+    const valid = (sourceMembers as Member[]).filter(m =>
+      m && /^\d+$/.test(String(m.gid)) && Array.isArray(m.slots) &&
+      m.slots.length === 12
+    );
+    if (valid.length !== sourceMembers.length ||
+        new Set(valid.map(m => String(m.gid))).size !== valid.length) {
+      throw new Error("Invalid equipment snapshot");
+    }
+    // Never equate a historical distribution entry with current ownership.
+    // Current inventory always comes from the equipment sheet by immutable GID.
+    const members = valid.map(member => {
+      const current = rosterByGid.get(String(member.gid));
+      return {
+        ...member,
+        nickname: current?.nickname || member.nickname,
+        guild: current?.guild ?? member.guild,
+        job: current?.job || member.job,
+        growthPower: current?.growthPower || member.growthPower,
+        rosterMatched: Boolean(current),
+      };
+    });
+    return NextResponse.json({
+      success: true, members,
+      history: Array.isArray(payload?.history) ? payload.history.slice(0, 3000) : [],
+      sourceSummary: payload?.sourceSummary ?? {},
+      updatedAt: equipment.data?.fetched_at ?? null,
+      rosterTotal: currentRoster.length,
+      readOnly: true,
+    }, { headers: { "Cache-Control": "private, no-store, max-age=0", Vary: "Cookie" } });
+  } catch (error) {
+    console.error("Equipment inventory read failed:", error);
+    return NextResponse.json({
+      success: false, message: "장비 데이터를 조회하지 못했습니다.",
+    }, { status: 502 });
+  }
+}
