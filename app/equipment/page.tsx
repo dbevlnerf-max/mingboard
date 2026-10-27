@@ -68,7 +68,7 @@ export default function EquipmentPage() {
     (!search.trim() || [member.nickname, member.sourceNickname, member.job, member.gid]
       .some(v => cleanName(v || "").toLowerCase().includes(cleanName(search).toLowerCase())))
   )), [members, guildFilter, search]);
-  const selected = members.find(m => m.gid === selectedGid) ?? filtered[0] ?? null;
+  const selected = filtered.find(m => m.gid === selectedGid) ?? filtered[0] ?? null;
   const recent = useMemo(() => {
     if (!selected) return [];
     const aliases = nickAliases(selected);
@@ -151,7 +151,7 @@ export default function EquipmentPage() {
                   {selected.slots.slice(0, 6).map(slot => <div className={styles.equipmentSlot} key={slot.slot}>
                     <span className={styles.slotIcon}>◆</span>
                     <span><small>{slot.slot}</small><strong title={slot.item}>{slot.item || "미기록"}</strong></span>
-                    {slot.item && <em>{tierText(slot.item)}</em>}
+                    {slot.item && <em>{tierText(slot.item)}{slot.enhancement ? " · " + (slot.enhancement.startsWith("+") ? "" : "+") + slot.enhancement : ""}</em>}
                   </div>)}
                 </div>
                 <div className={styles.characterDisplay}>
@@ -164,7 +164,7 @@ export default function EquipmentPage() {
                   {selected.slots.slice(6, 12).map(slot => <div className={styles.equipmentSlot} key={slot.slot}>
                     <span className={styles.slotIcon}>◆</span>
                     <span><small>{slot.slot}</small><strong title={slot.item}>{slot.item || "미기록"}</strong></span>
-                    {slot.item && <em>{tierText(slot.item)}</em>}
+                    {slot.item && <em>{tierText(slot.item)}{slot.enhancement ? " · " + (slot.enhancement.startsWith("+") ? "" : "+") + slot.enhancement : ""}</em>}
                   </div>)}
                 </div>
                 <p className={styles.panelNote}>※ 개인구매 표기는 시트 원문을 그대로 유지합니다. 강화 수치가 별도 입력된 경우에만 표시하며, 장비 사진은 아직 웹으로 동기화되지 않았습니다.</p>
