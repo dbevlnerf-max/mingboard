@@ -14,6 +14,7 @@ export type EquipmentCatalogItem = {
   aliases: string[];
   icon_asset: string | null;
   sprite_index: number | null;
+  sprite_columns: number;
   icon_verified: boolean;
 };
 
