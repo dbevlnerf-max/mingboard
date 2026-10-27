@@ -27,7 +27,7 @@ export default function EquipmentSlotCard({ slot, job, catalog }: Props) {
     } : {
       backgroundImage: `url("${item.icon_asset}")`,
       backgroundPosition: `${-48 * item.sprite_index}px 0px`,
-      backgroundSize: "336px 48px",
+      backgroundSize: `${Math.max(1, Math.min(200, item.sprite_columns || 7)) * 48}px 48px`,
       backgroundRepeat: "no-repeat",
     } : undefined;
   const enhancement = slot.enhancement
