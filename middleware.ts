@@ -31,6 +31,9 @@ export default auth(
         "/api/member-status-sync"
       ) ||
       pathname.startsWith(
+        "/api/guild-roster-sync"
+      ) ||
+      pathname.startsWith(
         "/_next"
       ) ||
       pathname ===
