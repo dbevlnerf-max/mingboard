@@ -9,6 +9,8 @@ import {
   EQUIPMENT_SLOTS, getEquipmentTier, recommendEquipment,
   type EquippedMember,
 } from "@/lib/equipment-recommendation";
+import EquipmentSlotCard from "./EquipmentSlotCard";
+import type { EquipmentCatalogItem } from "@/lib/equipment-catalog";
 import styles from "./equipment.module.css";
 
 type History = {
@@ -17,6 +19,7 @@ type History = {
 };
 type EquipmentResponse = {
   success: boolean; message?: string; members?: EquippedMember[];
+  catalog?: EquipmentCatalogItem[];
   history?: History[]; rosterTotal?: number; updatedAt?: string | null;
   sourceSummary?: { equipmentDistributionRows?: number };
 };
@@ -48,6 +51,7 @@ export default function EquipmentPage() {
     canRead ? "/api/equipment" : null, { arrayField: "members" }
   );
   const members = useMemo(() => query.data?.members ?? [], [query.data?.members]);
+  const catalog = useMemo(() => query.data?.catalog ?? [], [query.data?.catalog]);
   const history = useMemo(() => query.data?.history ?? [], [query.data?.history]);
   const [search, setSearch] = useState("");
   const [guildFilter, setGuildFilter] = useState("전체");
@@ -145,11 +149,9 @@ export default function EquipmentPage() {
               </div>
               {view === "inventory" ? <section className={styles.inventoryPanel}>
                 <div className={styles.inventoryLeft}>
-                  {selected.slots.slice(0, 6).map(slot => <div className={styles.equipmentSlot} key={slot.slot}>
-                    <span className={styles.slotIcon}>◆</span>
-                    <span><small>{slot.slot}</small><strong title={slot.item}>{slot.item || "미기록"}</strong></span>
-                    {slot.item && <em>{tierText(slot.item)}{slot.enhancement ? " · " + (slot.enhancement.startsWith("+") ? "" : "+") + slot.enhancement : ""}</em>}
-                  </div>)}
+                  {selected.slots.slice(0, 6).map(slot =>
+                    <EquipmentSlotCard key={slot.slot} slot={slot} job={selected.job} catalog={catalog} />
+                  )}
                 </div>
                 <div className={styles.characterDisplay}>
                   <span className={styles.characterCircle}>⚔</span>
@@ -158,13 +160,11 @@ export default function EquipmentPage() {
                   <small>캐릭터 사진은 원본 시트에서 확인</small>
                 </div>
                 <div className={styles.inventoryRight}>
-                  {selected.slots.slice(6, 12).map(slot => <div className={styles.equipmentSlot} key={slot.slot}>
-                    <span className={styles.slotIcon}>◆</span>
-                    <span><small>{slot.slot}</small><strong title={slot.item}>{slot.item || "미기록"}</strong></span>
-                    {slot.item && <em>{tierText(slot.item)}{slot.enhancement ? " · " + (slot.enhancement.startsWith("+") ? "" : "+") + slot.enhancement : ""}</em>}
-                  </div>)}
+                  {selected.slots.slice(6, 12).map(slot =>
+                    <EquipmentSlotCard key={slot.slot} slot={slot} job={selected.job} catalog={catalog} />
+                  )}
                 </div>
-                <p className={styles.panelNote}>※ 개인구매 표기는 시트 원문을 그대로 유지합니다. 강화 수치가 별도 입력된 경우에만 표시하며, 장비 사진은 아직 웹으로 동기화되지 않았습니다.</p>
+                <p className={styles.panelNote}>※ 검증된 장비만 실제 아이콘을 표시합니다(희귀 T4 이상 또는 영웅). 개인구매 및 강화 수치는 원본을 유지하며, 캐릭터 스크린샷 연동은 별도로 진행합니다.</p>
               </section> :
               <section className={styles.historyPanel}>
                 <div className={styles.panelTitle}>
