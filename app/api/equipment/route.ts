@@ -35,7 +35,7 @@ export async function GET() {
         .select("payload").eq("guild_id", guildId)
         .eq("source_key", "manual-guild-roster").eq("query_key", "v1").maybeSingle(),
       supabaseAdmin.from("equipment_item_catalog")
-        .select("item_id,item_name,slot,rarity,tier,equipment_kind,job_class,aliases,icon_asset,sprite_index,icon_verified")
+        .select("item_id,item_name,slot,rarity,tier,equipment_kind,job_class,aliases,icon_asset,sprite_index,sprite_columns,icon_verified")
         .eq("icon_verified", true)
         .order("tier", { ascending: true })
         .limit(1000),
