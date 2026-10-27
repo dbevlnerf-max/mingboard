@@ -98,9 +98,40 @@
 .qualityRare .slotInfo strong{color:#76b7f5}
 .qualityRare .slotIconPending{border-color:#345577;background:#21354a;color:#77b6eb}
 .qualityUnclassified .slotInfo strong{color:#ece3d5}
+
+/* Mask the irregular game-screenshot edges behind one uniform inset rim. */
+.slotIconArt{
+  position:relative;
+  isolation:isolate;
+  box-sizing:border-box;
+  overflow:hidden;
+  border:0;
+  border-radius:6px;
+  background-color:#201f24;
+  box-shadow:0 0 0 1px rgba(0,0,0,.88),0 2px 5px rgba(0,0,0,.22);
+}
+.slotIconArt::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  border:1px solid rgba(155,155,155,.18);
+  border-radius:inherit;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.48),inset 0 0 5px rgba(0,0,0,.28);
+}
+.qualityHero .slotIconArt::after{border-color:rgba(163,109,205,.58)}
+.qualityRare .slotIconArt::after{border-color:rgba(91,152,203,.52)}
+.slotMeta em{white-space:nowrap;font-weight:750;letter-spacing:.01em}
+.qualityHero .slotMeta em{color:#cb9af1}
+.qualityRare .slotMeta em{color:#89beeb}
+
 @media(max-width:750px){
+  .equipmentSlot{position:relative;min-height:76px;height:auto;align-items:center}
   .slotIconArt{width:48px;height:48px;min-width:48px}
   .slotIconPending{width:36px;min-width:36px;height:36px}
-  .slotMeta{display:none}
-  .slotInfo strong{font-size:10px;max-height:45px}
+  .slotInfo{padding-top:12px}
+  .slotInfo strong{font-size:10px;max-height:43px}
+  .slotMeta{display:flex;position:absolute;right:5px;top:4px;gap:0;align-items:flex-end}
+  .slotMeta em{font-size:9px;font-weight:700}
+  .slotMeta b{display:none}
 }
