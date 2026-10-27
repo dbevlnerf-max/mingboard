@@ -616,6 +616,7 @@ export default function Home() {
   );
   const guildQuery = usePortalQuery<{
     success: boolean; members: GuildMember[]; counts?: GuildCounts; jobs?: string[];
+    liveMatchedCount?: number; liveUpdatedCount?: number;
   }>(canReadGuild ? "/api/guild" : null, { arrayField: "members" });
   const guildMembers = guildQuery.data?.members ?? [];
   const guildCounts = { total: guildMembers.length };
@@ -2065,6 +2066,9 @@ export default function Home() {
 
               <small>
                 🧾길드현황 기준
+                {typeof guildQuery.data?.liveMatchedCount === "number" && (
+                  <> · 시트 연동 {guildQuery.data.liveMatchedCount}/{guildMembers.length}명</>
+                )}
               </small>
             </div>
 
