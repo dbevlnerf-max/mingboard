@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { mergeLiveRoster } from "@/lib/guild-roster-merge";
 
 export type RosterMember = {
   gid: string;
@@ -26,7 +27,7 @@ const EXTRA_GUILDS = new Set(["아스가르드", "천제", "지옥소녀"]);
 
 export async function includeUnreturnedGuilds<T extends RosterMember>(
   upstream: T[]
-): Promise<{ members: T[]; supplementalUpdatedAt: string | null }> {
+): Promise<{ members: T[]; supplementalUpdatedAt: string | null; liveMatchedCount?: number; liveUpdatedCount?: number }> {
   const guildId = process.env.DISCORD_GUILD_ID;
   if (!guildId) return { members: upstream, supplementalUpdatedAt: null };
 
@@ -63,7 +64,9 @@ export async function includeUnreturnedGuilds<T extends RosterMember>(
         console.error("Authoritative guild roster has invalid GIDs");
         return { members: [], supplementalUpdatedAt: snapshot.fetched_at };
       }
-      return { members: members as T[], supplementalUpdatedAt: snapshot.fetched_at };
+      // Refresh mutable fields for known GIDs only; never re-add legacy members.
+      const merged = mergeLiveRoster(members as T[], upstream);
+      return { ...merged, supplementalUpdatedAt: snapshot.fetched_at };
     }
 
     // The owner may retire a member or temporarily clear their guild even
