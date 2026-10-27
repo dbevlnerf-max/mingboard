@@ -66,8 +66,11 @@ export async function includeUnreturnedGuilds<T extends RosterMember>(
         console.error("Authoritative guild roster has invalid GIDs");
         return { members: [], supplementalUpdatedAt: snapshot.fetched_at };
       }
-      // Refresh mutable fields for known GIDs only; never re-add legacy members.
-      const merged = mergeLiveRoster(members as T[], upstream);
+      // The complete sheet sync owns job/growth once it has succeeded.
+      // A stale legacy feed must never overwrite its 186 verified entries.
+      const merged = snapshot.payload.liveSourceSyncedAt
+        ? { members: members as T[] }
+        : mergeLiveRoster(members as T[], upstream);
       return {
         ...merged, supplementalUpdatedAt: snapshot.fetched_at,
         liveSourceSyncedAt: snapshot.payload.liveSourceSyncedAt ?? null,
