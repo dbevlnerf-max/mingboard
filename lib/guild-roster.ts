@@ -25,7 +25,8 @@ type SupplementalSnapshot = {
 const EXTRA_GUILDS = new Set(["아스가르드", "천제", "지옥소녀"]);
 
 export async function includeUnreturnedGuilds<T extends RosterMember>(
-  upstream: T[]
+  upstream: T[],
+  upstreamUpdatedAt?: string,
 ): Promise<{ members: T[]; supplementalUpdatedAt: string | null }> {
   const guildId = process.env.DISCORD_GUILD_ID;
   if (!guildId) return { members: upstream, supplementalUpdatedAt: null };
@@ -62,6 +63,39 @@ export async function includeUnreturnedGuilds<T extends RosterMember>(
       if (members.length !== supplemental.length || uniqueIds.size !== members.length) {
         console.error("Authoritative guild roster has invalid GIDs");
         return { members: [], supplementalUpdatedAt: snapshot.fetched_at };
+      }
+      // Membership and identity remain curated, but newer Sheet growth/job
+      // values must not be frozen at the reorganization snapshot's values.
+      // Ignore older cached responses and ambiguous/reassigned identities.
+      if (upstreamUpdatedAt &&
+          Date.parse(upstreamUpdatedAt) > Date.parse(snapshot.fetched_at)) {
+        const liveByGid = new Map<string, T>();
+        const duplicateGids = new Set<string>();
+        for (const live of upstream) {
+          const gid = String(live.gid);
+          if (liveByGid.has(gid)) duplicateGids.add(gid);
+          liveByGid.set(gid, live);
+        }
+        return {
+          members: members.map(member => {
+            const gid = String(member.gid);
+            const live = liveByGid.get(gid);
+            const growth = Number(live?.growthPowerNumber);
+            if (!live || duplicateGids.has(gid) ||
+                String(live.nickname).trim() !== String(member.nickname).trim()) return member as T;
+            const liveJob = String(live.job || "").trim();
+            const job = liveJob === "앨리멘탈리스트" ? "엘리멘탈리스트" : liveJob;
+            return {
+              ...member,
+              job: job || member.job,
+              ...(Number.isFinite(growth) && growth > 0 ? {
+                growthPower: growth.toLocaleString("en-US"),
+                growthPowerNumber: growth,
+              } : {}),
+            } as T;
+          }),
+          supplementalUpdatedAt: snapshot.fetched_at,
+        };
       }
       return { members: members as T[], supplementalUpdatedAt: snapshot.fetched_at };
     }

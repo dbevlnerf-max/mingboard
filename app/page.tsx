@@ -1468,6 +1468,10 @@ export default function Home() {
   const missingGrowthCount =
     guildMembers.length - validGrowthValues.length;
 
+  const missingRankingJobCount = guildMembers.filter(member =>
+    !member.job.trim() && Number(member.growthPowerNumber) > 0
+  ).length;
+
   const averageGrowth =
     validGrowthValues.length > 0
       ? Math.round(
@@ -2064,7 +2068,8 @@ export default function Home() {
               </div>
 
               <small>
-                🧾길드현황 기준
+                전체 {guildMembers.length}명 · 성장력 등록 {validGrowthValues.length}명
+                {missingGrowthCount > 0 && ` · 미입력 ${missingGrowthCount}명`}
               </small>
             </div>
 
@@ -2199,6 +2204,9 @@ export default function Home() {
                 <h2>
                   🏆 직업별 성장력 TOP 5
                 </h2>
+                <small>
+                  성장력 등록 {validGrowthValues.length}명 중 직업 미입력 {missingRankingJobCount}명 제외
+                </small>
               </div>
 
               <div className="jobRankingNav">

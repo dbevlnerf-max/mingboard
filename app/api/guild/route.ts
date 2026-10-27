@@ -28,7 +28,8 @@ export async function GET(request: Request) {
     if (!data.success || !Array.isArray(data.members)) return sheetJson(data);
 
     const { members, supplementalUpdatedAt } = await includeUnreturnedGuilds(
-      data.members as RosterMember[]
+      data.members as RosterMember[],
+      typeof data.sourceUpdatedAt === "string" ? data.sourceUpdatedAt : undefined,
     );
     const count = (name: string) =>
       members.filter(member => member.guild === name).length;
