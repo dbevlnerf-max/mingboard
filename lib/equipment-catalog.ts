@@ -48,6 +48,22 @@ export function analyzeEquipmentItem(raw: string): AnalyzedEquipment {
   };
 }
 
+/**
+ * Equipment panel label only: strip source-sheet grade/tier and purchase notes.
+ * Leave the real item adjective ("수호자의", "영웅의", "위대한") intact.
+ * Full source text is still retained for tooltips, GID mapping and database lookups.
+ */
+export function displayEquipmentName(raw: string): string {
+  const original = String(raw || "").normalize("NFKC").trim();
+  if (!original) return "미기록";
+  const withoutNotes = original.replace(/\s*[（(]\s*개인\s*구매\s*[)）]\s*/g, " ").trim();
+  const withoutTier = withoutNotes
+    .replace(/^\s*영웅\s*(?:(?:[tT]\s*\d+)|(?:\d+\s*[tT]))(?:\s+|(?=[가-힣]))/i, "")
+    .replace(/^\s*(?:(?:[tT]\s*\d+)|(?:\d+\s*[tT]))(?:\s+|(?=[가-힣]))/i, "")
+    .trim();
+  return withoutTier || original;
+}
+
 export function eligibleForItemIcon(item: AnalyzedEquipment): boolean {
   return item.tier !== null &&
     (item.rarity === "hero" || item.rarity === "legendary" ||
