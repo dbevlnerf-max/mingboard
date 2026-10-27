@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
+import type { EquipmentCatalogItem } from "@/lib/equipment-catalog";
 
 type Member = {
   gid: string; nickname: string; sourceNickname: string; guild: string;
@@ -25,7 +26,7 @@ export async function GET() {
   try {
     const guildId = process.env.DISCORD_GUILD_ID;
     if (!guildId) throw new Error("Missing configured guild");
-    const [equipment, roster] = await Promise.all([
+    const [equipment, roster, catalog] = await Promise.all([
       supabaseAdmin.from("portal_sheet_snapshots")
         .select("payload,fetched_at")
         .eq("guild_id", guildId).eq("source_key", "manual-equipment-inventory")
@@ -33,9 +34,15 @@ export async function GET() {
       supabaseAdmin.from("portal_sheet_snapshots")
         .select("payload").eq("guild_id", guildId)
         .eq("source_key", "manual-guild-roster").eq("query_key", "v1").maybeSingle(),
+      supabaseAdmin.from("equipment_item_catalog")
+        .select("item_id,item_name,slot,rarity,tier,equipment_kind,job_class,aliases,icon_asset,sprite_index,icon_verified")
+        .eq("icon_verified", true)
+        .order("tier", { ascending: true })
+        .limit(1000),
     ]);
     if (equipment.error) throw equipment.error;
     if (roster.error) throw roster.error;
+    if (catalog.error) throw catalog.error;
 
     const payload = equipment.data?.payload as {
       members?: Member[]; history?: History[]; sourceSummary?: Record<string, number>;
@@ -75,6 +82,7 @@ export async function GET() {
     });
     return NextResponse.json({
       success: true, members,
+      catalog: (catalog.data ?? []) as EquipmentCatalogItem[],
       history: Array.isArray(payload?.history) ? payload.history.slice(0, 3000) : [],
       sourceSummary: payload?.sourceSummary ?? {},
       updatedAt: equipment.data?.fetched_at ?? null,
