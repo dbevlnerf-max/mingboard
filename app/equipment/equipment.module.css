@@ -80,3 +80,27 @@
 .state h1{font-size:22px}
 @media(max-width:1080px){.layout{grid-template-columns:240px minmax(0,1fr)}.inventoryPanel{grid-template-columns:1fr 1fr}.characterDisplay{grid-column:1/-1;grid-row:1;min-height:115px}.inventoryLeft,.inventoryRight{grid-row:2}}
 @media(max-width:750px){.shell{padding:20px 12px 50px}.heading{align-items:flex-start}.heading h1{font-size:24px}.summary{grid-template-columns:repeat(2,minmax(0,1fr))}.layout{display:block}.sidebar{position:static;margin-bottom:15px}.memberList{max-height:230px}.profile{padding:15px}.profileBadge{display:none}.inventoryPanel{padding:12px;gap:8px}.equipmentSlot{height:68px;padding:7px 5px}.equipmentSlot em{display:none}.slotIcon{width:26px;height:27px}.formLine{grid-template-columns:1fr}.formLine .primary{width:100%}.historyRow{grid-template-columns:48px minmax(0,1fr) 65px;font-size:11px}.historyRow>span:nth-last-child(2){display:none}}
+
+/* Game-marketplace-like, subdued rarity treatment; affects only equipment slots. */
+.slotIconArt{width:48px;height:48px;min-width:48px;min-height:48px;flex-shrink:0;border:1px solid #665b50;background-color:#201f21;border-radius:5px;color:transparent}
+.slotIconPending{width:44px;height:44px;min-width:44px;flex-shrink:0;border-radius:5px;color:#877f73;font-size:15px}
+.slotInfo{min-width:0;flex:1;display:flex;flex-direction:column;justify-content:center;gap:5px}
+.slotInfo small{font-size:10px;color:#bdac95;margin:0}
+.slotInfo strong{display:block;font-size:12px;line-height:1.4;font-weight:700;white-space:normal;overflow-wrap:anywhere;max-height:33px;overflow:hidden}
+.slotInfo .personalPurchase{font-size:10px;color:#948b80}
+.slotMeta{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:4px;flex-shrink:0}
+.slotMeta em{font-size:10px;color:#a79783;font-style:normal}
+.slotMeta b{font-size:11px;color:#dec7a0}
+.qualityHero{border-color:#654486;background:#302638}
+.qualityHero .slotInfo strong{color:#c795f4}
+.qualityHero .slotIconPending{border-color:#68468c;background:#372642;color:#ba94e5}
+.qualityRare{border-color:#355778;background:#252c36}
+.qualityRare .slotInfo strong{color:#76b7f5}
+.qualityRare .slotIconPending{border-color:#345577;background:#21354a;color:#77b6eb}
+.qualityUnclassified .slotInfo strong{color:#ece3d5}
+@media(max-width:750px){
+  .slotIconArt{width:42px;height:42px;min-width:42px;background-size:294px 42px!important}
+  .slotIconPending{width:36px;min-width:36px;height:36px}
+  .slotMeta{display:none}
+  .slotInfo strong{font-size:10px;max-height:45px}
+}
