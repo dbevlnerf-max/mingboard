@@ -99,7 +99,7 @@
 .qualityRare .slotIconPending{border-color:#345577;background:#21354a;color:#77b6eb}
 .qualityUnclassified .slotInfo strong{color:#ece3d5}
 @media(max-width:750px){
-  .slotIconArt{width:42px;height:42px;min-width:42px;background-size:294px 42px!important}
+  .slotIconArt{width:48px;height:48px;min-width:48px;background-size:336px 48px!important}
   .slotIconPending{width:36px;min-width:36px;height:36px}
   .slotMeta{display:none}
   .slotInfo strong{font-size:10px;max-height:45px}
