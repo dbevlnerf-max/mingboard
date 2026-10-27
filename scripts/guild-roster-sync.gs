@@ -5,7 +5,7 @@ function isValidGuild(guild) {
     .includes(String(guild || '').trim());
 }
 
-// 2) ADD both functions below at the end of the existing Apps Script file.
+// 2) In getGuildStatus(), REMOVE the optional block that calls\n//    sortActiveGuildMembers_(sheet, headerInfo). GET must be read-only.\n//    Auto-sort may otherwise move the full 186-row guild roster on refresh.\n// 3) ADD the following functions at the end of the existing Apps Script file.
 // Keep the existing SPREADSHEET_ID, GUILD_SHEET and all other functions.
 function readFourGuildRosterForSync_() {
   // READ ONLY: getGuildStatus() may sort the sheet as a side effect.
