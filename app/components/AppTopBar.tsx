@@ -54,6 +54,8 @@ export default function AppTopBar() {
       "/distribution"
     );
 
+  const isEquipment = pathname.startsWith("/equipment");
+
 
   function goBack() {
 
@@ -145,6 +147,11 @@ export default function AppTopBar() {
           분배조회
         </Link>
 
+
+        <Link href="/equipment"
+          className={`menuItem ${isEquipment ? "active" : ""}`}>
+          착용장비
+        </Link>
 
         <Link
           href="/#guild"
