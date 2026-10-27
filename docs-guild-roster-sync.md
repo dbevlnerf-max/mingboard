@@ -9,7 +9,7 @@
 ## Apps Script 최초 설치 (운영자 1회)
 1. **원본 구글시트** → 확장 프로그램 → Apps Script에서 **운영 중인 스크립트**를 열기
 2. 기존 `isValidGuild(guild)`의 허용 길드를 `핑뚝`, `아스가르드`, `천제`, `지옥소녀`로 변경
-3. [밍보드_4개길드_10분자동동기화_AppsScript.gs]에 포함된 `syncGuildRosterToPortal`, `installGuildRosterSyncTrigger` 함수 두 개를 추가 (다른 기존 코드는 보존)
+3. [scripts/guild-roster-sync.gs](scripts/guild-roster-sync.gs)에 포함된 `syncGuildRosterToPortal`, `installGuildRosterSyncTrigger` 함수 두 개를 추가 (다른 기존 코드는 보존)
 4. 기존 Script Properties의 `DASHBOARD_API_SECRET`이 멤버 상태 동기화 때와 동일하게 구성돼 있는지 확인. 키를 채팅이나 GitHub에 붙여넣지 말 것
 5. Apps Script에서 **`installGuildRosterSyncTrigger`를 딱 한 번 실행**, 권한 승인
 6. **배포 → 배포 관리 → 기존 웹앱 편집 → 새 버전 배포** (기존 웹앱 URL 유지)
