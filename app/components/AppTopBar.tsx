@@ -148,10 +148,12 @@ export default function AppTopBar() {
         </Link>
 
 
-        <Link href="/equipment"
-          className={`menuItem ${isEquipment ? "active" : ""}`}>
-          착용장비
-        </Link>
+        {(session.user.isAdmin || session.user.isMaster) && (
+          <Link href="/equipment"
+            className={`menuItem ${isEquipment ? "active" : ""}`}>
+            착용장비
+          </Link>
+        )}
 
         <Link
           href="/#guild"

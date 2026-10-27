@@ -42,11 +42,8 @@ function tierText(s: string) {
 
 export default function EquipmentPage() {
   const { data: session, status } = useSession();
-  const canRead = status === "authenticated" && Boolean(
-    (session?.user?.isGuildMember && session.user.hasZeusRole) ||
-    session?.user?.isAdmin || session?.user?.isMaster
-  );
   const isAdmin = Boolean(session?.user?.isAdmin || session?.user?.isMaster);
+  const canRead = status === "authenticated" && isAdmin;
   const query = usePortalQuery<EquipmentResponse>(
     canRead ? "/api/equipment" : null, { arrayField: "members" }
   );
@@ -83,7 +80,7 @@ export default function EquipmentPage() {
   if (!canRead) return (
     <main className={styles.state}>
       <h1>장비 현황 조회 권한이 없습니다.</h1>
-      <p>밍보드에 로그인하고 길드원 역할을 인증해주세요.</p>
+      <p>관리자(ADMIN 또는 MASTER)만 장비 현황을 조회할 수 있습니다.</p>
     </main>
   );
 
