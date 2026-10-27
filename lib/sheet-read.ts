@@ -9,6 +9,13 @@ type Payload = { success: boolean; message?: string; [key: string]: unknown };
 type Snapshot = { payload: Payload; fetched_at: string };
 let databaseUnavailableUntil = 0;
 const refreshing = new Map<string, Promise<Snapshot>>();
+const GUILD_REFRESH_MS = 10 * 60 * 1000;
+const DEFAULT_REFRESH_MS = 30 * 1000;
+
+function snapshotLifetime(params: string) {
+  return new URLSearchParams(params).get("action") === "guild"
+    ? GUILD_REFRESH_MS : DEFAULT_REFRESH_MS;
+}
 
 function identity(scriptUrl: string, params: string) {
   return {
@@ -76,6 +83,9 @@ async function refreshSnapshot(scriptUrl: string, params: string, arrayField: st
 const cachedSnapshot = unstable_cache(refreshSnapshot, ["portal-sheet-snapshot-v1"], {
   revalidate: 30, tags: ["portal-sheet-snapshots"],
 });
+const cachedGuildSnapshot = unstable_cache(refreshSnapshot, ["portal-guild-snapshot-v1"], {
+  revalidate: GUILD_REFRESH_MS / 1000, tags: ["portal-sheet-snapshots"],
+});
 
 function backgroundRefresh(scriptUrl: string, params: string, arrayField: string) {
   after(async () => {
@@ -135,15 +145,17 @@ export async function readSheet(
   }
   const existing = fresh ? null : await loadSnapshot(scriptUrl, query);
   if (existing?.payload?.success && Array.isArray(existing.payload[arrayField]) && Number.isFinite(Date.parse(existing.fetched_at))) {
-    const stale = Boolean(existing.invalidated_at) || Date.now() - Date.parse(existing.fetched_at) > 30000;
+    const stale = Boolean(existing.invalidated_at) || Date.now() - Date.parse(existing.fetched_at) > snapshotLifetime(query);
     if (stale) backgroundRefresh(scriptUrl, query, arrayField);
     return { ...existing.payload, sourceUpdatedAt: existing.fetched_at, stale };
   }
   const snapshot = fresh ? await refreshSnapshot(scriptUrl, query, arrayField)
-    : await cachedSnapshot(scriptUrl, query, arrayField);
+    : new URLSearchParams(query).get("action") === "guild"
+      ? await cachedGuildSnapshot(scriptUrl, query, arrayField)
+      : await cachedSnapshot(scriptUrl, query, arrayField);
   return {
     ...snapshot.payload, sourceUpdatedAt: snapshot.fetched_at,
-    stale: Date.now() - Date.parse(snapshot.fetched_at) > 30000,
+    stale: Date.now() - Date.parse(snapshot.fetched_at) > snapshotLifetime(query),
   };
 }
 

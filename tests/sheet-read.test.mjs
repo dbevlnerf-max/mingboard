@@ -49,13 +49,21 @@ test('fresh saved snapshots bypass slow Sheets even in a new request', async()=>
   assert.equal(result.members[0].nickname,'밍쨩'); assert.equal(result.stale,false); assert.equal(h.after.length,0);
 });
 test('stale snapshots return before refresh, then publish new data in the background', async()=>{
-  const h=await harness(); h.seed(guild,{success:true,members:[{nickname:'이전'}]},60000);
+  const h=await harness(); h.seed(guild,{success:true,members:[{nickname:'이전'}]},660000);
   let calls=0; globalThis.fetch=async()=>{calls++; return Response.json({success:true,members:[{nickname:'최신'}]});};
   const result=await h.read(guild); assert.equal(result.members[0].nickname,'이전'); assert.equal(result.stale,true); assert.equal(calls,0);
   await h.drain(); assert.equal(calls,1); assert.equal((await h.read(guild)).members[0].nickname,'최신');
 });
+test('guild snapshot remains fresh for 10 minutes while distribution stays at 30 seconds', async()=>{
+  const h=await harness();
+  h.seed(guild,{success:true,members:[]},540000);
+  h.seed({action:'distributionList'},{success:true,rows:['구버전']},60000);
+  globalThis.fetch=async()=>Response.json({success:true,rows:['신버전'],members:[]});
+  assert.equal((await h.read(guild)).stale,false);
+  assert.equal((await h.read({action:'distributionList'},'rows')).stale,true);
+});
 test('upstream failures cannot overwrite a last good snapshot', async()=>{
-  const h=await harness(); h.seed(guild,{success:true,members:[{nickname:'유지'}]},60000);
+  const h=await harness(); h.seed(guild,{success:true,members:[{nickname:'유지'}]},660000);
   globalThis.fetch=async()=>Response.json({success:false,message:'unavailable'}, {status:503});
   await h.read(guild); await h.drain();
   assert.equal(h.rows.get(h.key(guild)).payload.members[0].nickname,'유지'); assert.equal(h.saves,0);
