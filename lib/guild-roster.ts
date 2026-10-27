@@ -15,7 +15,8 @@ export type RosterMember = {
 };
 
 type SupplementalSnapshot = {
-  payload: { mode?: string; members?: RosterMember[]; excludedGids?: string[]; overrideGids?: string[]; forceIncludeGids?: string[] } | null;
+  payload: { mode?: string; members?: RosterMember[]; excludedGids?: string[]; overrideGids?: string[]; forceIncludeGids?: string[];
+    liveSourceSyncedAt?: string; liveSourceMatchedCount?: number } | null;
   fetched_at: string;
 };
 
@@ -27,7 +28,8 @@ const EXTRA_GUILDS = new Set(["아스가르드", "천제", "지옥소녀"]);
 
 export async function includeUnreturnedGuilds<T extends RosterMember>(
   upstream: T[]
-): Promise<{ members: T[]; supplementalUpdatedAt: string | null; liveMatchedCount?: number; liveUpdatedCount?: number }> {
+): Promise<{ members: T[]; supplementalUpdatedAt: string | null; liveMatchedCount?: number; liveUpdatedCount?: number;
+  liveSourceSyncedAt?: string | null; liveSourceMatchedCount?: number | null }> {
   const guildId = process.env.DISCORD_GUILD_ID;
   if (!guildId) return { members: upstream, supplementalUpdatedAt: null };
 
@@ -66,7 +68,11 @@ export async function includeUnreturnedGuilds<T extends RosterMember>(
       }
       // Refresh mutable fields for known GIDs only; never re-add legacy members.
       const merged = mergeLiveRoster(members as T[], upstream);
-      return { ...merged, supplementalUpdatedAt: snapshot.fetched_at };
+      return {
+        ...merged, supplementalUpdatedAt: snapshot.fetched_at,
+        liveSourceSyncedAt: snapshot.payload.liveSourceSyncedAt ?? null,
+        liveSourceMatchedCount: snapshot.payload.liveSourceMatchedCount ?? null,
+      };
     }
 
     // The owner may retire a member or temporarily clear their guild even
