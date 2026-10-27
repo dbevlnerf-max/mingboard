@@ -41,7 +41,7 @@ export default function EquipmentSlotCard({ slot, job, catalog }: Props) {
         className={`${styles.slotIcon} ${item ? styles.slotIconArt : styles.slotIconPending}`}
         style={iconStyle}
       >
-        {item ? null : "◆"}
+        {item ? null : slot.slot}
       </span>
       <span className={styles.slotInfo}>
         <small>{slot.slot}</small>
