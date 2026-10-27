@@ -27,7 +27,8 @@ export async function GET(request: Request) {
     );
     if (!data.success || !Array.isArray(data.members)) return sheetJson(data);
 
-    const { members, supplementalUpdatedAt, liveMatchedCount, liveUpdatedCount } = await includeUnreturnedGuilds(
+    const { members, supplementalUpdatedAt, liveMatchedCount, liveUpdatedCount,
+      liveSourceSyncedAt, liveSourceMatchedCount } = await includeUnreturnedGuilds(
       data.members as RosterMember[]
     );
     const count = (name: string) =>
@@ -50,6 +51,8 @@ export async function GET(request: Request) {
       supplementalUpdatedAt,
       liveMatchedCount,
       liveUpdatedCount,
+      liveSourceSyncedAt,
+      liveSourceMatchedCount,
     });
   } catch (error) {
     console.error("Guild API Error:", error);
