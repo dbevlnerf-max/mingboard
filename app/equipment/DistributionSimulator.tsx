@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import {
-  EQUIPMENT_SLOTS, getEquipmentTier, equipmentKind, recommendEquipment,
+  EQUIPMENT_SLOTS, getEquipmentTier, equipmentKind, recommendEquipment, eligibleForHandDown,
   type EquippedMember,
 } from "@/lib/equipment-recommendation";
 import { classHeroSkills, normalizeSkillJob, normalizeSkillName } from "@/lib/skill-catalog";
@@ -33,6 +33,18 @@ const offered = (entry: EquipmentCatalogItem) =>
 const itemLabel = (entry: EquipmentCatalogItem) =>
   (entry.rarity === "hero" ? "영웅" : entry.rarity === "legendary" ? "전설" : "희귀") +
   " T" + entry.tier + " · " + entry.item_name;
+/** Display a real tier and rarity, not a guessed rarity for unknown data. */
+function GradeItem({ item }: { item: string }) {
+  const tier = getEquipmentTier(item);
+  const hero = tier?.group === "hero";
+  const grade = tier ? (hero ? "영웅 T" : tier.level >= 4 ? "희귀 T" : "T") +
+    tier.level + " · " : "";
+  return <span className={hero ? styles.simItemHero :
+    tier && tier.level >= 4 ? styles.simItemRare : styles.simItemUnknown}>
+    {grade}{displayEquipmentName(item)}
+  </span>;
+}
+
 
 export default function DistributionSimulator({members,rosterMembers,catalog,skillHistory}:Props) {
   const [category,setCategory]=useState<"equipment"|"skill">("equipment");
@@ -179,7 +191,8 @@ export default function DistributionSimulator({members,rosterMembers,catalog,ski
       </div>
       <p className={styles.simHint}>
         추천은 같은 등급 체계·장비 종류에서 티어가 상승하는 경우에만 표시합니다.
-        타 등급·다른 종류·미기록 장비는 자동 판단 없이 추가 검토로 표시합니다.
+        일반 T4 이하 장비는 후속 계승하지 않습니다.
+        다른 등급·종류·미기록 장비는 추가 검토로 분류합니다.
       </p>
       {(proposal?.suggestions.length || 0)>0 && <div className={styles.simGroup}>
         <h4>자동 교체 추천 <span>{proposal?.suggestions.length}명</span></h4>
@@ -191,9 +204,10 @@ export default function DistributionSimulator({members,rosterMembers,catalog,ski
             <div className={styles.simIdentity}><strong>{row.nickname}</strong>
               <small>{row.job} · {row.guild}</small></div>
             <div className={styles.simRowDetails}>
-              <strong>{displayEquipmentName(row.currentItem)} → {selectedItem.item_name}</strong>
-              <small>티어 +{row.gainedTiers} · {worn?.personal?"기존 장비 개인구매(계승 제외)":
-                row.chain.length>1?"후속 계승 검토: "+row.chain[1].nickname:
+              <strong><GradeItem item={row.currentItem} /> <span className={styles.simItemArrow}>→</span> <GradeItem item={offer} /></strong>
+              <small>티어 +{row.gainedTiers} · {worn?.personal?"기존 장비 개인구매 · 계승 제외":
+                !eligibleForHandDown(row.currentItem)?"T4 이하 장비는 후속 계승하지 않음":
+                row.chain.length>1?"계승 검토: "+row.chain[1].nickname+" ← "+row.currentItem:
                 "후속 계승 대상 미확정"}</small>
             </div>
           </article>;
@@ -212,7 +226,7 @@ export default function DistributionSimulator({members,rosterMembers,catalog,ski
             <div className={styles.simIdentity}><strong>{member.nickname}</strong>
               <small>{member.job} · {member.guild}</small></div>
             <div className={styles.simRowDetails}>
-              <strong>{before?displayEquipmentName(before):"장비 미기록"}</strong>
+              <strong>{before?<GradeItem item={before} />:"장비 미기록"}</strong>
               <small>{reason}{personal?" · 개인구매":""}</small>
             </div>
           </article>)}
