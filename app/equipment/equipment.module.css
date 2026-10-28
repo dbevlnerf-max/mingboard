@@ -204,3 +204,72 @@
   .inventoryPanel{gap:7px}
   .skillSectionCompact .skillGrid{grid-template-columns:1fr}
 }
+
+
+/* Body-mapped equipment layout: keep all of the surrounding dashboard untouched. */
+.inventoryPanel{
+  grid-template-columns:minmax(0,1fr) minmax(140px,172px) minmax(0,1fr);
+  align-items:stretch;
+  gap:12px;
+}
+.inventoryTop{grid-column:1 / -1}
+.inventoryLeft{grid-column:1;grid-row:2}
+.equipmentMannequin{
+  grid-column:2;
+  grid-row:2;
+  min-width:0;
+  min-height:450px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:15px 7px;
+  border:1px solid #514534;
+  border-radius:8px;
+  background:radial-gradient(ellipse 85% 55% at 50% 38%,#3d362d 0%,#2e2a25 62%,#272522 100%);
+  overflow:hidden;
+}
+.bodyDiagram{
+  width:100%;
+  height:100%;
+  max-height:432px;
+  max-width:170px;
+  display:block;
+  overflow:visible;
+}
+.bodyPart{transition:filter .2s,opacity .2s}
+.bodyPartActive{filter:drop-shadow(0 0 5px #e9b77f);transition:filter .2s}
+.manikinSpot{opacity:.46;transition:opacity .2s}
+.manikinSpotActive{opacity:1;filter:drop-shadow(0 0 5px #f4c68e)}
+.equipmentSlotHighlighted{
+  outline:2px solid rgba(226,181,114,.85);
+  outline-offset:-2px;
+  box-shadow:0 0 0 1px rgba(245,213,157,.24),0 0 13px rgba(232,183,107,.12);
+}
+.equipmentSlot:focus-visible{
+  outline:2px solid #e2b572;
+  outline-offset:2px;
+}
+.inventoryRight{grid-column:3;grid-row:2}
+@media (max-width:1080px){
+  .inventoryPanel{grid-template-columns:minmax(0,1fr) minmax(110px,22%) minmax(0,1fr)}
+  .inventoryLeft,.inventoryRight{grid-row:2}
+  .equipmentMannequin{grid-column:2;grid-row:2;min-height:450px}
+}
+@media (max-width:750px){
+  .inventoryPanel{grid-template-columns:minmax(0,1fr) minmax(85px,22%) minmax(0,1fr);gap:7px}
+  .inventoryTop{grid-column:1/-1}
+  .equipmentMannequin{padding:6px 1px;min-height:498px}
+  .bodyDiagram{max-height:452px}
+  .inventoryLeft{grid-column:1;grid-row:2}
+  .inventoryRight{grid-column:3;grid-row:2}
+}
+@media (max-width:440px){
+  .inventoryPanel{grid-template-columns:minmax(0,1fr) minmax(65px,20%) minmax(0,1fr);gap:5px}
+  .equipmentMannequin{min-height:498px}
+  .inventoryPanel .equipmentSlot{gap:4px;padding:5px 4px}
+  .inventoryPanel .slotIconArt{width:32px;height:32px;min-width:32px}
+  .inventoryPanel .slotIconPending{width:26px;height:26px;min-width:26px}
+  .inventoryPanel .slotInfo strong{font-size:9px}
+  .inventoryPanel .slotInfo small{font-size:9px}
+  .inventoryPanel .slotMeta{right:2px;top:3px}
+}
