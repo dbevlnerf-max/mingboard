@@ -9,7 +9,8 @@ import type { EquippedMember } from "@/lib/equipment-recommendation";
 import EquipmentSlotCard from "./EquipmentSlotCard";
 import EquipmentMannequin from "./EquipmentMannequin";
 import SkillDistributionCard from "./SkillDistributionCard";
-import DistributionSimulator, { type RosterPreviewMember } from "./DistributionSimulator";
+import Link from "next/link";
+import type { RosterPreviewMember } from "./DistributionSimulator";
 import type { EquipmentCatalogItem } from "@/lib/equipment-catalog";
 import styles from "./equipment.module.css";
 
@@ -210,12 +211,23 @@ export default function EquipmentPage() {
                 )}</div> : <p className={styles.empty}>연결 가능한 분배 기록이 없습니다.</p>}
               </section>}
             </> : <section className={styles.emptyPanel}>장비가 등록된 길드원이 없습니다.</section>}
-            {isAdmin && <DistributionSimulator
-              members={members}
-              rosterMembers={query.data?.rosterMembers ?? []}
-              catalog={catalog}
-              skillHistory={skillHistory}
-            />}
+            {isAdmin && (
+              <div className={styles.adminPanel}>
+                <div className={styles.panelTitle}>
+                  <div>
+                    <span className={styles.eyebrow}>ADMIN · EQUIPMENT ALLOCATION</span>
+                    <h3>신규 장비 분배·계승 관리</h3>
+                  </div>
+                  <Link href="/admin/equipment-allocation" className={styles.profileBadge}>
+                    계승 관리 열기 →
+                  </Link>
+                </div>
+                <p className={styles.muted}>
+                  신규 장비 1개를 지급할 성장력 최상위 인원과 다음 장비 수령자를
+                  관리자 전용 화면에서 확인하세요.
+                </p>
+              </div>
+            )}
           </div>
         </div>}
       </div>
