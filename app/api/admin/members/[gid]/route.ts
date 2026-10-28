@@ -594,7 +594,7 @@ export async function DELETE(
     try {
       const response =
         await fetch(
-          googleScriptUrl,
+          googleScriptUrl!,
           {
             method:
               "POST",
