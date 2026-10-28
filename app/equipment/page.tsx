@@ -5,13 +5,11 @@ import { useSession } from "next-auth/react";
 import AppTopBar from "@/app/components/AppTopBar";
 import DataStatus from "@/app/components/DataStatus";
 import { usePortalQuery } from "@/lib/use-portal-query";
-import {
-  EQUIPMENT_SLOTS, getEquipmentTier, recommendEquipment,
-  type EquippedMember,
-} from "@/lib/equipment-recommendation";
+import type { EquippedMember } from "@/lib/equipment-recommendation";
 import EquipmentSlotCard from "./EquipmentSlotCard";
 import EquipmentMannequin from "./EquipmentMannequin";
 import SkillDistributionCard from "./SkillDistributionCard";
+import DistributionSimulator, { type RosterPreviewMember } from "./DistributionSimulator";
 import type { EquipmentCatalogItem } from "@/lib/equipment-catalog";
 import styles from "./equipment.module.css";
 
@@ -23,6 +21,7 @@ type EquipmentResponse = {
   success: boolean; message?: string; members?: EquippedMember[];
   catalog?: EquipmentCatalogItem[];
   history?: History[]; skillHistory?: History[]; rosterTotal?: number; updatedAt?: string | null;
+  rosterMembers?: RosterPreviewMember[];
   sourceSummary?: { equipmentDistributionRows?: number };
   rankingByGid?: Record<string, {
     jobRank: number; jobTotal: number; overallRank: number; overallTotal: number;
@@ -43,11 +42,6 @@ function nickAliases(member: EquippedMember) {
   }
   return result;
 }
-function tierText(s: string) {
-  const tier = getEquipmentTier(s);
-  return tier ? (tier.group === "hero" ? "영웅 " : "") + "T" + tier.level : "등급 미확인";
-}
-
 // Display order is visual only: keep exact source slot names for icon lookup and data.
 const EQUIPMENT_PAIR_ROWS = [
   { left: "무기", right: "보조무기" },
@@ -80,9 +74,6 @@ export default function EquipmentPage() {
   const [guildFilter, setGuildFilter] = useState("전체");
   const [selectedGid, setSelectedGid] = useState("");
   const [view, setView] = useState<"inventory" | "history">("inventory");
-  const [newSlot, setNewSlot] = useState<string>("무기");
-  const [newItem, setNewItem] = useState("");
-  const [calculated, setCalculated] = useState(false);
   const [highlightedEquipmentSlot, setHighlightedEquipmentSlot] = useState<string | null>(null);
 
   const guilds = useMemo(() =>
@@ -100,10 +91,6 @@ export default function EquipmentPage() {
     return combinedHistory.filter(h => aliases.has(cleanName(h.target))).slice(-40).reverse();
   }, [selected, combinedHistory]);
   const distributionTotal = recent.length;
-  const proposal = useMemo(() => calculated ?
-    recommendEquipment(members, newSlot, newItem) : null,
-  [calculated, members, newSlot, newItem]);
-
   if (status === "loading") return <main className={styles.state}>Discord 인증 상태를 확인 중입니다.</main>;
   if (!canRead) return (
     <main className={styles.state}>
@@ -223,44 +210,12 @@ export default function EquipmentPage() {
                 )}</div> : <p className={styles.empty}>연결 가능한 분배 기록이 없습니다.</p>}
               </section>}
             </> : <section className={styles.emptyPanel}>장비가 등록된 길드원이 없습니다.</section>}
-            {isAdmin && <section className={styles.adminPanel}>
-              <div className={styles.panelTitle}><div>
-                <span className={styles.eyebrow}>ADMIN · PREVIEW ONLY</span>
-                <h3>신규 장비 분배 · 계승 시뮬레이션</h3>
-              </div><span className={styles.profileBadge}>관리자 전용</span></div>
-              <p className={styles.muted}>실제 분배를 기록하지 않는 미리보기입니다. 직업 적합성·참여도·개인 장비 회수 여부는 운영진 최종 확인이 필요합니다.</p>
-              <div className={styles.formLine}>
-                <label>장비 부위
-                  <select className={styles.select} value={newSlot}
-                    onChange={e => {setNewSlot(e.target.value);setCalculated(false);}}>
-                    {EQUIPMENT_SLOTS.map(s => <option value={s} key={s}>{s}</option>)}
-                  </select>
-                </label>
-                <label>새 아이템 이름
-                  <input className={styles.input} value={newItem}
-                    placeholder="예: 6t 위대한 대검"
-                    onChange={e => {setNewItem(e.target.value);setCalculated(false);}} />
-                </label>
-                <button type="button" className={styles.primary} onClick={() => setCalculated(true)}>
-                  추천 계산
-                </button>
-              </div>
-              {proposal && <>
-                <div className={styles.suggestionNote}>{proposal.message} · 비교/적합성 미확인 {proposal.excluded}명</div>
-                {proposal.suggestions.map((s,i) => <article className={styles.suggestion} key={s.gid}>
-                  <div className={styles.suggestionTitle}>
-                    <strong>{i+1}순위 · {s.nickname}</strong>
-                    <span>{s.job} / {s.guild} · 비교 티어 +{s.gainedTiers}</span>
-                  </div>
-                  <div className={styles.chain}>{s.chain.map((step,index) =>
-                    <div key={step.gid} className={styles.chainItem}>
-                      <b>{index+1}. {step.nickname}</b>
-                      <span>{step.before} → {step.receives}</span>
-                    </div>)}</div>
-                  <p>{s.reasons.join(" · ")}</p>
-                </article>)}
-              </>}
-            </section>}
+            {isAdmin && <DistributionSimulator
+              members={members}
+              rosterMembers={query.data?.rosterMembers ?? []}
+              catalog={catalog}
+              skillHistory={skillHistory}
+            />}
           </div>
         </div>}
       </div>
