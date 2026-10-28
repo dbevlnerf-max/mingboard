@@ -57,7 +57,8 @@ function comparable(offered: string, worn: string, slot: string) {
 export function recommendEquipment(
   members: EquippedMember[],
   slot: string,
-  newItem: string
+  newItem: string,
+  options: { candidateJob?: string; limit?: number } = {},
 ): { suggestions: Suggestion[]; excluded: number; message: string } {
   const proposed = newItem.trim();
   if (!EQUIPMENT_SLOTS.some(v => v === slot) || !proposed) {
@@ -67,7 +68,11 @@ export function recommendEquipment(
     return { suggestions: [], excluded: members.length,
       message: "새 아이템의 티어를 식별할 수 없어 자동 비교하지 않았습니다. 티어 표기를 확인해주세요." };
   }
-  const candidates = members.flatMap(member => {
+  const selectedJob = options.candidateJob?.replace("앨리멘탈리스트", "엘리멘탈리스트");
+  const targetMembers = selectedJob
+    ? members.filter(m => m.job.replace("앨리멘탈리스트", "엘리멘탈리스트") === selectedJob)
+    : members;
+  const candidates = targetMembers.flatMap(member => {
     const worn = member.slots.find(s => s.slot === slot);
     if (!worn?.item) return [];
     const delta = comparable(proposed, worn.item, slot);
@@ -111,8 +116,8 @@ export function recommendEquipment(
     b.chain.length - a.chain.length ||
     a.nickname.localeCompare(b.nickname, "ko"));
   return {
-    suggestions: suggestions.slice(0, 5),
-    excluded: Math.max(0, members.length - candidates.length),
+    suggestions: suggestions.slice(0, Math.max(1, options.limit ?? 5)),
+    excluded: Math.max(0, targetMembers.length - candidates.length),
     message: suggestions.length ? "현재 장비의 티어 개선 가능성을 기준으로 계산한 참고 추천입니다." :
       "비교 가능한 착용 장비에서 명확한 티어 상승 대상을 찾지 못했습니다.",
   };
