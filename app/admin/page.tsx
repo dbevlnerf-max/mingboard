@@ -213,6 +213,24 @@ export default async function AdminPage() {
 
     {
       icon:
+        "🛡️",
+
+      title:
+        "장비 분배·계승 관리",
+
+      description:
+        "새 장비 1개 기준 최초 지급자와 연쇄 계승 경로를 성장력순으로 계산합니다.",
+
+      status:
+        "사용 가능",
+
+      href:
+        "/admin/equipment-allocation",
+    },
+
+
+    {
+      icon:
         "📦",
 
       title:
