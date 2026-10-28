@@ -81,7 +81,8 @@ export default function DistributionSimulator({members,rosterMembers,catalog,ski
           candidateJob:job==="전체"?undefined:job,limit:activeEquipment.length,
         }) : null,
   [category,activeEquipment,slot,offer,selectedItem,job]);
-  const suggestedGids=new Set((proposal?.suggestions || []).map(s=>s.gid));
+  const suggestedGids=new Set((proposal?.suggestions || [])
+    .flatMap(s=>s.chain.map(step=>step.gid)));
 
   const reviewRows=selectedItem && category==="equipment"
     ? selectedMembers.filter(m=>!suggestedGids.has(m.gid)).map(member=>{
@@ -188,43 +189,65 @@ export default function DistributionSimulator({members,rosterMembers,catalog,ski
       <div className={styles.simSummary}>
         <div><small>선택 아이템</small><strong>{itemLabel(selectedItem)}</strong></div>
         <div><small>장비 조사된 활동 길드원</small><strong>{selectedMembers.length}명</strong></div>
-        <div><small>자동 교체 추천</small><strong>{proposal?.suggestions.length || 0}명</strong></div>
-        <div><small>추가 확인 대상</small><strong>{reviewRows.length}명</strong></div>
+        <div><small>신규 장비 최초 지급</small><strong>{proposal?.suggestions.length || 0}명</strong></div>
+        <div><small>후속 장비 계승</small><strong>{proposal?.suggestions[0]?.chain.length ? proposal.suggestions[0].chain.length - 1 : 0}명</strong></div>
       </div>
       <p className={styles.simHint}>
-        같은 종류의 희귀→영웅 등급 상승 또는 같은 등급 내 티어 상승을 추천합니다.
-        일반 T4 이하 장비는 후속 계승하지 않습니다.
-        다른 등급·종류·미기록 장비는 추가 검토로 분류합니다.
+        신규 장비는 1개 기준으로 계산합니다. 해당 직업에서 받을 수 있는 성장력 최상위 인원에게 먼저 지급하며,
+        회수 가능한 기존 장비는 같은 직업·길드에서 낮은 장비를 착용한 인원 중 성장력 순으로 계승합니다.
+        개인구매 장비와 일반 T4 이하는 후속 계승하지 않습니다.
       </p>
+
       {(proposal?.suggestions.length || 0)>0 && <div className={styles.simGroup}>
-        <h4>자동 교체 추천 <span>{proposal?.suggestions.length}명</span></h4>
-        {proposal?.suggestions.map((row,i)=>{
-          const member=selectedMembers.find(m=>m.gid===row.gid);
-          const worn=member?.slots.find(s=>s.slot===slot);
-          return <article className={styles.simRow} key={row.gid}>
-            <span className={styles.simOrder}>{i+1}</span>
-            <div className={styles.simIdentity}><strong>{row.nickname}</strong>
-              <small>{row.job} · {row.guild}</small></div>
-            <div className={styles.simRowDetails}>
-              <strong><GradeItem item={row.currentItem} /> <span className={styles.simItemArrow}>→</span> <GradeItem item={offer} /></strong>
-              <small>{getEquipmentTier(row.currentItem)?.group !== getEquipmentTier(offer)?.group
-                ? "희귀 → 영웅 등급 상승"
-                : "티어 +" + row.gainedTiers} · {worn?.personal?"기존 장비 개인구매 · 계승 제외":
-                !eligibleForHandDown(row.currentItem)?"T4 이하 장비는 후속 계승하지 않음":
-                row.chain.length>1?"계승 검토: "+row.chain[1].nickname+" ← "+row.currentItem:
-                "후속 계승 대상 미확정"}</small>
-            </div>
-          </article>;
+        <h4>신규 장비 최초 지급 <span>1명</span></h4>
+        {proposal?.suggestions.map(row=> {
+          const first=selectedMembers.find(m=>m.gid===row.gid);
+          const oldTier=getEquipmentTier(row.currentItem);
+          const newTier=getEquipmentTier(offer);
+          return <div key={row.gid} className={styles.simChainGroup}>
+            <article className={`${styles.simRow} ${styles.simRowPrimary}`}>
+              <span className={styles.simOrder}>1</span>
+              <div className={styles.simIdentity}>
+                <strong>{row.nickname}</strong>
+                <small>{row.job} · {row.guild} · 성장력 {power(first?.growthPower || "").toLocaleString("ko-KR")}</small>
+              </div>
+              <div className={styles.simRowDetails}>
+                <strong><GradeItem item={row.currentItem} /> <span className={styles.simItemArrow}>→</span> <GradeItem item={offer} /></strong>
+                <small>{oldTier?.group !== newTier?.group ? "희귀 → 영웅 등급 상승" : "동일 등급 티어 상승"}</small>
+              </div>
+            </article>
+            <h4 className={styles.simChainHeading}>예상 계승 경로 <span>{row.chain.length-1}명</span></h4>
+            {row.chain.slice(1).map((step,index)=>{
+              const receiver=selectedMembers.find(m=>m.gid===step.gid);
+              const prior=row.chain[index];
+              return <article className={styles.simRow} key={step.gid}>
+                <span className={styles.simOrder}>{index+2}</span>
+                <div className={styles.simIdentity}>
+                  <strong>{step.nickname}</strong>
+                  <small>{receiver?.job} · {receiver?.guild} · 성장력 {power(receiver?.growthPower || "").toLocaleString("ko-KR")}</small>
+                </div>
+                <div className={styles.simRowDetails}>
+                  <strong><GradeItem item={step.before} /> <span className={styles.simItemArrow}>→</span> <GradeItem item={step.receives} /></strong>
+                  <small>{prior.nickname}의 회수 장비 계승 예정 · 운영진 확인 필요</small>
+                </div>
+              </article>;
+            })}
+            <p className={styles.simChainStop}>
+              {row.chain.length===1 ? "후속 계승 없음 · " : "계승 경로 종료 · "}
+              {row.reasons[2]}
+            </p>
+          </div>;
         })}
       </div>}
       {reviewRows.length>0 && <div className={styles.simGroup}>
-        <div className={styles.simGroupHeader}><h4>추가 확인 대상 <span>{reviewRows.length}명</span></h4>
-          {reviewRows.length>8 && <button className={styles.simExpand} type="button"
+        <div className={styles.simGroupHeader}>
+          <h4>기타 조사 인원 <span>{reviewRows.length}명 · 신규 지급·계승 미선정</span></h4>
+          <button className={styles.simExpand} type="button"
             onClick={()=>setShowAll(v=>!v)}>
-            {showAll?"접기":"전체 "+reviewRows.length+"명 보기"}
-          </button>}
+            {showAll?"목록 접기":"다른 인원 보기"}
+          </button>
         </div>
-        {reviewRows.slice(0,showAll?undefined:8).map(({member,before,reason,personal})=>
+        {showAll && reviewRows.map(({member,before,reason,personal})=>
           <article className={styles.simRow} key={member.gid}>
             <span className={styles.simOrderMuted}>·</span>
             <div className={styles.simIdentity}><strong>{member.nickname}</strong>
