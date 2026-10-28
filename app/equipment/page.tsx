@@ -10,6 +10,7 @@ import {
   type EquippedMember,
 } from "@/lib/equipment-recommendation";
 import EquipmentSlotCard from "./EquipmentSlotCard";
+import EquipmentMannequin from "./EquipmentMannequin";
 import SkillDistributionCard from "./SkillDistributionCard";
 import type { EquipmentCatalogItem } from "@/lib/equipment-catalog";
 import styles from "./equipment.module.css";
@@ -47,6 +48,19 @@ function tierText(s: string) {
   return tier ? (tier.group === "hero" ? "영웅 " : "") + "T" + tier.level : "등급 미확인";
 }
 
+// Display order is visual only: keep exact source slot names for icon lookup and data.
+const EQUIPMENT_PAIR_ROWS = [
+  { left: "무기", right: "보조무기" },
+  { left: "투구", right: "상의" },
+  { left: "장갑", right: "망토" },
+  { left: "신발", right: "하의" },
+  { left: "귀걸이", right: "허리띠" },
+  { left: "목걸이", right: "반지" },
+] as const;
+const EQUIPMENT_LABELS: Record<string, string> = {
+  상의: "갑옷", 하의: "바지",
+};
+
 export default function EquipmentPage() {
   const { data: session, status } = useSession();
   const isAdmin = Boolean(session?.user?.isAdmin || session?.user?.isMaster);
@@ -69,6 +83,7 @@ export default function EquipmentPage() {
   const [newSlot, setNewSlot] = useState<string>("무기");
   const [newItem, setNewItem] = useState("");
   const [calculated, setCalculated] = useState(false);
+  const [highlightedEquipmentSlot, setHighlightedEquipmentSlot] = useState<string | null>(null);
 
   const guilds = useMemo(() =>
     ["전체", ...new Set(members.map(m => m.guild).filter(Boolean))], [members]
@@ -174,14 +189,23 @@ export default function EquipmentPage() {
                   <SkillDistributionCard member={selected} history={skillHistory} compact />
                 </div>
                 <div className={styles.inventoryLeft}>
-                  {selected.slots.slice(0, 6).map(slot =>
-                    <EquipmentSlotCard key={slot.slot} slot={slot} job={selected.job} catalog={catalog} />
-                  )}
+                  {EQUIPMENT_PAIR_ROWS.map(({ left }) => {
+                    const slot = selected.slots.find(item => item.slot === left);
+                    return slot ? <EquipmentSlotCard key={left} slot={slot} job={selected.job}
+                      catalog={catalog} displaySlot={EQUIPMENT_LABELS[left] || left}
+                      highlighted={highlightedEquipmentSlot === left}
+                      onActiveChange={setHighlightedEquipmentSlot} /> : null;
+                  })}
                 </div>
+                <EquipmentMannequin activeSlot={highlightedEquipmentSlot} />
                 <div className={styles.inventoryRight}>
-                  {selected.slots.slice(6, 12).map(slot =>
-                    <EquipmentSlotCard key={slot.slot} slot={slot} job={selected.job} catalog={catalog} />
-                  )}
+                  {EQUIPMENT_PAIR_ROWS.map(({ right }) => {
+                    const slot = selected.slots.find(item => item.slot === right);
+                    return slot ? <EquipmentSlotCard key={right} slot={slot} job={selected.job}
+                      catalog={catalog} displaySlot={EQUIPMENT_LABELS[right] || right}
+                      highlighted={highlightedEquipmentSlot === right}
+                      onActiveChange={setHighlightedEquipmentSlot} /> : null;
+                  })}
                 </div>
                 <p className={styles.panelNote}>※ 검증된 장비만 실제 아이콘을 표시합니다(희귀 T4 이상 또는 영웅). 개인구매 및 강화 수치는 원본을 유지하며, 캐릭터 스크린샷 연동은 별도로 진행합니다.</p>
               </section> :
