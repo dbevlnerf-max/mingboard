@@ -43,6 +43,13 @@ export function equipmentKind(item: string, slot: string): string | null {
   if (slot !== "무기" && slot !== "보조무기") return slot;
   return WEAPON_KINDS.find(kind => item.includes(kind)) || null;
 }
+/** Ordinary T4 or lower equipment is never handed down in a succession.
+ * Hero equipment remains reviewable within its separate hero tier system. */
+export function eligibleForHandDown(item: string): boolean {
+  const tier = getEquipmentTier(item);
+  return Boolean(tier && (tier.group === "hero" || tier.level >= 5));
+}
+
 function comparable(offered: string, worn: string, slot: string) {
   const newTier = getEquipmentTier(offered);
   const oldTier = getEquipmentTier(worn);
@@ -84,7 +91,7 @@ export function recommendEquipment(
       gid: member.gid, nickname: member.nickname, receives: proposed, before: worn.item,
     }];
     // Personal purchases cannot be redistributed automatically.
-    if (!worn.personal && !/개인구매/.test(worn.item)) {
+    if (!worn.personal && !/개인구매/.test(worn.item) && eligibleForHandDown(worn.item)) {
       const next = members
         .filter(other => other.gid !== member.gid && other.guild === member.guild)
         .flatMap(other => {
@@ -109,7 +116,9 @@ export function recommendEquipment(
         "동일 장비 부위 및 비교 가능한 장비 종류",
         "동일 티어 체계에서 " + delta + "단계 상승",
         chain.length > 1 ? "기존 장비를 같은 길드의 하위 장비 사용자에게 계승 가능" :
-          worn.personal ? "개인 구매 장비는 계승에서 제외" : "안전한 후속 계승 대상 미확정",
+          worn.personal ? "개인 구매 장비는 계승에서 제외" :
+          !eligibleForHandDown(worn.item) ? "T4 이하 일반 장비는 후속 계승 제외" :
+          "안전한 후속 계승 대상 미확정",
       ],
     };
   }).sort((a, b) => b.gainedTiers - a.gainedTiers ||
