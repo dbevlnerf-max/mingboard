@@ -90,8 +90,10 @@ export default function DistributionSimulator({members,rosterMembers,catalog,ski
       const oldTier=getEquipmentTier(before),newTier=getEquipmentTier(offer);
       let reason="현재 장비가 동급 이상";
       if(!before) reason="기존 장비 미기록";
-      else if(!newTier || !oldTier || newTier.group!==oldTier.group)
-        reason="등급 체계가 달라 자동 비교 불가";
+      else if(!newTier || !oldTier)
+        reason="장비 등급 확인 불가";
+      else if(newTier.group!==oldTier.group)
+        reason=newTier.group==="normal" ? "현재 영웅 장비 착용 · 등급 하향 제외" : "등급 비교 확인 필요";
       else if((slot==="무기" || slot==="보조무기") &&
         equipmentKind(offer,slot)!==equipmentKind(before,slot))
         reason="무기 종류·직업 적합성 확인 필요";
@@ -190,7 +192,7 @@ export default function DistributionSimulator({members,rosterMembers,catalog,ski
         <div><small>추가 확인 대상</small><strong>{reviewRows.length}명</strong></div>
       </div>
       <p className={styles.simHint}>
-        추천은 같은 등급 체계·장비 종류에서 티어가 상승하는 경우에만 표시합니다.
+        같은 종류의 희귀→영웅 등급 상승 또는 같은 등급 내 티어 상승을 추천합니다.
         일반 T4 이하 장비는 후속 계승하지 않습니다.
         다른 등급·종류·미기록 장비는 추가 검토로 분류합니다.
       </p>
@@ -205,7 +207,9 @@ export default function DistributionSimulator({members,rosterMembers,catalog,ski
               <small>{row.job} · {row.guild}</small></div>
             <div className={styles.simRowDetails}>
               <strong><GradeItem item={row.currentItem} /> <span className={styles.simItemArrow}>→</span> <GradeItem item={offer} /></strong>
-              <small>티어 +{row.gainedTiers} · {worn?.personal?"기존 장비 개인구매 · 계승 제외":
+              <small>{getEquipmentTier(row.currentItem)?.group !== getEquipmentTier(offer)?.group
+                ? "희귀 → 영웅 등급 상승"
+                : "티어 +" + row.gainedTiers} · {worn?.personal?"기존 장비 개인구매 · 계승 제외":
                 !eligibleForHandDown(row.currentItem)?"T4 이하 장비는 후속 계승하지 않음":
                 row.chain.length>1?"계승 검토: "+row.chain[1].nickname+" ← "+row.currentItem:
                 "후속 계승 대상 미확정"}</small>
