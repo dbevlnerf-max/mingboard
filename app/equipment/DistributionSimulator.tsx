@@ -5,7 +5,7 @@ import {
   type EquippedMember,
 } from "@/lib/equipment-recommendation";
 import { classHeroSkills, normalizeSkillJob, normalizeSkillName } from "@/lib/skill-catalog";
-import { displayEquipmentName, type EquipmentCatalogItem } from "@/lib/equipment-catalog";
+import { displayEquipmentName, equipmentAvailableForJob, type EquipmentCatalogItem } from "@/lib/equipment-catalog";
 import styles from "./equipment.module.css";
 
 export type RosterPreviewMember = {
@@ -56,7 +56,7 @@ export default function DistributionSimulator({members,rosterMembers,catalog,ski
 
   const items=useMemo(()=>catalog.filter(item=>item.icon_verified &&
     Boolean(item.icon_asset) && item.slot===slot &&
-    (!item.job_class || job==="전체" || normalizeSkillJob(item.job_class)===job))
+    equipmentAvailableForJob(item,job))
     .sort((a,b)=>
       (a.rarity==="hero"?0:1)-(b.rarity==="hero"?0:1) ||
       b.tier-a.tier || a.item_name.localeCompare(b.item_name,"ko")
