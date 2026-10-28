@@ -2,6 +2,8 @@
  * Verified equipment icons are keyed by (slot, rarity, tier, exact item name).
  * Do not display an icon based on tier alone: T5 has multiple distinct items.
  */
+import { normalizeSkillJob } from "@/lib/skill-catalog";
+
 export type EquipmentRarity = "hero" | "rare" | "legendary";
 export type EquipmentCatalogItem = {
   item_id: string;
@@ -17,6 +19,46 @@ export type EquipmentCatalogItem = {
   sprite_columns: number;
   icon_verified: boolean;
 };
+
+/**
+ * Verified class-equipment pairing, checked against the 2026-10-28
+ * guild's 55-member equipment snapshot. The icon catalog has blank
+ * job_class on all weapon/offhand records, so that field alone cannot
+ * filter a class-specific equipment dropdown.
+ *
+ * These rules only filter item choices in the allocation preview.
+ * They do not alter equipment ownership or invent class suitability
+ * for newly introduced/unverified weapon types.
+ */
+export const EQUIPMENT_KINDS_BY_JOB: Record<
+  string, { 무기: readonly string[]; 보조무기: readonly string[] }
+> = {
+  나이트: { 무기: ["한손검", "대검"], 보조무기: ["대형방패"] },
+  버서커: { 무기: ["대검"], 보조무기: ["완갑"] },
+  어쌔신: { 무기: ["단검"], 보조무기: ["사슬검"] },
+  레인저: { 무기: ["활"], 보조무기: ["조준경"] },
+  오라클: { 무기: ["보주"], 보조무기: ["팔찌"] },
+  엘리멘탈리스트: { 무기: ["지팡이"], 보조무기: ["마법서"] },
+  블레스드: { 무기: ["철퇴"], 보조무기: ["소형방패"] },
+  아티산: { 무기: ["망치"], 보조무기: ["천칭"] },
+};
+
+/** Filter equipment selections by class even when catalog.job_class is empty. */
+export function equipmentAvailableForJob(
+  item: EquipmentCatalogItem,
+  job: string,
+): boolean {
+  const currentJob = normalizeSkillJob(job);
+  if (!currentJob || currentJob === "전체") return true;
+  if (item.job_class && normalizeSkillJob(item.job_class) !== currentJob) {
+    return false;
+  }
+  if (item.slot !== "무기" && item.slot !== "보조무기") return true;
+  const allowed = EQUIPMENT_KINDS_BY_JOB[currentJob];
+  if (!allowed) return false;
+  const kind = String(item.equipment_kind || "").replace(/\s+/g, "");
+  return allowed[item.slot].includes(kind);
+}
 
 type AnalyzedEquipment = {
   name: string;
