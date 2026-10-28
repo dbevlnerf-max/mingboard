@@ -80,57 +80,88 @@ export function recommendEquipment(
   const targetMembers = selectedJob
     ? members.filter(m => m.job.replace("앨리멘탈리스트", "엘리멘탈리스트") === selectedJob)
     : members;
+
+  // A newly acquired item means ONE item, therefore ONE primary recipient.
+  // Pick the highest-growth eligible active member, never the largest tier gain.
+  const numericPower = (member: EquippedMember) => {
+    const value = Number(String(member.growthPower || "").replace(/,/g, ""));
+    return Number.isFinite(value) ? value : 0;
+  };
+  const strongestFirst = (a: EquippedMember, b: EquippedMember) =>
+    numericPower(b) - numericPower(a) ||
+    a.nickname.localeCompare(b.nickname, "ko") ||
+    a.gid.localeCompare(b.gid);
+
   const candidates = targetMembers.flatMap(member => {
     const worn = member.slots.find(s => s.slot === slot);
     if (!worn?.item) return [];
     const delta = comparable(proposed, worn.item, slot);
     if (delta === null || delta <= 0) return [];
-    return [{ member, worn, delta }];
-  });
-  const suggestions = candidates.map(({ member, worn, delta }) => {
-    const chain: Suggestion["chain"] = [{
-      gid: member.gid, nickname: member.nickname, receives: proposed, before: worn.item,
-    }];
-    // Personal purchases cannot be redistributed automatically.
-    if (!worn.personal && !/개인구매/.test(worn.item) && eligibleForHandDown(worn.item)) {
-      const next = members
-        .filter(other => other.gid !== member.gid && other.guild === member.guild)
-        .flatMap(other => {
-          const used = other.slots.find(s => s.slot === slot);
-          if (!used?.item) return [];
-          const gain = comparable(worn.item, used.item, slot);
-          if (gain === null || gain <= 0) return [];
-          return [{ other, used, gain }];
-        }).sort((a, b) => b.gain - a.gain ||
-          a.other.nickname.localeCompare(b.other.nickname, "ko"))[0];
-      if (next) chain.push({
-        gid: next.other.gid, nickname: next.other.nickname,
-        receives: worn.item, before: next.used.item,
-      });
+    return [{member, worn, delta}];
+  }).sort((a, b) => strongestFirst(a.member, b.member));
+  const first = candidates[0];
+  if (!first) {
+    return { suggestions: [], excluded: targetMembers.length,
+      message: "현재 착용 장비와 비교해 지급 가능한 대상이 없습니다." };
+  }
+
+  const { member, worn, delta } = first;
+  const chain: Suggestion["chain"] = [{
+    gid: member.gid, nickname: member.nickname, receives: proposed, before: worn.item,
+  }];
+  const visited = new Set([member.gid]);
+  let released = worn;
+  let stoppedReason = "";
+
+  // Every hand-down transfers the item released by the previous recipient.
+  // Search ONLY lower-equipment members of the same job and guild; rank them
+  // by growthPower, not by largest tier difference. Never reuse a recipient.
+  while (chain.length < targetMembers.length) {
+    if (released.personal || /개인구매/.test(released.item)) {
+      stoppedReason = "기존 개인구매 장비는 회수·재계승할 수 없습니다.";
+      break;
     }
-    return {
-      gid: member.gid, nickname: member.nickname,
-      job: member.job, guild: member.guild, currentItem: worn.item,
-      gainedTiers: delta,
-      chain,
-      reasons: [
-        "동일 장비 부위 및 비교 가능한 장비 종류",
-        getEquipmentTier(proposed)?.group !== getEquipmentTier(worn.item)?.group
-          ? "희귀 장비에서 영웅 장비로 등급 상승"
-          : "동일 등급에서 " + delta + "티어 상승",
-        chain.length > 1 ? "기존 장비를 같은 길드의 하위 장비 사용자에게 계승 가능" :
-          worn.personal ? "개인 구매 장비는 계승에서 제외" :
-          !eligibleForHandDown(worn.item) ? "T4 이하 일반 장비는 후속 계승 제외" :
-          "안전한 후속 계승 대상 미확정",
-      ],
-    };
-  }).sort((a, b) => b.gainedTiers - a.gainedTiers ||
-    b.chain.length - a.chain.length ||
-    a.nickname.localeCompare(b.nickname, "ko"));
+    if (!eligibleForHandDown(released.item)) {
+      stoppedReason = "일반 T4 이하 장비는 재계승하지 않습니다.";
+      break;
+    }
+    const next = targetMembers
+      .filter(other => !visited.has(other.gid) &&
+        other.guild === member.guild && other.job === member.job)
+      .flatMap(other => {
+        const used = other.slots.find(s => s.slot === slot);
+        if (!used?.item) return [];
+        const gain = comparable(released.item, used.item, slot);
+        if (gain === null || gain <= 0) return [];
+        return [{ other, used }];
+      })
+      .sort((a, b) => strongestFirst(a.other, b.other))[0];
+    if (!next) {
+      stoppedReason = "동일 직업·길드에 더 낮은 장비의 계승 대상이 없습니다.";
+      break;
+    }
+    chain.push({
+      gid: next.other.gid, nickname: next.other.nickname,
+      receives: released.item, before: next.used.item,
+    });
+    visited.add(next.other.gid);
+    released = next.used;
+  }
+
+  const suggestion: Suggestion = {
+    gid: member.gid, nickname: member.nickname, job: member.job, guild: member.guild,
+    currentItem: worn.item, gainedTiers: delta, chain,
+    reasons: [
+      "해당 장비를 받을 수 있는 성장력 최상위 인원",
+      getEquipmentTier(proposed)?.group !== getEquipmentTier(worn.item)?.group
+        ? "희귀 → 영웅 등급 상승"
+        : "동일 등급에서 " + delta + "티어 상승",
+      stoppedReason || "연쇄 계승 경로 계산 완료",
+    ],
+  };
   return {
-    suggestions: suggestions.slice(0, Math.max(1, options.limit ?? 5)),
-    excluded: Math.max(0, targetMembers.length - candidates.length),
-    message: suggestions.length ? "장비의 등급 또는 티어 상승을 기준으로 계산한 참고 추천입니다." :
-      "비교 가능한 착용 장비에서 명확한 등급·티어 상승 대상을 찾지 못했습니다.",
+    suggestions: [suggestion],
+    excluded: Math.max(0, targetMembers.length - visited.size),
+    message: "신규 장비 1개 기준 최초 지급 1명 및 연쇄 계승 경로입니다.",
   };
 }
