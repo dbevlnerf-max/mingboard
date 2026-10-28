@@ -325,3 +325,9 @@
   .simRowDetails{grid-column:2}
   .simSummary>div{padding:10px}
 }
+
+/* Rarity labeling in allocation/succession results. */
+.simRowDetails strong .simItemRare{color:#2676c4;font-weight:800}
+.simRowDetails strong .simItemHero{color:#9051c4;font-weight:800}
+.simRowDetails strong .simItemUnknown{color:#776c61;font-weight:700}
+.simRowDetails strong .simItemArrow{color:#a79682;font-weight:600;padding:0 5px}
