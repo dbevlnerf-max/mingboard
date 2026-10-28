@@ -60,7 +60,9 @@ export function displayEquipmentName(raw: string): string {
   const withoutTier = withoutNotes
     .replace(/^\s*영웅\s*(?:(?:[tT]\s*\d+)|(?:\d+\s*[tT]))(?:\s+|(?=[가-힣]))/i, "")
     .replace(/^\s*(?:(?:[tT]\s*\d+)|(?:\d+\s*[tT]))(?:\s+|(?=[가-힣]))/i, "")
-    .trim();
+    .trim()
+    // Display the Knight shield label as written in the UI; keep the sheet value intact.
+    .replace(/수호자의\s*방패/g, "수호자의 방패");
   return withoutTier || original;
 }
 
