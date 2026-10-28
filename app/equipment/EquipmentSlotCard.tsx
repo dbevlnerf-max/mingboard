@@ -11,8 +11,13 @@ type Props = {
   slot: EquipmentSlot;
   job: string;
   catalog: EquipmentCatalogItem[];
+  displaySlot?: string;
+  highlighted?: boolean;
+  onActiveChange?: (slot: string | null) => void;
 };
-export default function EquipmentSlotCard({ slot, job, catalog }: Props) {
+export default function EquipmentSlotCard({
+  slot, job, catalog, displaySlot, highlighted = false, onActiveChange,
+}: Props) {
   const parsed = analyzeEquipmentItem(slot.item);
   const item = matchEquipmentIcon(slot.item, slot.slot, job, catalog);
   const isHero = parsed.rarity === "hero";
@@ -43,7 +48,15 @@ export default function EquipmentSlotCard({ slot, job, catalog }: Props) {
     ? (slot.enhancement.startsWith("+") ? "" : "+") + slot.enhancement : "";
 
   return (
-    <div className={`${styles.equipmentSlot} ${qualityClass}`}>
+    <div
+      className={`${styles.equipmentSlot} ${qualityClass} ${highlighted ? styles.equipmentSlotHighlighted : ""}`}
+      tabIndex={0}
+      aria-label={`${displaySlot || slot.slot}: ${displayName || "미기록"}`}
+      onMouseEnter={() => onActiveChange?.(slot.slot)}
+      onMouseLeave={() => onActiveChange?.(null)}
+      onFocus={() => onActiveChange?.(slot.slot)}
+      onBlur={() => onActiveChange?.(null)}
+    >
       <span
         role="img"
         aria-label={item ? `${item.item_name} 장비 아이콘` : `${slot.slot} 아이콘 미등록`}
@@ -53,7 +66,7 @@ export default function EquipmentSlotCard({ slot, job, catalog }: Props) {
         {item ? null : slot.slot}
       </span>
       <span className={styles.slotInfo}>
-        <small>{slot.slot}</small>
+        <small>{displaySlot || slot.slot}</small>
         <strong title={slot.item || "미기록"}>{displayName}</strong>
         {slot.personal && <small className={styles.personalPurchase}>개인구매</small>}
       </span>
