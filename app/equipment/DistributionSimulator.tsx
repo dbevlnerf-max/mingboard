@@ -53,6 +53,7 @@ export default function DistributionSimulator({members,rosterMembers,catalog,ski
   const [itemId,setItemId]=useState("");
   const [skillName,setSkillName]=useState("");
   const [showAll,setShowAll]=useState(false);
+  const [copyState,setCopyState]=useState("");
 
   const activeGids=useMemo(()=>new Set(rosterMembers.map(m=>String(m.gid))),[rosterMembers]);
   const activeEquipment=useMemo(()=>members.filter(m=>
@@ -130,11 +131,37 @@ export default function DistributionSimulator({members,rosterMembers,catalog,ski
   },[category,selectedSkill,job,rosterMembers,activeEquipment,members,skillHistory]);
   const recorded=skillRows.filter(s=>Boolean(s.record)).length;
 
+  async function copySuccessionPlan() {
+    if (!selectedItem || !proposal?.suggestions.length) return;
+    const plan = proposal.suggestions[0];
+    const rows = [
+      "[밍보드 장비 분배·연쇄 계승 예상안]",
+      "신규 아이템: " + itemLabel(selectedItem),
+      "부위 / 직업: " + (labelBySlot[slot] || slot) + " / " + job,
+      ...plan.chain.map((step, index) => {
+        const member = selectedMembers.find(m => m.gid === step.gid);
+        const from = index === 0 ? "신규 획득" : plan.chain[index - 1].nickname + " 회수";
+        return (index + 1) + "차 " + step.nickname +
+          " (성장력 " + power(member?.growthPower || "").toLocaleString("ko-KR") +
+          ") : " + displayEquipmentName(step.before) +
+          " → " + displayEquipmentName(step.receives) + " [" + from + "]";
+      }),
+      "종료: " + plan.reasons[2],
+      "※ 참고 미리보기 · 실제 지급/회수와 시트 변경은 운영진 확인 후 별도 처리",
+    ];
+    try {
+      await navigator.clipboard.writeText(rows.join("\n"));
+      setCopyState("계승 경로를 복사했습니다.");
+    } catch {
+      setCopyState("복사할 수 없습니다. 브라우저 클립보드 권한을 확인해주세요.");
+    }
+  }
+
   function switchCategory(next:"equipment"|"skill") {
-    setCategory(next);setItemId("");setSkillName("");setShowAll(false);
+    setCategory(next);setItemId("");setSkillName("");setShowAll(false);setCopyState("");
   }
   function switchJob(next:string) {
-    setJob(next);setItemId("");setSkillName("");setShowAll(false);
+    setJob(next);setItemId("");setSkillName("");setShowAll(false);setCopyState("");
   }
 
   return <section className={styles.adminPanel} aria-label="신규 장비 및 스킬북 시뮬레이션">
@@ -199,7 +226,12 @@ export default function DistributionSimulator({members,rosterMembers,catalog,ski
       </p>
 
       {(proposal?.suggestions.length || 0)>0 && <div className={styles.simGroup}>
-        <h4>신규 장비 최초 지급 <span>1명</span></h4>
+        <div className={styles.simGroupHeader}>
+          <h4>신규 장비 최초 지급 <span>1명</span></h4>
+          <button type="button" className={styles.simExpand}
+            onClick={copySuccessionPlan}>계승 경로 복사</button>
+        </div>
+        {copyState && <p className={styles.simHint} role="status">{copyState}</p>}
         {proposal?.suggestions.map(row=> {
           const first=selectedMembers.find(m=>m.gid===row.gid);
           const oldTier=getEquipmentTier(row.currentItem);
