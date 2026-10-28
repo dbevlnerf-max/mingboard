@@ -14,6 +14,7 @@ import {
 import {
   setMemberLifecycleStatus,
 } from "@/lib/member-lifecycle";
+import { findCuratedMember, archiveCuratedMember } from "@/lib/curated-roster-archive";
 
 
 type RouteContext = {
@@ -514,29 +515,20 @@ export async function DELETE(
         .GUILD_WRITE_SECRET;
 
 
-    if (
-      !googleScriptUrl ||
-      !secret
-    ) {
+    // The approved roster is held in Supabase. The older Apps Script
+    // only contains a subset and must never decide whether a curated GID exists.
+    const curatedLookup = await findCuratedMember(cleanGid);
 
+    if (!curatedLookup && (!googleScriptUrl || !secret)) {
       return NextResponse.json(
-        {
-          success: false,
-          message:
-            "서버 연동 설정이 없습니다.",
-        },
-        {
-          status: 500,
-        }
+        { success: false, message: "서버 연동 설정이 없습니다." },
+        { status: 500 }
       );
     }
 
-
-    const beforeMember =
-      await getCurrentMember(
-        googleScriptUrl,
-        cleanGid
-      );
+    const beforeMember = curatedLookup
+      ? curatedLookup.member
+      : await getCurrentMember(googleScriptUrl!, cleanGid);
 
 
     if (
@@ -592,6 +584,13 @@ export async function DELETE(
       null;
 
 
+    if (curatedLookup) {
+      // The authoritative roster is the source of truth for these members.
+      // Never issue the legacy Apps Script deletion for a curated GID.
+      await archiveCuratedMember(cleanGid);
+      sheetSynced = true;
+      invalidatePortalSheetReads();
+    } else {
     try {
       const response =
         await fetch(
@@ -650,6 +649,7 @@ export async function DELETE(
         error instanceof Error
           ? error.message
           : "Google Sheet 탈퇴 상태 반영에 실패했습니다.";
+    }
     }
 
 
