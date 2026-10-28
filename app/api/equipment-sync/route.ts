@@ -8,6 +8,7 @@ const SLOT_NAMES = new Set([
   "신발", "하의", "귀걸이", "허리띠", "목걸이", "반지",
 ]);
 const HISTORY_CATEGORIES = new Set(["무기", "보조무기", "방어구", "장신구"]);
+const SKILL_CATEGORY = "영웅스킬";
 type SourceMember = { gid: string; sourceNickname: string; slots: Array<{
   slot: string; item: string; enhancement: string; personal: boolean;
 }> };
@@ -37,6 +38,10 @@ export async function POST(request: Request) {
     if (!Array.isArray(body.members) || body.members.length < 50 || body.members.length > 250 ||
         !Array.isArray(body.history) || body.history.length > 3000) {
       return NextResponse.json({ success: false, message: "장비 또는 분배 이력 범위가 유효하지 않습니다." }, { status: 422 });
+    }
+    if (body.skillHistory !== undefined && (!Array.isArray(body.skillHistory) ||
+        body.skillHistory.length > 1000)) {
+      return NextResponse.json({ success: false, message: "스킬 분배 이력 범위가 유효하지 않습니다." }, { status: 422 });
     }
     const rawMembers = body.members as SourceMember[];
     const idSet = new Set<string>();
@@ -71,6 +76,17 @@ export async function POST(request: Request) {
           !h.date || !h.item || !HISTORY_CATEGORIES.has(h.category))) {
       return NextResponse.json({ success: false, message: "분배 기록 형식이 잘못되었습니다." }, { status: 422 });
     }
+    const incomingSkills: History[] | null = Array.isArray(body.skillHistory)
+      ? (body.skillHistory as History[]).map(h => ({
+          row: Number(h?.row), date: clean(h?.date, 32),
+          item: clean(h?.item, 200), category: clean(h?.category, 30),
+          job: clean(h?.job, 60), target: clean(h?.target, 100),
+          diamond: clean(h?.diamond, 40), notes: clean(h?.notes, 300),
+        })) : null;
+    if (incomingSkills?.some(h => !Number.isInteger(h.row) || h.row < 1 ||
+          !h.date || !h.item || h.category !== SKILL_CATEGORY)) {
+      return NextResponse.json({ success: false, message: "스킬 기록 형식이 잘못되었습니다." }, { status: 422 });
+    }
     const guildId = process.env.DISCORD_GUILD_ID;
     if (!guildId) return NextResponse.json({ success: false, message: "길드 설정 오류" }, { status: 503 });
     const [roster, previous] = await Promise.all([
@@ -90,7 +106,7 @@ export async function POST(request: Request) {
     if (idSet.size !== rawMembers.length || rawMembers.some(m => !rosterById.has(String(m.gid)))) {
       return NextResponse.json({ success: false, message: "확인되지 않은 GID가 있습니다." }, { status: 422 });
     }
-    const before = previous.data?.payload as { members?: unknown[]; history?: unknown[] } | null;
+    const before = previous.data?.payload as { members?: unknown[]; history?: unknown[]; skillHistory?: History[] } | null;
     const minimum = Math.max(50, Math.floor((before?.members?.length || 0) * 0.8));
     if (rawMembers.length < minimum) {
       return NextResponse.json({ success: false,
@@ -99,6 +115,14 @@ export async function POST(request: Request) {
     }
     if (history.length < Math.floor((before?.history?.length || 0) * 0.6)) {
       return NextResponse.json({ success: false, message: "분배 이력이 급감해 기존 데이터를 보호했습니다." }, { status: 422 });
+    }
+    const skillHistory = incomingSkills ?? (
+      Array.isArray(before?.skillHistory) ? before.skillHistory : []
+    );
+    if (incomingSkills && incomingSkills.length < Math.floor(
+        (before?.skillHistory?.length || 0) * 0.6)) {
+      return NextResponse.json({ success: false,
+        message: "스킬 분배 이력이 급감해 기존 데이터를 보호했습니다." }, { status: 422 });
     }
     const members = rawMembers.map(m => {
       const r = rosterById.get(String(m.gid))!;
@@ -114,17 +138,17 @@ export async function POST(request: Request) {
       };
     });
     const fetchedAt = new Date().toISOString();
-    const payload = { success: true, schemaVersion: 1, members, history,
+    const payload = { success: true, schemaVersion: 2, members, history, skillHistory,
       sourceSheet: "길드원 착용장비",
       sourceSummary: { registered: members.length, rosterCount: canonical.length,
-        equipmentDistributionRows: history.length } };
+        equipmentDistributionRows: history.length, skillDistributionRows: skillHistory.length } };
     const result = await supabaseAdmin.from("portal_sheet_snapshots")
       .upsert({ guild_id: guildId, source_key: "manual-equipment-inventory",
         query_key: "v1", action: "guild", payload, fetched_at: fetchedAt,
         invalidated_at: null }, { onConflict: "guild_id,source_key,query_key" });
     if (result.error) throw result.error;
     return NextResponse.json({ success: true, syncedAt: fetchedAt,
-      registered: members.length, history: history.length },
+      registered: members.length, history: history.length, skillHistory: skillHistory.length },
     { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
     console.error("Equipment sync failed:", error instanceof Error ? error.name : "unknown");

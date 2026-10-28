@@ -48,24 +48,27 @@ function syncMingboardEquipmentInventory() {
   var rows = end >= 6 ? distribution.getRange(6, 2, end - 5, 8).getDisplayValues() : [];
   var categories = {'무기': true, '보조무기': true, '방어구': true, '장신구': true};
   var history = [];
+  var skillHistory = [];
   for (var r = 0; r < rows.length; r++) {
     var cells = rows[r];
     var date = String(cells[0] || '').trim();
     var item = String(cells[1] || '').trim();
     var category = String(cells[2] || '').trim();
-    if (!date || !item || !categories[category]) continue;
-    history.push({
+    if (!date || !item || (!categories[category] && category !== '영웅스킬')) continue;
+    var record = {
       row: r + 6, date: date, item: item, category: category,
       job: String(cells[3] || '').trim(), target: String(cells[4] || '').trim(),
       diamond: String(cells[5] || '').trim(), notes: String(cells[7] || '').trim()
-    });
+    };
+    if (category === '영웅스킬') skillHistory.push(record);
+    else history.push(record);
   }
   if (history.length > 3000) throw new Error('분배 이력 최대 건수를 초과했습니다.');
 
   var response = UrlFetchApp.fetch(MING_EQUIPMENT_SYNC_URL, {
     method: 'post',
     contentType: 'application/json',
-    payload: JSON.stringify({secret: secret, members: members, history: history}),
+    payload: JSON.stringify({secret: secret, members: members, history: history, skillHistory: skillHistory}),
     muteHttpExceptions: true
   });
   var code = response.getResponseCode();
@@ -74,7 +77,7 @@ function syncMingboardEquipmentInventory() {
   if (code < 200 || code >= 300 || !result || !result.success) {
     throw new Error('장비 동기화 실패 (' + code + '): ' + (result && result.message || '응답 확인 필요'));
   }
-  console.log('밍보드 장비 동기화 완료: 인원=' + result.registered + ' 이력=' + result.history);
+  console.log('밍보드 장비 동기화 완료: 인원=' + result.registered + ' 장비이력=' + result.history + ' 영웅스킬=' + result.skillHistory);
   return result;
 }
 

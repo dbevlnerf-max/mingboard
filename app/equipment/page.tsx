@@ -10,6 +10,7 @@ import {
   type EquippedMember,
 } from "@/lib/equipment-recommendation";
 import EquipmentSlotCard from "./EquipmentSlotCard";
+import SkillDistributionCard from "./SkillDistributionCard";
 import type { EquipmentCatalogItem } from "@/lib/equipment-catalog";
 import styles from "./equipment.module.css";
 
@@ -20,7 +21,7 @@ type History = {
 type EquipmentResponse = {
   success: boolean; message?: string; members?: EquippedMember[];
   catalog?: EquipmentCatalogItem[];
-  history?: History[]; rosterTotal?: number; updatedAt?: string | null;
+  history?: History[]; skillHistory?: History[]; rosterTotal?: number; updatedAt?: string | null;
   sourceSummary?: { equipmentDistributionRows?: number };
 };
 function formatPower(s: string) {
@@ -53,6 +54,11 @@ export default function EquipmentPage() {
   const members = useMemo(() => query.data?.members ?? [], [query.data?.members]);
   const catalog = useMemo(() => query.data?.catalog ?? [], [query.data?.catalog]);
   const history = useMemo(() => query.data?.history ?? [], [query.data?.history]);
+  const skillHistory = useMemo(() => query.data?.skillHistory ?? [], [query.data?.skillHistory]);
+  const combinedHistory = useMemo(
+    () => [...history, ...skillHistory].sort((a, b) => a.row - b.row),
+    [history, skillHistory],
+  );
   const [search, setSearch] = useState("");
   const [guildFilter, setGuildFilter] = useState("전체");
   const [selectedGid, setSelectedGid] = useState("");
@@ -73,8 +79,8 @@ export default function EquipmentPage() {
   const recent = useMemo(() => {
     if (!selected) return [];
     const aliases = nickAliases(selected);
-    return history.filter(h => aliases.has(cleanName(h.target))).slice(-40).reverse();
-  }, [selected, history]);
+    return combinedHistory.filter(h => aliases.has(cleanName(h.target))).slice(-40).reverse();
+  }, [selected, combinedHistory]);
   const distributionTotal = recent.length;
   const proposal = useMemo(() => calculated ?
     recommendEquipment(members, newSlot, newItem) : null,
@@ -147,7 +153,7 @@ export default function EquipmentPage() {
                 <button className={view === "inventory" ? styles.tabActive : styles.tab} onClick={() => setView("inventory")}>착용 인벤토리</button>
                 <button className={view === "history" ? styles.tabActive : styles.tab} onClick={() => setView("history")}>분배 이력</button>
               </div>
-              {view === "inventory" ? <section className={styles.inventoryPanel}>
+              {view === "inventory" ? <><section className={styles.inventoryPanel}>
                 <div className={styles.inventoryLeft}>
                   {selected.slots.slice(0, 6).map(slot =>
                     <EquipmentSlotCard key={slot.slot} slot={slot} job={selected.job} catalog={catalog} />
@@ -165,13 +171,15 @@ export default function EquipmentPage() {
                   )}
                 </div>
                 <p className={styles.panelNote}>※ 검증된 장비만 실제 아이콘을 표시합니다(희귀 T4 이상 또는 영웅). 개인구매 및 강화 수치는 원본을 유지하며, 캐릭터 스크린샷 연동은 별도로 진행합니다.</p>
-              </section> :
+              </section>
+              <SkillDistributionCard member={selected} history={skillHistory} />
+              </> :
               <section className={styles.historyPanel}>
                 <div className={styles.panelTitle}>
                   <h3>{selected.nickname} 분배 기록</h3>
                   <span>{distributionTotal}건 표시</span>
                 </div>
-                <p className={styles.muted}>현재/과거 이름의 문자열이 일치하는 장비 분배 기록입니다. 착용·소유 확정 기록이 아닙니다.</p>
+                <p className={styles.muted}>현재/과거 이름의 문자열이 일치하는 장비·영웅스킬 분배 기록입니다. 착용·소유 확정 기록이 아닙니다.</p>
                 {recent.length ? <div className={styles.historyList}>{recent.map(h =>
                   <div className={styles.historyRow} key={h.row}>
                     <time>{h.date}</time><strong>{h.item}</strong>

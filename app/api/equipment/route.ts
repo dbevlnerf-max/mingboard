@@ -26,7 +26,7 @@ export async function GET() {
   try {
     const guildId = process.env.DISCORD_GUILD_ID;
     if (!guildId) throw new Error("Missing configured guild");
-    const [equipment, roster, catalog] = await Promise.all([
+    const [equipment, roster, catalog, legacySkills] = await Promise.all([
       supabaseAdmin.from("portal_sheet_snapshots")
         .select("payload,fetched_at")
         .eq("guild_id", guildId).eq("source_key", "manual-equipment-inventory")
@@ -39,13 +39,18 @@ export async function GET() {
         .eq("icon_verified", true)
         .order("tier", { ascending: true })
         .limit(1000),
+      supabaseAdmin.from("portal_sheet_snapshots")
+        .select("payload").eq("guild_id", guildId)
+        .eq("source_key", "manual-skill-distribution")
+        .eq("query_key", "v1").maybeSingle(),
     ]);
     if (equipment.error) throw equipment.error;
     if (roster.error) throw roster.error;
     if (catalog.error) throw catalog.error;
+    if (legacySkills.error) throw legacySkills.error;
 
     const payload = equipment.data?.payload as {
-      members?: Member[]; history?: History[]; sourceSummary?: Record<string, number>;
+      members?: Member[]; history?: History[]; skillHistory?: History[]; sourceSummary?: Record<string, number>;
     } | null;
     const sourceMembers = payload?.members;
     if (!Array.isArray(sourceMembers)) {
@@ -84,6 +89,10 @@ export async function GET() {
       success: true, members,
       catalog: (catalog.data ?? []) as EquipmentCatalogItem[],
       history: Array.isArray(payload?.history) ? payload.history.slice(0, 3000) : [],
+      skillHistory: Array.isArray(payload?.skillHistory) && payload.skillHistory.length
+        ? payload.skillHistory.slice(0, 1000)
+        : (Array.isArray((legacySkills.data?.payload as { history?: History[] } | null)?.history)
+          ? (legacySkills.data?.payload as { history: History[] }).history.slice(0, 1000) : []),
       sourceSummary: payload?.sourceSummary ?? {},
       updatedAt: equipment.data?.fetched_at ?? null,
       rosterTotal: currentRoster.length,
