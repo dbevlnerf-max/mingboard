@@ -18,8 +18,8 @@ function aliases(member: EquippedMember) {
   return names;
 }
 export default function SkillDistributionCard({
-  member, history,
-}: {member: EquippedMember; history: History[]}) {
+  member, history, compact = false,
+}: {member: EquippedMember; history: History[]; compact?: boolean}) {
   const skills = classHeroSkills(member.job);
   const names = aliases(member);
   const job = normalizeSkillJob(member.job);
@@ -28,12 +28,12 @@ export default function SkillDistributionCard({
     names.has(row.target.replace(/\s+/g,"").toLocaleLowerCase("ko-KR")) &&
     (!row.job.trim() || normalizeSkillJob(row.job) === job)
   );
-  return <section className={styles.skillSection} aria-label="직업별 영웅 스킬 분배">
+  return <section className={compact ? `${styles.skillSection} ${styles.skillSectionCompact}` : styles.skillSection} aria-label="직업별 영웅 스킬 분배">
     <div className={styles.skillSectionHeader}>
       <h3>영웅 스킬 분배</h3>
       <span>{job} · 최대 2종</span>
     </div>
-    <p className={styles.skillSubtext}>장비 슬롯과 별도로, 해당 직업의 영웅 스킬 2종과 길드 분배 기록을 보여줍니다.</p>
+    {!compact && <p className={styles.skillSubtext}>장비 슬롯과 별도로, 해당 직업의 영웅 스킬 2종과 길드 분배 기록을 보여줍니다.</p>}
     {skills.length === 2 ? <div className={styles.skillGrid}>
       {skills.map(skill => {
         const record = awarded.filter(row =>
@@ -59,6 +59,6 @@ export default function SkillDistributionCard({
         </div>;
       })}
     </div> : <p className={styles.skillSubtext}>해당 직업의 영웅 스킬 이름이 아직 확인되지 않았습니다.</p>}
-    <p className={styles.skillFootnote}>※ 분배 기록 확인은 지급 내역과 닉네임을 대조한 결과이며, 현재 습득·보유 확정은 아닙니다. 닉네임 변경 이전 기록은 누락될 수 있습니다.</p>
+    {!compact && <p className={styles.skillFootnote}>※ 분배 기록 확인은 지급 내역과 닉네임을 대조한 결과이며, 현재 습득·보유 확정은 아닙니다. 닉네임 변경 이전 기록은 누락될 수 있습니다.</p>}
   </section>;
 }
