@@ -331,3 +331,10 @@
 .simRowDetails strong .simItemHero{color:#9051c4;font-weight:800}
 .simRowDetails strong .simItemUnknown{color:#776c61;font-weight:700}
 .simRowDetails strong .simItemArrow{color:#a79682;font-weight:600;padding:0 5px}
+
+/* One-item allocation and visible multi-step hand-down path. */
+.simChainGroup{display:flex;flex-direction:column;gap:8px}
+.simRowPrimary{border-color:#c6ac83;background:#fcf7ef}
+.simChainHeading{margin:13px 0 1px!important;padding-top:7px;border-top:1px solid #e9dece}
+.simChainStop{margin:4px 0 0;background:#f7f3ed;border:1px solid #ece2d6;
+ color:#7d6a54;border-radius:7px;padding:10px 12px;font-size:11px;line-height:1.6}
