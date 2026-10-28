@@ -115,7 +115,9 @@ export function recommendEquipment(
       chain,
       reasons: [
         "동일 장비 부위 및 비교 가능한 장비 종류",
-        "동일 티어 체계에서 " + delta + "단계 상승",
+        getEquipmentTier(proposed)?.group !== getEquipmentTier(worn.item)?.group
+          ? "희귀 장비에서 영웅 장비로 등급 상승"
+          : "동일 등급에서 " + delta + "티어 상승",
         chain.length > 1 ? "기존 장비를 같은 길드의 하위 장비 사용자에게 계승 가능" :
           worn.personal ? "개인 구매 장비는 계승에서 제외" :
           !eligibleForHandDown(worn.item) ? "T4 이하 일반 장비는 후속 계승 제외" :
@@ -128,7 +130,7 @@ export function recommendEquipment(
   return {
     suggestions: suggestions.slice(0, Math.max(1, options.limit ?? 5)),
     excluded: Math.max(0, targetMembers.length - candidates.length),
-    message: suggestions.length ? "현재 장비의 티어 개선 가능성을 기준으로 계산한 참고 추천입니다." :
-      "비교 가능한 착용 장비에서 명확한 티어 상승 대상을 찾지 못했습니다.",
+    message: suggestions.length ? "장비의 등급 또는 티어 상승을 기준으로 계산한 참고 추천입니다." :
+      "비교 가능한 착용 장비에서 명확한 등급·티어 상승 대상을 찾지 못했습니다.",
   };
 }
