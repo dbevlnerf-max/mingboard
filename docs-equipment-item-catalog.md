@@ -27,6 +27,13 @@ DB는 RLS ON, `anon` / `authenticated` 직접 SELECT 불가. 서버 전용 secre
 이름 미확정으로 보류: 인덱스 0(T1_H2), 3(T5 보조무기), 6(T1_H).
 이들은 검증 전 다른 아이템과 매칭하지 않음.
 
+## 2026-10-28 고화질 방어구 이미지 교체
+- 소스: 사용자 제공 `아이템_아이콘_고화질 (2).zip` 내 방어구 PNG 48장.
+- 범위: 투구·상의·장갑·하의·신발·망토, 영웅 T1/T2 18종 + 희귀 T4/T5/T6 30종.
+- 전용 에셋: `public/equipment/icons/armor-hero-20261028.webp` (18프레임), `armor-rare-20261028.webp` (30프레임).
+- 변경 SQL: `supabase/seeds/equipment_armor_icons_20261028.sql` (기존 카탈로그 방어구 아이콘 덮어쓰기, 누락된 장갑 8종 카탈로그 추가).
+- 무기 및 장신구 아이콘, 시트/GID/착용·분배 데이터는 변경하지 않는다.
+
 ## 신규 이미지 대량 추가 절차
 1. **원본 개별 이미지 파일명**과 정확한 게임 장비명을 함께 확인한다. 권장 파일명: `assassin_weapon_t6_great_dagger.webp`.
 2. `public/equipment/icons/` 에 등록한다. 단일 이미지는 `sprite_index = NULL`, 묶음 이미지는 프레임 번호를 지정한다.
