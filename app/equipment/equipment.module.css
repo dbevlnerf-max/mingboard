@@ -273,3 +273,55 @@
   .inventoryPanel .slotInfo small{font-size:9px}
   .inventoryPanel .slotMeta{right:2px;top:3px}
 }
+
+
+/* Cascading equipment / hero skill simulator, constrained to the admin preview. */
+.simFilters{
+  display:grid;
+  grid-template-columns:minmax(100px,.75fr) minmax(125px,1fr)
+    minmax(125px,1fr) minmax(200px,1.65fr);
+  gap:10px;
+  align-items:end;
+  margin-top:19px;
+}
+.simFilters:has(>label:nth-child(3):last-child){
+  grid-template-columns:minmax(120px,1fr) minmax(140px,1.2fr) minmax(230px,1.8fr);
+}
+.simFilters label{min-width:0;font-size:12px;font-weight:750;color:#685d51;display:flex;flex-direction:column;gap:7px}
+.simFilters .select{max-width:100%;text-overflow:ellipsis}
+.simFilters .select:disabled{opacity:.65;cursor:not-allowed;background:#f5f1eb}
+.simPrompt{margin:15px 0 0;background:#faf8f4;border:1px dashed #ded1c1;border-radius:9px;padding:19px;color:#877a6b;font-size:12px;line-height:1.65}
+.simResult{margin-top:16px}
+.simSummary{display:grid;grid-template-columns:1.65fr repeat(3,1fr);gap:8px}
+.simSummary>div{min-width:0;border-radius:8px;background:#f7f3ed;border:1px solid #ede3d7;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.simSummary small{font-size:11px;color:#8e7d6a}
+.simSummary strong{font-size:14px;color:#4b3e32;overflow-wrap:anywhere;font-weight:800;line-height:1.4}
+.simHint{font-size:11px;color:#8d8174;line-height:1.7;margin:12px 0}
+.simGroup{margin-top:18px}
+.simGroup h4{font-size:13px;margin:0 0 9px;color:#46362b}
+.simGroup h4 span{color:#a4865f;font-size:12px}
+.simGroupHeader{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.simExpand{cursor:pointer;border:1px solid #dfcfbc;border-radius:7px;background:#fff;padding:6px 11px;font-weight:700;font-size:11px;color:#856945;margin:7px 0}
+.simExpand:hover{background:#f7f0e7}
+.simRow{display:grid;grid-template-columns:28px minmax(115px,.75fr) minmax(0,1.65fr);align-items:center;gap:11px;padding:10px 12px;border:1px solid #eee6dc;border-radius:8px;margin-top:6px;background:#fff}
+.simOrder,.simOrderMuted{border-radius:6px;display:grid;place-items:center;height:26px;width:26px;background:#f0e4d4;color:#916d41;font-weight:800;font-size:12px}
+.simOrderMuted{background:#f3f1ee;color:#aea59a}
+.simIdentity{min-width:0;display:flex;flex-direction:column;gap:3px}
+.simIdentity strong{font-size:12px;color:#3b312a}
+.simIdentity small{font-size:10px;color:#94887c;line-height:1.5;overflow-wrap:anywhere}
+.simRowDetails{min-width:0;display:flex;flex-direction:column;gap:4px}
+.simRowDetails strong{font-size:12px;color:#735437;line-height:1.5;overflow-wrap:anywhere}
+.simRowDetails small{font-size:10px;color:#968777;line-height:1.5}
+@media(max-width:1150px){
+  .simFilters{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .simFilters:has(>label:nth-child(3):last-child){grid-template-columns:repeat(2,minmax(0,1fr))}
+  .simFilters>label:last-child:nth-child(3){grid-column:1/-1}
+  .simSummary{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:500px){
+  .simFilters,.simFilters:has(>label:nth-child(3):last-child){grid-template-columns:1fr}
+  .simFilters>label:last-child:nth-child(3){grid-column:auto}
+  .simRow{grid-template-columns:24px minmax(0,1fr);gap:8px;padding:9px}
+  .simRowDetails{grid-column:2}
+  .simSummary>div{padding:10px}
+}
