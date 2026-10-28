@@ -135,6 +135,13 @@ export async function GET() {
       sourceSummary: payload?.sourceSummary ?? {},
       updatedAt: equipment.data?.fetched_at ?? null,
       rosterTotal: currentRoster.length,
+      rosterMembers: currentRoster.map(member => ({
+        gid: String(member.gid),
+        nickname: String(member.nickname ?? ""),
+        job: String(member.job ?? ""),
+        guild: String(member.guild ?? ""),
+        growthPower: String(member.growthPower ?? ""),
+      })),
       rankingByGid,
       readOnly: true,
     }, { headers: { "Cache-Control": "private, no-store, max-age=0", Vary: "Cookie" } });
