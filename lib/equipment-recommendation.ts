@@ -38,7 +38,7 @@ export function getEquipmentTier(item: string): Tier | null {
   if (normal) return { group: "normal", level: Number(normal[1]) };
   return null;
 }
-const WEAPON_KINDS = ["대검", "한손검", "단검", "활", "석궁", "지팡이", "보주", "망치", "창", "도끼", "방패", "완갑", "마법서", "조준경", "사슬검"];
+const WEAPON_KINDS = ["대형방패", "소형방패", "한손검", "대검", "단검", "활", "석궁", "지팡이", "보주", "망치", "철퇴", "창", "도끼", "방패", "완갑", "마법서", "조준경", "사슬검", "천칭", "팔찌"];
 export function equipmentKind(item: string, slot: string): string | null {
   if (slot !== "무기" && slot !== "보조무기") return slot;
   return WEAPON_KINDS.find(kind => item.includes(kind)) || null;
