@@ -53,12 +53,13 @@ export function eligibleForHandDown(item: string): boolean {
 function comparable(offered: string, worn: string, slot: string) {
   const newTier = getEquipmentTier(offered);
   const oldTier = getEquipmentTier(worn);
-  if (!newTier || !oldTier || newTier.group !== oldTier.group) return null;
+  if (!newTier || !oldTier) return null;
   if (slot === "무기" || slot === "보조무기") {
     const newKind = equipmentKind(offered, slot);
     const oldKind = equipmentKind(worn, slot);
     if (!newKind || !oldKind || newKind !== oldKind) return null;
   }
+  if (newTier.group !== oldTier.group) return newTier.group === "hero" ? 1 : null;
   return newTier.level - oldTier.level;
 }
 export function recommendEquipment(
