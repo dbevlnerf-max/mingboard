@@ -64,6 +64,45 @@ export async function GET() {
     } | null;
     const currentRoster = Array.isArray(rosterPayload?.members) ? rosterPayload.members : [];
     const rosterByGid = new Map(currentRoster.map(m => [String(m.gid), m]));
+
+    // Rankings use the full, approved active roster, not just members
+    // who have an equipment-inventory entry. Unranked/invalid powers
+    // are excluded rather than assigning an invented position.
+    const rankedMembers = currentRoster.map(member => ({
+      gid: String(member.gid),
+      job: String(member.job ?? "").trim().replace("앨리멘탈리스트", "엘리멘탈리스트"),
+      power: Number(String(member.growthPower ?? "").replace(/,/g, "")),
+    })).filter(member => Number.isFinite(member.power) && member.power > 0);
+    const byPower = (a: typeof rankedMembers[number], b: typeof rankedMembers[number]) =>
+      b.power - a.power || a.gid.localeCompare(b.gid, "ko-KR");
+    const overall = [...rankedMembers].sort(byPower);
+    const byJob = new Map<string, typeof rankedMembers>();
+    for (const member of rankedMembers) {
+      const bucket = byJob.get(member.job) ?? [];
+      bucket.push(member);
+      byJob.set(member.job, bucket);
+    }
+    const overallPositions = new Map<string, number>();
+    overall.forEach((member, index) => overallPositions.set(
+      member.gid, index > 0 && overall[index - 1].power === member.power
+        ? overallPositions.get(overall[index - 1].gid)! : index + 1
+    ));
+    const rankingByGid: Record<string, {
+      jobRank: number; jobTotal: number; overallRank: number; overallTotal: number;
+    }> = {};
+    for (const [job, bucket] of byJob) {
+      bucket.sort(byPower);
+      let rank = 0;
+      bucket.forEach((member, index) => {
+        if (index === 0 || member.power !== bucket[index - 1].power) rank = index + 1;
+        rankingByGid[member.gid] = {
+          jobRank: rank,
+          jobTotal: bucket.length,
+          overallRank: overallPositions.get(member.gid) ?? 0,
+          overallTotal: overall.length,
+        };
+      });
+    }
     const valid = (sourceMembers as Member[]).filter(m =>
       m && /^\d+$/.test(String(m.gid)) && Array.isArray(m.slots) &&
       m.slots.length === 12
@@ -96,6 +135,7 @@ export async function GET() {
       sourceSummary: payload?.sourceSummary ?? {},
       updatedAt: equipment.data?.fetched_at ?? null,
       rosterTotal: currentRoster.length,
+      rankingByGid,
       readOnly: true,
     }, { headers: { "Cache-Control": "private, no-store, max-age=0", Vary: "Cookie" } });
   } catch (error) {
