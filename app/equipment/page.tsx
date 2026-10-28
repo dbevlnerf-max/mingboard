@@ -23,6 +23,9 @@ type EquipmentResponse = {
   catalog?: EquipmentCatalogItem[];
   history?: History[]; skillHistory?: History[]; rosterTotal?: number; updatedAt?: string | null;
   sourceSummary?: { equipmentDistributionRows?: number };
+  rankingByGid?: Record<string, {
+    jobRank: number; jobTotal: number; overallRank: number; overallTotal: number;
+  }>;
 };
 function formatPower(s: string) {
   const n = Number(String(s ?? "").replace(/,/g, ""));
@@ -140,30 +143,40 @@ export default function EquipmentPage() {
           </aside>
           <div className={styles.mainColumn}>
             {selected ? <>
-              <section className={styles.profile}>
-                <div className={styles.avatar}>{selected.nickname.slice(0, 1)}</div>
-                <div>
-                  <span className={styles.eyebrow}>{selected.guild} · GID {selected.gid}</span>
-                  <h2>{selected.nickname}</h2>
-                  <p>{selected.job} <span className={styles.muted}>· 성장력 {formatPower(selected.growthPower)}</span></p>
-                </div>
-                <span className={styles.profileBadge}>착용장비 12부위</span>
-              </section>
               <div className={styles.tabs}>
                 <button className={view === "inventory" ? styles.tabActive : styles.tab} onClick={() => setView("inventory")}>착용 인벤토리</button>
                 <button className={view === "history" ? styles.tabActive : styles.tab} onClick={() => setView("history")}>분배 이력</button>
               </div>
-              {view === "inventory" ? <><section className={styles.inventoryPanel}>
+              {view === "inventory" ? <section className={styles.inventoryPanel}>
+                <div className={styles.inventoryTop}>
+                  <div className={styles.characterDisplay}>
+                    <span className={styles.characterCircle} aria-hidden="true">⚔</span>
+                    <div className={styles.characterInfo}>
+                      <span className={styles.characterMeta}>{selected.guild} · GID {selected.gid}</span>
+                      <strong>{selected.nickname}</strong>
+                      <span className={styles.characterJob}>{selected.job} · 성장력 {formatPower(selected.growthPower)}</span>
+                      <div className={styles.inlineRanks} aria-label="성장력 랭킹정보">
+                        <div>
+                          <span>{selected.job} 순위</span>
+                          <b>{query.data?.rankingByGid?.[selected.gid]
+                            ? `${query.data.rankingByGid[selected.gid].jobRank}/${query.data.rankingByGid[selected.gid].jobTotal}`
+                            : "—"}</b>
+                        </div>
+                        <div>
+                          <span>전직업 순위</span>
+                          <b>{query.data?.rankingByGid?.[selected.gid]
+                            ? `${query.data.rankingByGid[selected.gid].overallRank}/${query.data.rankingByGid[selected.gid].overallTotal}`
+                            : "—"}</b>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <SkillDistributionCard member={selected} history={skillHistory} compact />
+                </div>
                 <div className={styles.inventoryLeft}>
                   {selected.slots.slice(0, 6).map(slot =>
                     <EquipmentSlotCard key={slot.slot} slot={slot} job={selected.job} catalog={catalog} />
                   )}
-                </div>
-                <div className={styles.characterDisplay}>
-                  <span className={styles.characterCircle}>⚔</span>
-                  <strong>{selected.nickname}</strong>
-                  <span>{selected.job}</span>
-                  <small>캐릭터 사진은 원본 시트에서 확인</small>
                 </div>
                 <div className={styles.inventoryRight}>
                   {selected.slots.slice(6, 12).map(slot =>
@@ -171,9 +184,7 @@ export default function EquipmentPage() {
                   )}
                 </div>
                 <p className={styles.panelNote}>※ 검증된 장비만 실제 아이콘을 표시합니다(희귀 T4 이상 또는 영웅). 개인구매 및 강화 수치는 원본을 유지하며, 캐릭터 스크린샷 연동은 별도로 진행합니다.</p>
-              </section>
-              <SkillDistributionCard member={selected} history={skillHistory} />
-              </> :
+              </section> :
               <section className={styles.historyPanel}>
                 <div className={styles.panelTitle}>
                   <h3>{selected.nickname} 분배 기록</h3>
