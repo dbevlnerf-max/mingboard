@@ -15,6 +15,7 @@ import {
 import {
   supabaseAdmin,
 } from "@/lib/supabase/admin";
+import { getArchivedCuratedMembers } from "@/lib/curated-roster-archive";
 
 
 async function requireAdmin() {
@@ -59,35 +60,33 @@ async function requireAdmin() {
 
 
 async function fetchDepartedMembers() {
-  const googleScriptUrl =
-    process.env.GOOGLE_SCRIPT_URL;
+  const archived = await getArchivedCuratedMembers();
+  const googleScriptUrl = process.env.GOOGLE_SCRIPT_URL;
+  let sheetMembers: Array<{ gid: string; [key: string]: unknown }> = [];
 
-  if (!googleScriptUrl) {
-    throw new Error(
-      "GOOGLE_SCRIPT_URL이 설정되지 않았습니다."
-    );
+  if (googleScriptUrl) {
+    try {
+      const separator = googleScriptUrl.includes("?") ? "&" : "?";
+      const response = await fetch(
+        `${googleScriptUrl}${separator}action=guildDeparted`,
+        { cache: "no-store" }
+      );
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "탈퇴 인원 정보를 불러오지 못했습니다.");
+      }
+      if (Array.isArray(data.members)) sheetMembers = data.members;
+    } catch (error) {
+      // The legacy sheet may be offline or missing newer curated members.
+      if (!archived.length) throw error;
+      console.warn("Legacy departed roster unavailable; using curated archive.");
+    }
+  } else if (!archived.length) {
+    throw new Error("탈퇴 인원 조회 설정이 없습니다.");
   }
 
-  const separator =
-    googleScriptUrl.includes("?") ? "&" : "?";
-
-  const response = await fetch(
-    `${googleScriptUrl}${separator}action=guildDeparted`,
-    { cache: "no-store" }
-  );
-
-  const data = await response.json();
-
-  if (!response.ok || !data.success) {
-    throw new Error(
-      data.message ||
-      "탈퇴 인원 정보를 불러오지 못했습니다."
-    );
-  }
-
-  return Array.isArray(data.members)
-    ? data.members
-    : [];
+  const seen = new Set(archived.map(member => String(member.gid)));
+  return [...archived, ...sheetMembers.filter(member => !seen.has(String(member.gid)))];
 }
 
 
