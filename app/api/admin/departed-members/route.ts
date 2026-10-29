@@ -16,6 +16,7 @@ import {
   supabaseAdmin,
 } from "@/lib/supabase/admin";
 import { getArchivedCuratedMembers } from "@/lib/curated-roster-archive";
+import { getMemberAccess } from "@/lib/guild-scoped-admin";
 
 
 async function requireAdmin() {
@@ -35,26 +36,21 @@ async function requireAdmin() {
     };
   }
 
-  if (
-    !session.user.isGuildMember ||
-    !session.user.hasZeusRole ||
-    (!session.user.isAdmin && !session.user.isMaster)
-  ) {
+  const scopedAccess = await getMemberAccess(session.user);
+  if (scopedAccess.kind === "denied") {
     return {
       ok: false as const,
-      response: NextResponse.json(
-        {
-          success: false,
-          message: "관리자 권한이 필요합니다.",
-        },
-        { status: 403 }
-      ),
+      response: NextResponse.json({
+        success: false, message: "탈퇴 인원 관리 권한이 없습니다."
+      }, { status: 403 }),
     };
   }
+
 
   return {
     ok: true as const,
     session,
+    scopedAccess,
   };
 }
 
@@ -98,14 +94,14 @@ export async function GET() {
   }
 
   try {
-    const members =
-      await fetchDepartedMembers();
-
+    const members = await fetchDepartedMembers();
+    const scoped = access.scopedAccess.kind === "scoped"
+      ? members.filter(m => String(m.guild || "") === access.scopedAccess.guild)
+      : members;
     return NextResponse.json({
-      success: true,
-      count: members.length,
-      members,
-    });
+      success: true, count: scoped.length, members: scoped,
+      scope: access.scopedAccess.kind === "scoped" ? access.scopedAccess.guild : null,
+    }, { headers: { "Cache-Control": "private, no-store", "Vary": "Cookie" } });
 
   } catch (error) {
     console.error(
@@ -131,10 +127,12 @@ export async function DELETE(
   request: NextRequest
 ) {
   const access = await requireAdmin();
-
-  if (!access.ok) {
-    return access.response;
-  }
+  if (!access.ok) return access.response;
+  // Scoped guild operators may process departures in the member editor,
+  // but are NOT authorized to permanently erase archived member records.
+  if (access.scopedAccess.kind !== "full") return NextResponse.json({
+    success: false, message: "영구삭제는 전체 관리자만 가능합니다."
+  }, { status: 403 });
 
   try {
     const body = await request
