@@ -1,7 +1,8 @@
 import type { RosterMember } from "./guild-roster";
 
 type LiveFields = Pick<RosterMember, "gid" | "job" | "growthPower" | "growthPowerNumber"> &
-  Partial<Pick<RosterMember, "nickname" | "guild">>;
+  Partial<Pick<RosterMember, "nickname" | "guild" | "no" |
+    "attendanceRate" | "participationCount" | "targetCount">>;
 
 function normalizeJob(value: string): string {
   const job = String(value ?? "").trim();
@@ -25,7 +26,9 @@ function parseGrowth(member: LiveFields): number | null {
  * string matching or allow a stale legacy response to undo approved nicknames.
  */
 export function mergeLiveRoster<T extends LiveFields>(
-  curated: T[], live: LiveFields[], options: { syncNickname?: boolean } = {}
+  curated: T[], live: LiveFields[], options: {
+    syncNickname?: boolean; syncGuild?: boolean; syncParticipation?: boolean;
+  } = {}
 ) {
   const sources = new Map<string, LiveFields>();
   const duplicates = new Set<string>();
@@ -64,21 +67,37 @@ export function mergeLiveRoster<T extends LiveFields>(
     const jobChanged = Boolean(job) && job !== member.job;
     const growthChanged = growth !== null && growth !== member.growthPowerNumber;
     const nextNickname = String(current.nickname || "").trim();
-    const matchedGuild = String(current.guild || "") === String(member.guild || "");
+    const sourceGuild=String(current.guild || "").trim();
+    const validGuild=["핑뚝","천제","아스가르드","지옥소녀"].includes(sourceGuild);
+    const matchedGuild = sourceGuild === String(member.guild || "");
+    const guildChanged = Boolean(options.syncGuild && validGuild && !matchedGuild);
     const nameKey = normalizedName(nextNickname);
     const existingOwner = curatedNameOwner.get(nameKey);
-    const canRename = Boolean(options.syncNickname && matchedGuild &&
+    const canRename = Boolean(options.syncNickname && (matchedGuild || guildChanged) &&
       nextNickname && [...nextNickname].length <= 24 &&
       !/[\u0000-\u001f\u007f]/u.test(nextNickname) &&
       newNameCounts.get(nameKey) === 1 &&
       (!existingOwner || existingOwner === String(member.gid)));
     const nicknameChanged = canRename && nextNickname !== member.nickname;
-    if (!jobChanged && !growthChanged && !nicknameChanged) return member;
+    const attendanceChanged = Boolean(options.syncParticipation &&
+      current.attendanceRate !== undefined && current.attendanceRate !== member.attendanceRate);
+    const countChanged=Boolean(options.syncParticipation &&
+      current.participationCount !== undefined &&
+      Number(current.participationCount) !== Number(member.participationCount));
+    const targetChanged=Boolean(options.syncParticipation &&
+      current.targetCount !== undefined &&
+      Number(current.targetCount) !== Number(member.targetCount));
+    if (!jobChanged && !growthChanged && !nicknameChanged && !guildChanged &&
+        !attendanceChanged && !countChanged && !targetChanged) return member;
     liveUpdatedCount++;
     return {
       ...member,
       ...(jobChanged ? { job } : {}),
       ...(nicknameChanged ? { nickname: nextNickname } : {}),
+      ...(guildChanged ? { guild:sourceGuild } : {}),
+      ...(attendanceChanged ? {attendanceRate:current.attendanceRate}:{}),
+      ...(countChanged ? {participationCount:Number(current.participationCount)}:{}),
+      ...(targetChanged ? {targetCount:Number(current.targetCount)}:{}),
       ...(growthChanged ? {
         growthPowerNumber: growth,
         growthPower: growth!.toLocaleString("en-US"),
