@@ -127,7 +127,7 @@ export async function POST(request: Request) {
         targetCount:Number(member.targetCount || 0)
       }));
     const nextMembers = [...merged.members, ...additions];
-    const changed = nextMembers.flatMap(member => {
+    const changed = nextMembers.flatMap<{ before: RosterMember | null; after: RosterMember }>(member => {
       const before = confirmed.find(old => String(old.gid) === String(member.gid));
       if (!before) return [{before:null,after:member}];
       const fields = ["nickname", "guild", "job", "growthPower", "attendanceRate",
