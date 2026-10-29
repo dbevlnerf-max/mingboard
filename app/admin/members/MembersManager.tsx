@@ -24,12 +24,7 @@ type GuildMember = {
 };
 
 
-type GuildCounts = {
-  total: number;
-  pink: number;
-  red: number;
-  black: number;
-};
+type GuildCounts = Record<string, number>;
 
 
 type Props = {
@@ -101,12 +96,7 @@ export default function MembersManager({
     useState<GuildMember[]>([]);
 
   const [counts, setCounts] =
-    useState<GuildCounts>({
-      total: 0,
-      pink: 0,
-      red: 0,
-      black: 0,
-    });
+    useState<GuildCounts>({});
 
   const [jobs, setJobs] =
     useState<string[]>([]);
@@ -255,7 +245,7 @@ export default function MembersManager({
 
       const response =
         await fetch(
-          "/api/guild",
+          "/api/admin/managed-members",
           {
             cache: "no-store",
           }
@@ -278,14 +268,7 @@ export default function MembersManager({
         data.members || []
       );
 
-      setCounts(
-        data.counts || {
-          total: 0,
-          pink: 0,
-          red: 0,
-          black: 0,
-        }
-      );
+      setCounts(data.counts || {});
 
       setJobs(
         data.jobs || []
@@ -750,7 +733,7 @@ export default function MembersManager({
       const url =
         isAdd
           ? "/api/admin/members"
-          : `/api/admin/members/${encodeURIComponent(
+          : `/api/admin/managed-members/${encodeURIComponent(
               editingMember?.gid || ""
             )}`;
 
@@ -881,7 +864,7 @@ export default function MembersManager({
 
       const response =
         await fetch(
-          `/api/admin/members/${encodeURIComponent(
+          `/api/admin/managed-members/${encodeURIComponent(
             deletingMember.gid
           )}`,
           {
@@ -1154,7 +1137,7 @@ export default function MembersManager({
               </h1>
 
               <p>
-                핑뚝 · 빨뚝 · 검뚝 길드원을 추가, 수정, 탈퇴처리합니다.
+                핑뚝 · 천제 · 아스가르드 · 지옥소녀 길드원의 정보를 관리합니다.
               </p>
 
             </div>
@@ -1199,89 +1182,16 @@ export default function MembersManager({
 
 
           <section className={styles.summaryGrid}>
-
-            <button
-              className={
-                guildFilter ===
-                "전체"
-                  ? `${styles.summaryCard} ${styles.activeCard}`
-                  : styles.summaryCard
-              }
-              onClick={
-                () =>
-                  setGuildFilter(
-                    "전체"
-                  )
-              }
-            >
-              <span>전체</span>
-              <strong>{counts.total}</strong>
-              <small>TOTAL MEMBERS</small>
-            </button>
-
-
-            <button
-              className={
-                guildFilter ===
-                "핑뚝"
-                  ? `${styles.summaryCard} ${styles.pinkCard} ${styles.activeCard}`
-                  : `${styles.summaryCard} ${styles.pinkCard}`
-              }
-              onClick={
-                () =>
-                  setGuildFilter(
-                    "핑뚝"
-                  )
-              }
-            >
-              <span>핑뚝</span>
-              <strong>{counts.pink}</strong>
-              <small>PINK</small>
-            </button>
-
-
-            <button
-              className={
-                guildFilter ===
-                "빨뚝"
-                  ? `${styles.summaryCard} ${styles.redCard} ${styles.activeCard}`
-                  : `${styles.summaryCard} ${styles.redCard}`
-              }
-              onClick={
-                () =>
-                  setGuildFilter(
-                    "빨뚝"
-                  )
-              }
-            >
-              <span>빨뚝</span>
-              <strong>{counts.red}</strong>
-              <small>RED</small>
-            </button>
-
-
-            <button
-              className={
-                guildFilter ===
-                "검뚝"
-                  ? `${styles.summaryCard} ${styles.blackCard} ${styles.activeCard}`
-                  : `${styles.summaryCard} ${styles.blackCard}`
-              }
-              onClick={
-                () =>
-                  setGuildFilter(
-                    "검뚝"
-                  )
-              }
-            >
-              <span>검뚝</span>
-              <strong>{counts.black}</strong>
-              <small>BLACK</small>
-            </button>
-
+            {["전체", "핑뚝", "천제", "아스가르드", "지옥소녀"].map(name=> (
+              <button type="button" key={name}
+                className={guildFilter===name ? `${styles.summaryCard} ${styles.activeCard}` : styles.summaryCard}
+                onClick={()=>setGuildFilter(name)}>
+                <span>{name}</span>
+                <strong>{counts[name] ?? 0}</strong>
+                <small>{name==="전체"?"ALL GUILDS":"GUILD"}</small>
+              </button>
+            ))}
           </section>
-
-
 
           <section className={styles.toolbar}>
 
@@ -1923,13 +1833,9 @@ export default function MembersManager({
                       핑뚝
                     </option>
 
-                    <option value="빨뚝">
-                      빨뚝
-                    </option>
-
-                    <option value="검뚝">
-                      검뚝
-                    </option>
+                    <option value="천제">천제</option>
+                    <option value="아스가르드">아스가르드</option>
+                    <option value="지옥소녀">지옥소녀</option>
 
                   </select>
 
