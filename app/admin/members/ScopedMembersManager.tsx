@@ -110,11 +110,15 @@ export default function ScopedMembersManager({ guild }: { guild: string }) {
         </div>}
       {editing&&<div className={styles.overlay} role="dialog" aria-modal="true" aria-label="길드원 수정">
         <div className={styles.modal}><h2>{editing.nickname} 정보 수정</h2>
-          <p>GID {editing.gid} · {editing.guild} · GID와 소속 길드는 변경할 수 없습니다.</p>
+          <p>GID {editing.gid} · 담당 길드 내 닉네임·직업·전투력을 수정할 수 있습니다.</p>
           <label>닉네임<input value={nickname} onChange={e=>setNickname(e.target.value)}
             maxLength={24} autoComplete="off" /></label>
           <label>직업<input value={job} onChange={e=>setJob(e.target.value)} maxLength={40}/></label>
           <label>전투력<input type="text" inputMode="numeric" value={power} onChange={e=>setPower(e.target.value)}/></label>
+          <label>길드 · 변경 불가
+            <input type="text" value={editing.guild} disabled readOnly
+              aria-label="소속 길드 변경 불가" />
+          </label>
           <div className={styles.modalActions}>
             <button type="button" onClick={()=>setEditing(null)} disabled={busy}>취소</button>
             <button type="button" onClick={save} disabled={busy}>{busy?"저장 중":"변경 저장"}</button>
