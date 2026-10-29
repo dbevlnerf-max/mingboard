@@ -68,9 +68,11 @@ export async function includeUnreturnedGuilds<T extends RosterMember>(
       }
       // The complete sheet sync owns job/growth once it has succeeded.
       // A stale legacy feed must never overwrite its 186 verified entries.
+      const managedGids = new Set((snapshot.payload.overrideGids ?? []).map(String));
+      const legacyRows = upstream.filter(row => !managedGids.has(String(row.gid)));
       const merged = snapshot.payload.liveSourceSyncedAt
         ? { members: members as T[] }
-        : mergeLiveRoster(members as T[], upstream);
+        : mergeLiveRoster(members as T[], legacyRows);
       return {
         ...merged, supplementalUpdatedAt: snapshot.fetched_at,
         liveSourceSyncedAt: snapshot.payload.liveSourceSyncedAt ?? null,
