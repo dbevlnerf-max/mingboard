@@ -270,7 +270,7 @@ export default function AppTopBar() {
                   : session.user.isAdmin
                     ? "ADMIN"
                     : session.user.scopedGuild
-                      ? session.user.scopedGuild + " 담당"
+                      ? session.user.scopedGuild + " 운영진"
                       : "ZEUS"
               }
 
