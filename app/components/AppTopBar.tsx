@@ -166,7 +166,8 @@ export default function AppTopBar() {
         {
           (
             session.user.isAdmin ||
-            session.user.isMaster
+            session.user.isMaster ||
+            session.user.scopedGuild
           ) &&
           (
 
@@ -268,7 +269,9 @@ export default function AppTopBar() {
                   ? "MASTER"
                   : session.user.isAdmin
                     ? "ADMIN"
-                    : "ZEUS"
+                    : session.user.scopedGuild
+                      ? session.user.scopedGuild + " 담당"
+                      : "ZEUS"
               }
 
             </small>
