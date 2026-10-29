@@ -174,7 +174,7 @@ export async function POST(request: Request) {
     action:"CREATE",targetType:"guild_member",targetId:gid,targetName:nickname,
     actorDiscordId:String(session?.user?.discordId || ""),
     actorName:session?.user?.name || "길드 운영진",
-    actorRole:session?.user?.isMaster?"MASTER":access.kind==="scoped"?"GUILD_OPERATOR":"ADMIN",
+    actorRole:session?.user?.isMaster?"MASTER":"ADMIN",
     beforeData:null,afterData:newMember,
     description:`[${guild}] ${nickname} 길드원 원본 시트·밍보드 동시 추가`
   });
