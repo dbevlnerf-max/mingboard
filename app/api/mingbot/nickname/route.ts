@@ -189,12 +189,38 @@ export async function GET(request: Request) {
     .in("target_type",["guild_member","guild_member_nickname","discord_registration"])
     .gt("id",after).order("id",{ascending:true}).limit(150);
   if(error) return respond("닉네임 감사로그를 조회할 수 없습니다.",503);
+  // Distribution ledger stores recipient name in F only, no GID.
+  // Never bulk-rewrite a historic recipient if that old nickname currently
+  // belongs to a different GID (including a departed character).
+  const [activeResult, departedResult] = await Promise.all([
+    supabaseAdmin.from("portal_sheet_snapshots").select("payload")
+      .eq("guild_id",process.env.DISCORD_GUILD_ID||"")
+      .eq("source_key","manual-guild-roster").eq("query_key","v1").maybeSingle(),
+    supabaseAdmin.from("portal_sheet_snapshots").select("payload")
+      .eq("guild_id",process.env.DISCORD_GUILD_ID||"")
+      .eq("source_key","manual-guild-departed").eq("query_key","v1").maybeSingle(),
+  ]);
+  if(activeResult.error || departedResult.error)
+    return respond("과거 분배 대상의 소유권을 확인하지 못했습니다.",503);
+  const knownMembers=[...(activeResult.data?.payload?.members||[]),
+    ...(departedResult.data?.payload?.members||[])].filter(
+      (m:unknown):m is {nickname:string;gid:string|number} =>
+        !!m && typeof m==="object" && "gid" in m && "nickname" in m
+    );
   const events=(data||[]).flatMap(row=>{
     const prior=String(row.before_data?.nickname||"").trim();
     const next=String(row.after_data?.nickname||"").trim();
     if (!prior || !next || prior===next) return [];
+    const ambiguous=knownMembers.some(m =>
+      String(m.gid)!==String(row.target_id) &&
+      normalized(String(m.nickname||""))===normalized(prior)
+    );
     return [{
       id:row.id,occurredAt:row.created_at,gid:row.target_id,
+      distributionRenameSafe: !ambiguous,
+      distributionRenameReason: ambiguous
+        ? "이전 닉네임을 다른 GID가 사용 중이거나 사용한 기록이 있어 F열 변경을 보류합니다."
+        : "",
       guild:String(row.after_data?.guild||row.before_data?.guild||""),
       oldNickname:prior,newNickname:next,
       actorDiscordId:row.actor_discord_id,actorName:row.actor_name,
