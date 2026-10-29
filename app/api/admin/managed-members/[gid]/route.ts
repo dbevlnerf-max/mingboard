@@ -188,35 +188,98 @@ export async function PATCH(request: Request, context: Context) {
 
 export async function DELETE(_request: Request, context: Context) {
   const { gid } = await context.params;
-  if (!/^\d+$/.test(gid)) return NextResponse.json({ success: false, message: "GID 오류" }, { status: 400 });
-  const check = await findWritable(gid);
-  if ("error" in check) return NextResponse.json({ success: false, message: check.error }, { status: check.status });
+  if (!/^\\d+$/.test(gid)) return NextResponse.json({
+    success: false, message: "GID 오류"
+  }, { status: 400 });
 
-  // Status is revoked before the archival removal. Keep the original records.
+  const check = await findWritable(gid);
+  if ("error" in check) return NextResponse.json({
+    success: false, message: check.error
+  }, { status: check.status });
+
+  const scriptUrl = process.env.GOOGLE_SCRIPT_URL;
+  const secret = process.env.GUILD_WRITE_SECRET;
+  if (!scriptUrl || !secret) return NextResponse.json({
+    success: false, sheetSynced: false, portalSynced: false,
+    message: "원본 Google Sheets 연동 설정이 없어 탈퇴를 처리하지 않았습니다."
+  }, { status: 503 });
+
+  // The deployed Apps Script's deleteGuildMember archives 🧾길드현황
+  // to 🧾탈퇴인원 using the immutable GID and then clears the active row.
+  // Never remove this member from the portal before the Sheet confirms success.
+  let sheetReply: {
+    success?: boolean;
+    message?: string;
+    member?: { gid?: string | number; status?: string; nickname?: string };
+  };
   try {
-    const lifecycle = await setMemberLifecycleStatus({
+    const response = await fetch(scriptUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "deleteGuildMember", secret, gid
+      }),
+      cache: "no-store",
+      signal: AbortSignal.timeout(20000),
+    });
+    sheetReply = await response.json();
+    if (!response.ok || !sheetReply?.success ||
+        String(sheetReply.member?.gid ?? "") !== gid ||
+        sheetReply.member?.status !== "탈퇴") {
+      return NextResponse.json({
+        success: false, sheetSynced: false, portalSynced: false,
+        message: sheetReply?.message ||
+          "원본 시트에서 탈퇴 처리 결과를 확인하지 못했습니다. 밍보드는 변경하지 않았습니다."
+      }, { status: 502 });
+    }
+  } catch {
+    return NextResponse.json({
+      success: false, sheetSynced: false, portalSynced: false,
+      message: "원본 시트 응답을 확인하지 못했습니다. 재시도하기 전 🧾길드현황과 🧾탈퇴인원을 확인해주세요."
+    }, { status: 502 });
+  }
+
+  // The Sheet is now archived. Record the member's revoked access and keep
+  // the portal archive, participation, and equipment history intact.
+  let lifecycle: Awaited<ReturnType<typeof setMemberLifecycleStatus>>;
+  try {
+    lifecycle = await setMemberLifecycleStatus({
       gid, status: "left", actorDiscordId: String(check.session.user.discordId || ""),
-      reason: check.access.kind === "scoped" ? `scoped_manager_${check.access.guild}` : "admin_member_leave",
+      reason: check.access.kind === "scoped"
+        ? `scoped_manager_${check.access.guild}` : "admin_member_leave",
     });
     await archiveCuratedMember(gid);
-    invalidatePortalSheetReads();
-    const audit = await writeAuditLog({
-      action: "UPDATE", targetType: "guild_member_status", targetId: gid,
-      targetName: check.member.nickname,
-      actorDiscordId: String(check.session.user.discordId || ""),
-      actorName: check.session.user.name || "담당자",
-      actorRole: check.session.user.isMaster ? "MASTER" : "ADMIN",
-      beforeData: check.member,
-      afterData: { status: "left", linksRevoked: lifecycle.linksRevoked },
-      description: `[${check.member.guild}] ${check.member.nickname} 길드원 탈퇴처리`,
-    });
-    return NextResponse.json({ success: true, auditSaved: audit.success,
-      message: `${check.member.nickname}님을 탈퇴 처리했습니다.`,
-      warning: lifecycle.roleResults.some(x => !x.success)
-        ? "Discord 역할 회수에 실패한 계정이 있습니다. 연결은 해제했습니다." : null });
   } catch (error) {
-    return NextResponse.json({ success: false,
-      message: error instanceof Error ? error.message : "탈퇴 처리 실패. 운영자에게 확인해주세요." },
-      { status: 500 });
+    invalidatePortalSheetReads();
+    console.error("Sheet archived but portal departure incomplete",
+      error instanceof Error ? error.message : "unknown");
+    return NextResponse.json({
+      success: false, sheetSynced: true, portalSynced: false,
+      message: "구글시트에서 탈퇴자 이동은 완료됐지만 밍보드 후속 반영에 실패했습니다. 중복 탈퇴하지 말고 전체 관리자에게 확인해주세요."
+    }, { status: 503 });
   }
+
+  invalidatePortalSheetReads();
+  const audit = await writeAuditLog({
+    action: "UPDATE", targetType: "guild_member_status", targetId: gid,
+    targetName: check.member.nickname,
+    actorDiscordId: String(check.session.user.discordId || ""),
+    actorName: check.session.user.name || "담당자",
+    actorRole: check.session.user.isMaster ? "MASTER" : "ADMIN",
+    beforeData: check.member,
+    afterData: {
+      status: "left", linksRevoked: lifecycle.linksRevoked,
+      sheetArchived: true, portalArchived: true,
+    },
+    description: `[${check.member.guild}] ${check.member.nickname} 길드원 탈퇴처리 (원본 시트·밍보드)`,
+  });
+  const warning = lifecycle.roleResults.some(x => !x.success)
+    ? "Discord 역할 회수에 실패한 계정이 있습니다. 연동은 해제했습니다."
+    : null;
+  return NextResponse.json({
+    success: true, sheetSynced: true, portalSynced: true,
+    auditSaved: audit.success,
+    message: `${check.member.nickname}님을 🧾탈퇴인원으로 옮기고 밍보드 활동 명단에서 제외했습니다.`,
+    warning,
+  }, { headers: { "Cache-Control": "private, no-store" } });
 }
