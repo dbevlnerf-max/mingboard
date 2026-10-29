@@ -12,7 +12,7 @@ export function isScopedGuild(value: string): value is ScopedGuild {
 /** An explicitly delegated operator must never fall back to full ADMIN,
  * even if their limited Discord role is later revoked or is unavailable. */
 export async function isAssignedScopedOperator(discordId: string): Promise<boolean> {
-  if (!discordId || !/^\\d{15,22}$/.test(discordId)) return false;
+  if (!discordId || !/^\d{15,22}$/.test(discordId)) return false;
   const { data, error } = await supabaseAdmin.from("guild_scoped_admin_assignments")
     .select("gid").eq("discord_id", discordId).maybeSingle();
   if (error) {
