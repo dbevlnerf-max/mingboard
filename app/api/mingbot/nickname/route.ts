@@ -53,43 +53,79 @@ export async function POST(request: Request) {
     return respond("승인된 길드원 명단을 확인할 수 없습니다.",503);
   if (linkResult.error) return respond("Discord 연결정보 확인 실패",503);
   const linked=new Set((linkResult.data||[]).map(x=>String(x.gid)));
-  if (!linked.size)
-    return respond("밍보드에 본인 Discord 계정과 연결된 캐릭터가 없습니다. 운영진에게 본인 GID 연결을 요청해주세요.",403);
-  const roster:Member[]=snap.payload.members;
-  const candidates=roster.filter(m=>linked.has(String(m.gid)) && m.guild===guild);
-  if (!candidates.length)
-    return respond("이 Discord 계정에 연결된 해당 길드 캐릭터가 없습니다.",403);
 
+  // First-time registration is a DIFFERENT trust flow from later self-renames.
+  // A new user naturally has no Discord ID <-> GID link yet. Validate against
+  // the authoritative roster and prevent claiming already linked characters.
+  if(action==="verify_registration" || action==="commit_registration") {
+    const target=roster.find(m=>m.guild===guild && m.nickname===nickname &&
+      (!requestedGid || requestedGid===String(m.gid)));
+    if(!target) return respond("해당 길드의 등록된 캐릭터 닉네임을 찾지 못했습니다.",404);
+    if (linked.size && !linked.has(String(target.gid)))
+      return respond("이 Discord 계정은 이미 다른 캐릭터와 연결돼 있습니다. 운영진에게 확인해주세요.",403);
+    const [claimedResult, memberState] = await Promise.all([
+      supabaseAdmin.from("guild_member_discord_links")
+        .select("discord_id,revoked_at").eq("gid",Number(target.gid)),
+      supabaseAdmin.from("guild_member_states")
+        .select("status").eq("gid",Number(target.gid)).maybeSingle(),
+    ]);
+    if(claimedResult.error || memberState.error)
+      return respond("길드원 소유권 확인 중 오류가 발생했습니다.",503);
+    if(memberState.data?.status!=="active")
+      return respond("현재 활동 중인 길드원만 최초 인증할 수 있습니다.",403);
+    const previous=claimedResult.data||[];
+    if(previous.some(link=>link.discord_id!==actor))
+      return respond("이 캐릭터는 이미 다른 Discord 계정에 연결된 기록이 있습니다. 운영진에게 확인해주세요.",409);
+    if(previous.some(link=>link.discord_id===actor && link.revoked_at))
+      return respond("이 계정의 기존 연결이 해제된 상태입니다. 운영진에게 재연결을 요청해주세요.",403);
+    if(action==="verify_registration")
+      return NextResponse.json({success:true,gid:String(target.gid),
+        nickname:target.nickname,guild:target.guild,
+        registrationMode:previous.length?"existing":"first"});
+    if(!previous.length){
+      const {error:claimError}=await supabaseAdmin.rpc(
+        "link_guild_member_discord_account", {
+          p_gid:Number(target.gid),
+          p_discord_id:actor,
+          p_discord_username:String(body.discordUsername||"").slice(0,100),
+          p_discord_display_name:nickname+"["+guild+"]",
+          p_account_type:"primary",
+        }
+      );
+      if(claimError){
+        console.error("[밍봇 최초 사용자등록 GID 연결 실패]",claimError.code);
+        return respond("최초 계정 연결이 완료되지 않았습니다. 이미 등록됐는지 확인해주세요.",409);
+      }
+    }
+    const original=beforeName.slice(0,50)||actor;
+    const formatted=nickname+"["+guild+"]";
+    const audit=await supabaseAdmin.from("audit_logs").insert({
+      action:"UPDATE",target_type:"discord_registration",target_id:String(target.gid),
+      target_name:formatted,actor_discord_id:actor,actor_name:actor,
+      actor_role:"MEMBER",before_data:{gid:target.gid,nickname:original,guild},
+      after_data:{gid:target.gid,nickname:formatted,guild},
+      description:"[밍봇 최초 인증] "+original+" → "+formatted,
+    }).select("id").maybeSingle();
+    if(audit.error)console.error("[밍봇 최초등록 감사로그 실패]",audit.error.code);
+    return NextResponse.json({success:true,gid:String(target.gid),
+      auditSaved:!audit.error,auditId:audit.data?.id||null});
+  }
+
+  // A rename is intentionally strict: linked Discord account, active GID,
+  // matching current server nickname and owner-only existing character.
+  if(!linked.size)
+    return respond("Discord 계정에 연결된 캐릭터가 없습니다. 먼저 사용자등록을 완료해주세요.",403);
+  const candidates=roster.filter(m=>linked.has(String(m.gid)) && m.guild===guild);
+  if(!candidates.length)
+    return respond("이 Discord 계정에 연결된 해당 길드 캐릭터가 없습니다.",403);
   const stateResult=await supabaseAdmin.from("guild_member_states").select("gid,status")
     .in("gid",candidates.map(m=>Number(m.gid)));
-  if (stateResult.error) return respond("현재 길드원 상태 확인 실패",503);
+  if(stateResult.error) return respond("현재 길드원 상태 확인 실패",503);
   const active=new Set((stateResult.data||[])
-    .filter(s=>s.status==="active").map(s=>String(s.gid)));
+    .filter(row=>row.status==="active").map(row=>String(row.gid)));
   const eligible=candidates.filter(m=>active.has(String(m.gid)));
-  if (!eligible.length) return respond("활동 중인 연결 캐릭터를 찾을 수 없습니다.",403);
-
-  if (action==="verify_registration" || action==="commit_registration") {
-    // An account claiming a character by name alone is NOT evidence of ownership.
-    // Only the pre-approved GID–Discord binding is allowed to grant Zeus access.
-    const member=eligible.find(m=>m.nickname===nickname &&
-      (!requestedGid || requestedGid===String(m.gid)));
-    if (!member) return respond("입력한 닉네임은 이 Discord 계정에 연결된 캐릭터가 아닙니다.",403);
-    if (action==="verify_registration")
-      return NextResponse.json({success:true,gid:String(member.gid),
-        nickname:member.nickname,guild:member.guild});
-    const oldDiscordName=beforeName.slice(0,50) || actor;
-    const updatedDiscordName=nickname+"["+guild+"]";
-    const audit=await supabaseAdmin.from("audit_logs").insert({
-      action:"UPDATE",target_type:"discord_registration",target_id:String(member.gid),
-      target_name:updatedDiscordName,actor_discord_id:actor,actor_name:actor,
-      actor_role:"MEMBER",
-      before_data:{gid:member.gid,nickname:oldDiscordName,guild},
-      after_data:{gid:member.gid,nickname:updatedDiscordName,guild},
-      description:"[밍봇 최초 인증] "+oldDiscordName+" → "+updatedDiscordName,
-    }).select("id").maybeSingle();
-    if(audit.error) return respond("최초 인증 성공, 감사로그 기록 실패",503);
-    return NextResponse.json({success:true,auditId:audit.data?.id});
-  }
+  if(!eligible.length)
+    return respond("활동 중인 연결 캐릭터를 찾을 수 없습니다.",403);
   if (!beforeName) return respond("기존 캐릭터 닉네임 확인이 필요합니다.",400);
   // Existing Discord nickname selects one exact GID, even if the account
   // owns several characters. Never guess the character from the new nickname.
