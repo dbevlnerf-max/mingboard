@@ -100,9 +100,13 @@ export async function PATCH(request: Request, context: Context) {
     sheetResult = await response.json();
     if (!response.ok || !sheetResult?.success ||
         (sheetResult.member?.gid && String(sheetResult.member.gid) !== gid)) {
+      const oldScript = /핑뚝.{0,20}빨뚝.{0,20}검뚝/.test(String(sheetResult?.message || ""));
       return NextResponse.json({
         success: false, sheetSynced: false,
-        message: sheetResult?.message || "원본 Google Sheets 저장에 실패했습니다. 변경 사항은 반영하지 않았습니다.",
+        code: oldScript ? "SHEET_SCRIPT_OUTDATED" : "SHEET_WRITE_FAILED",
+        message: oldScript
+          ? "원본 구글시트의 Apps Script가 이전 길드(핑뚝·빨뚝·검뚝)만 허용하는 구버전입니다. Apps Script의 isValidGuild를 4개 길드로 변경한 뒤 기존 웹앱을 새 버전으로 재배포해야 합니다. 밍보드에는 저장하지 않았습니다."
+          : sheetResult?.message || "원본 Google Sheets 저장에 실패했습니다. 변경 사항은 반영하지 않았습니다.",
       }, { status: 502 });
     }
   } catch {
