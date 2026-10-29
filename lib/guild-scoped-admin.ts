@@ -9,6 +9,19 @@ export function isScopedGuild(value: string): value is ScopedGuild {
   return managerGuilds.includes(value as ScopedGuild);
 }
 
+/** An explicitly delegated operator must never fall back to full ADMIN,
+ * even if their limited Discord role is later revoked or is unavailable. */
+export async function isAssignedScopedOperator(discordId: string): Promise<boolean> {
+  if (!discordId || !/^\\d{15,22}$/.test(discordId)) return false;
+  const { data, error } = await supabaseAdmin.from("guild_scoped_admin_assignments")
+    .select("gid").eq("discord_id", discordId).maybeSingle();
+  if (error) {
+    // Fail closed for a broad role when the assignment lookup fails.
+    throw new Error("담당자 권한을 확인할 수 없습니다.");
+  }
+  return Boolean(data);
+}
+
 export async function getScopedGuildFromDiscord(discordId: string): Promise<ScopedGuild | null> {
   const guildId = process.env.DISCORD_GUILD_ID;
   const token = process.env.DISCORD_BOT_TOKEN;
