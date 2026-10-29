@@ -15,6 +15,7 @@ export default function ScopedMembersManager({ guild }: { guild: string }) {
   const [notice, setNotice] = useState("");
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<Member | null>(null);
+  const [nickname, setNickname] = useState("");
   const [job, setJob] = useState("");
   const [power, setPower] = useState("");
   const [leaving, setLeaving] = useState<Member | null>(null);
@@ -40,11 +41,13 @@ export default function ScopedMembersManager({ guild }: { guild: string }) {
     [members, search]);
   async function save() {
     if (!editing) return;
+    if (!nickname.trim()) { setError("닉네임을 입력해주세요."); return; }
     setBusy(true);setError("");setNotice("");
     try {
       const r = await fetch(`/api/admin/managed-members/${editing.gid}`, {
         method:"PATCH", headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({job, growthPower:power, nickname:editing.nickname, guild:editing.guild}),
+        body:JSON.stringify({job, growthPower:power, nickname:nickname.trim(), guild:editing.guild,
+          expectedNickname: editing.nickname}),
       });
       const data=await r.json();
       if(!r.ok || !data.success)throw new Error(data.message||"수정 실패");
@@ -74,7 +77,7 @@ export default function ScopedMembersManager({ guild }: { guild: string }) {
       <header className={styles.header}>
         <div><small>GUILD MEMBER · LIMITED ACCESS</small>
           <h1>{guild} 길드원 관리</h1>
-          <p>담당 길드의 전투력·직업 수정 및 탈퇴 처리만 가능합니다.</p>
+          <p>담당 길드의 닉네임·전투력·직업 수정 및 탈퇴 처리만 가능합니다.</p>
         </div>
         <div className={styles.actions}>
           <button type="button" onClick={reload} disabled={loading}>↻ 새로고침</button>
@@ -84,7 +87,7 @@ export default function ScopedMembersManager({ guild }: { guild: string }) {
       <section className={styles.stats}>
         <div><small>관리 가능한 인원</small><strong>{members.length}명</strong></div>
         <div><small>권한 범위</small><strong>{guild} 전용</strong></div>
-        <div><small>수정 가능한 항목</small><strong>전투력 · 직업 · 탈퇴</strong></div>
+        <div><small>수정 가능한 항목</small><strong>닉네임 · 전투력 · 직업 · 탈퇴</strong></div>
       </section>
       <div className={styles.toolbar}><input aria-label="길드원 검색" value={search}
         onChange={e=>setSearch(e.target.value)} placeholder="닉네임 · GID · 직업 검색" />
@@ -99,7 +102,7 @@ export default function ScopedMembersManager({ guild }: { guild: string }) {
             <strong>{m.nickname}</strong><span>{m.job||"직업 미입력"}</span>
             <b>{Number(String(m.growthPower).replace(/,/g,"")).toLocaleString("ko-KR")}</b>
             <div className={styles.rowActions}>
-              <button type="button" onClick={()=>{setEditing(m);setJob(m.job||"");setPower(String(m.growthPowerNumber||m.growthPower).replace(/,/g,""));setError("");}}>수정</button>
+              <button type="button" onClick={()=>{setEditing(m);setNickname(m.nickname);setJob(m.job||"");setPower(String(m.growthPowerNumber||m.growthPower).replace(/,/g,""));setError("");}}>수정</button>
               <button type="button" className={styles.danger} onClick={()=>{setLeaving(m);setConfirmName("");setError("");}}>탈퇴</button>
             </div>
           </article>)}
@@ -107,7 +110,9 @@ export default function ScopedMembersManager({ guild }: { guild: string }) {
         </div>}
       {editing&&<div className={styles.overlay} role="dialog" aria-modal="true" aria-label="길드원 수정">
         <div className={styles.modal}><h2>{editing.nickname} 정보 수정</h2>
-          <p>GID {editing.gid} · {editing.guild} · 닉네임과 소속 길드는 변경할 수 없습니다.</p>
+          <p>GID {editing.gid} · {editing.guild} · GID와 소속 길드는 변경할 수 없습니다.</p>
+          <label>닉네임<input value={nickname} onChange={e=>setNickname(e.target.value)}
+            maxLength={24} autoComplete="off" /></label>
           <label>직업<input value={job} onChange={e=>setJob(e.target.value)} maxLength={40}/></label>
           <label>전투력<input type="text" inputMode="numeric" value={power} onChange={e=>setPower(e.target.value)}/></label>
           <div className={styles.modalActions}>
