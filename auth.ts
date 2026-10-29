@@ -6,7 +6,7 @@ import {
   type AccessClaims, type CharacterAccess, type DiscordAccess, type Verification,
 } from "@/lib/access-policy";
 import { verifyDiscordAccess } from "@/lib/discord-access";
-import { getScopedGuildFromDiscord, isAssignedScopedOperator } from "@/lib/guild-scoped-admin";
+import { getScopedGuildFromDiscord } from "@/lib/guild-scoped-admin";
 
 const guildId = process.env.DISCORD_GUILD_ID!;
 const zeusRoleId = process.env.DISCORD_ZEUS_ROLE_ID!;
@@ -91,20 +91,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async session({ session, token }) {
       if (session.user) {
-        // Guild managers never inherit the unrestricted ADMIN role.
-        // Resolve their scoped Discord role independently on each session read.
-        const managerGuild = !token.isMaster
+        // Permissions are additive: a verified Discord ADMIN role wins over
+        // guild-scoped operator access. A member holding BOTH is a full admin,
+        // never MASTER. Only operator-only users get a scopedGuild claim.
+        const globalAdmin = Boolean(token.isAdmin || token.isMaster);
+        const managerGuild = !globalAdmin
           ? await getScopedGuildFromDiscord(String(token.discordId || ""))
           : null;
-        const delegated = Boolean(token.isAdmin && !token.isMaster && token.isGuildMember &&
-          token.hasZeusRole && await isAssignedScopedOperator(String(token.discordId || "")));
         Object.assign(session.user, {
           discordId: String(token.discordId || ""),
           isGuildMember: Boolean(token.isGuildMember),
           hasZeusRole: Boolean(token.hasZeusRole),
-          // A verified scoped role limits this account even if it also
-          // happens to hold the older broad ADMIN role.
-          isAdmin: Boolean(token.isAdmin) && !managerGuild && !delegated,
+          // Discord's full ADMIN role is authoritative even when the same
+          // account also has a scoped manager role.
+          isAdmin: Boolean(token.isAdmin || token.isMaster),
           isMaster: Boolean(token.isMaster),
           scopedGuild: managerGuild || undefined,
           hasActiveCharacterLink: Boolean(token.hasActiveCharacterLink),
