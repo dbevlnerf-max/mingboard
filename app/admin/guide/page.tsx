@@ -18,6 +18,9 @@ export default async function GuideAdminPage() {
   const session =
     await auth();
 
+  // Full menu remains visible, but this route is restricted server-side.
+  if (session?.user?.scopedGuild && !session.user.isMaster) redirect("/admin/denied");
+
 
   if (
     !session?.user
