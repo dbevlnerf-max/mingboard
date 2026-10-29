@@ -12,6 +12,7 @@ export default function ScopedMembersManager({ guild }: { guild: string }) {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<Member | null>(null);
   const [job, setJob] = useState("");
@@ -39,7 +40,7 @@ export default function ScopedMembersManager({ guild }: { guild: string }) {
     [members, search]);
   async function save() {
     if (!editing) return;
-    setBusy(true);setError("");
+    setBusy(true);setError("");setNotice("");
     try {
       const r = await fetch(`/api/admin/managed-members/${editing.gid}`, {
         method:"PATCH", headers:{"Content-Type":"application/json"},
@@ -47,7 +48,10 @@ export default function ScopedMembersManager({ guild }: { guild: string }) {
       });
       const data=await r.json();
       if(!r.ok || !data.success)throw new Error(data.message||"수정 실패");
+      if(!data.sheetSynced || !data.portalSynced)
+        throw new Error("원본 시트와 밍보드 저장 결과를 확인할 수 없습니다.");
       setEditing(null);await reload();
+      setNotice(data.message || "원본 Google Sheets 및 밍보드에 저장했습니다.");
     } catch(e){setError(e instanceof Error?e.message:"수정 실패");}
     finally{setBusy(false);}
   }
@@ -87,6 +91,7 @@ export default function ScopedMembersManager({ guild }: { guild: string }) {
         <span>{filtered.length}명 표시</span>
       </div>
       {error && <p className={styles.error} role="alert">{error}</p>}
+      {notice && <p className={styles.success} role="status">{notice}</p>}
       {loading ? <p className={styles.empty}>길드원 명단을 불러오는 중입니다.</p> :
         <div className={styles.list}>
           {filtered.map(m=><article key={m.gid} className={styles.row}>
