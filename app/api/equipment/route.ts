@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { getMemberAccess } from "@/lib/guild-scoped-admin";
 import { NextResponse } from "next/server";
 import type { EquipmentCatalogItem } from "@/lib/equipment-catalog";
 
@@ -18,8 +19,9 @@ export async function GET() {
   if (session?.user?.authVerificationPending) {
     return NextResponse.json({ success: false, message: "인증 상태를 확인 중입니다." }, { status: 503 });
   }
-  if (!session?.user || !(session.user.isAdmin || session.user.isMaster)) {
-    return NextResponse.json({ success: false, message: "관리자 권한이 필요합니다." },
+  const access = await getMemberAccess(session?.user);
+  if (access.kind === "denied") {
+    return NextResponse.json({ success: false, message: "장비 데이터 접근 권한이 없습니다." },
       { status: 403, headers: { "Cache-Control": "private, no-store" } });
   }
 
@@ -62,7 +64,8 @@ export async function GET() {
     const rosterPayload = roster.data?.payload as {
       members?: Array<{ gid: string | number; nickname?: string; job?: string; guild?: string; growthPower?: string }>;
     } | null;
-    const currentRoster = Array.isArray(rosterPayload?.members) ? rosterPayload.members : [];
+    const currentRoster = (Array.isArray(rosterPayload?.members) ? rosterPayload.members : [])
+      .filter(m => access.kind === "full" || m.guild === access.guild);
     const rosterByGid = new Map(currentRoster.map(m => [String(m.gid), m]));
 
     // Rankings use the full, approved active roster, not just members
@@ -113,7 +116,9 @@ export async function GET() {
     }
     // Never equate a historical distribution entry with current ownership.
     // Current inventory always comes from the equipment sheet by immutable GID.
-    const members = valid.map(member => {
+    const members = valid.filter(member =>
+      access.kind === "full" || rosterByGid.has(String(member.gid))
+    ).map(member => {
       const current = rosterByGid.get(String(member.gid));
       return {
         ...member,
@@ -124,15 +129,19 @@ export async function GET() {
         rosterMatched: Boolean(current),
       };
     });
+    const scopedNames = new Set(currentRoster.map(member => String(member.nickname ?? "").trim()));
+    const visibleHistory = (entries: History[]) => access.kind === "full"
+      ? entries : entries.filter(entry => scopedNames.has(String(entry.target || "").trim()));
+    const allSkills = Array.isArray(payload?.skillHistory) && payload.skillHistory.length
+      ? payload.skillHistory
+      : (Array.isArray((legacySkills.data?.payload as { history?: History[] } | null)?.history)
+        ? (legacySkills.data?.payload as { history: History[] }).history : []);
     return NextResponse.json({
-      success: true, members,
+      success: true, members, scope: access.kind === "full" ? null : access.guild,
       catalog: (catalog.data ?? []) as EquipmentCatalogItem[],
-      history: Array.isArray(payload?.history) ? payload.history.slice(0, 3000) : [],
-      skillHistory: Array.isArray(payload?.skillHistory) && payload.skillHistory.length
-        ? payload.skillHistory.slice(0, 1000)
-        : (Array.isArray((legacySkills.data?.payload as { history?: History[] } | null)?.history)
-          ? (legacySkills.data?.payload as { history: History[] }).history.slice(0, 1000) : []),
-      sourceSummary: payload?.sourceSummary ?? {},
+      history: visibleHistory(Array.isArray(payload?.history) ? payload.history : []).slice(0,3000),
+      skillHistory: visibleHistory(allSkills).slice(0,1000),
+      sourceSummary: access.kind === "full" ? payload?.sourceSummary ?? {} : {},
       updatedAt: equipment.data?.fetched_at ?? null,
       rosterTotal: currentRoster.length,
       rosterMembers: currentRoster.map(member => ({
