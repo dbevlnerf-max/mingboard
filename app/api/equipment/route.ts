@@ -16,9 +16,8 @@ type History = {
 
 export async function GET() {
   const session = await auth();
-  if (session?.user?.authVerificationPending) {
-    return NextResponse.json({ success: false, message: "인증 상태를 확인 중입니다." }, { status: 503 });
-  }
+  // A live-verified guild operator can access their own roster even when
+  // the separate Zeus JWT verification is temporarily pending.
   const access = await getMemberAccess(session?.user);
   if (access.kind === "denied") {
     return NextResponse.json({ success: false, message: "장비 데이터 접근 권한이 없습니다." },
