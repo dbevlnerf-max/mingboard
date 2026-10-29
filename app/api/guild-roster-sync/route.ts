@@ -80,7 +80,15 @@ export async function POST(request: Request) {
       }, { status: 422 });
     }
 
-    const merged = mergeLiveRoster(confirmed, incoming as RosterMember[]);
+    // Web admin edits are explicit owner-approved overrides. A later stale
+    // Google Sheet sync must not silently undo them.
+    const managedGids = new Set(
+      (Array.isArray(snapshot.payload.overrideGids) ? snapshot.payload.overrideGids : [])
+        .map(String)
+    );
+    const sourceRows = (incoming as RosterMember[])
+      .filter(member => !managedGids.has(String(member.gid)));
+    const merged = mergeLiveRoster(confirmed, sourceRows);
     const syncedAt = new Date().toISOString();
     const payload: StoredPayload = {
       ...snapshot.payload,
