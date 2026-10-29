@@ -41,7 +41,7 @@ export async function POST(
 
     if (
       !session.user.isGuildMember ||
-      !session.user.hasZeusRole
+      (!session.user.hasZeusRole && !session.user.isAdmin && !session.user.isMaster)
     ) {
 
       return NextResponse.json(
