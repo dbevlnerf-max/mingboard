@@ -64,17 +64,20 @@ export async function getMemberAccess(user: {
   isGuildMember?: boolean; hasZeusRole?: boolean; authVerificationPending?: boolean;
 } | null | undefined): Promise<MemberAccess> {
   if (!user) return { kind: "denied" };
-  // Scoped operator roles are standalone Discord permissions, not the
-  // unrestricted ADMIN role. Their live role, verified Discord ID, active
-  // GID and account link are checked by getScopedGuildFromDiscord.
-  // Do not require an additional Zeus role or a stale JWT admin bit.
-  if (!user.isMaster) {
+  // Discord's independently verified full ADMIN role takes precedence.
+  // The scoped role is additional, never a downgrade for dual-role users.
+  // Keep MASTER distinct from a full ADMIN role.
+  if (user.isGuildMember && (user.isAdmin || user.isMaster) &&
+      !user.authVerificationPending) return { kind: "full" };
+
+  // Operator-only accounts must still have a registered Discord ID, an
+  // active linked GID, and the *live* Discord scoped role. A stale assignment
+  // without its corresponding Discord role does not grant access.
+  if (!user.isMaster && !user.isAdmin) {
     const guild = await getScopedGuildFromDiscord(String(user.discordId || ""));
     if (guild) return { kind: "scoped", guild };
     if (await isAssignedScopedOperator(String(user.discordId || "")))
-      return { kind: "denied" }; // explicit assignment never falls back to full ADMIN
+      return { kind: "denied" };
   }
-  if (!user.isGuildMember || !user.hasZeusRole || user.authVerificationPending)
-    return { kind: "denied" };
-  return user.isAdmin || user.isMaster ? { kind: "full" } : { kind: "denied" };
+  return { kind: "denied" };
 }
