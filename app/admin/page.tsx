@@ -9,7 +9,7 @@ import {
 } from "@/auth";
 
 import styles from "./admin.module.css";
-import GuildRoleSetup from "./GuildRoleSetup";
+
 
 
 
@@ -682,7 +682,7 @@ export default async function AdminPage() {
 
 
             </section>
-            {user.isMaster && <GuildRoleSetup />}
+
 
 
           </section>
