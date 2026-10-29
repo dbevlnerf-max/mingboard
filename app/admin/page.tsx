@@ -9,6 +9,7 @@ import {
 } from "@/auth";
 
 import styles from "./admin.module.css";
+import GuildRoleSetup from "./GuildRoleSetup";
 
 
 
@@ -40,7 +41,8 @@ export default async function AdminPage() {
   const canAccessAdmin =
     Boolean(
       user.isAdmin ||
-      user.isMaster
+      user.isMaster ||
+      Boolean(user.scopedGuild)
     );
 
 
@@ -522,7 +524,9 @@ export default async function AdminPage() {
 
 
                 {
-                  adminMenus.map(
+                  adminMenus.filter(menu =>
+                    !user.scopedGuild || user.isAdmin || user.isMaster || menu.href === "/admin/members"
+                  ).map(
                     menu => {
 
                       const content = (
@@ -678,6 +682,7 @@ export default async function AdminPage() {
 
 
             </section>
+            {user.isMaster && <GuildRoleSetup />}
 
 
           </section>
