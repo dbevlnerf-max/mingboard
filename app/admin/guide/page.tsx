@@ -31,7 +31,7 @@ export default async function GuideAdminPage() {
 
   if (
     !session.user.isGuildMember ||
-    !session.user.hasZeusRole
+    (!session.user.hasZeusRole && !session.user.isAdmin && !session.user.isMaster)
   ) {
     redirect("/");
   }
