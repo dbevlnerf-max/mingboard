@@ -38,17 +38,35 @@ export async function PATCH(request: Request, context: Context) {
   const power = String(body.growthPower ?? "").replace(/,/g, "").trim();
   if (!job || job.length > 40 || !/^\d{1,9}$/.test(power) || Number(power) < 1)
     return NextResponse.json({ success: false, message: "직업과 유효한 성장력을 입력해주세요." }, { status: 400 });
+  // The member's GID is immutable. Delegated guild managers may change
+  // nickname, job and growth power only for their own assigned guild.
   if (check.access.kind === "scoped" &&
-    (String(body.nickname ?? check.member.nickname).trim() !== check.member.nickname ||
-     String(body.guild ?? check.member.guild).trim() !== check.member.guild))
-    return NextResponse.json({ success: false, message: "길드 담당자는 닉네임 및 소속 길드를 변경할 수 없습니다." }, { status: 403 });
-
-  const nickname = check.access.kind === "full"
-    ? String(body.nickname ?? check.member.nickname).trim() : check.member.nickname;
+      String(body.guild ?? check.member.guild).trim() !== check.member.guild)
+    return NextResponse.json({ success: false,
+      message: "길드 담당자는 소속 길드를 변경할 수 없습니다." }, { status: 403 });
+  const expectedNickname = String(body.expectedNickname ?? check.member.nickname).trim();
+  if (expectedNickname !== check.member.nickname)
+    return NextResponse.json({ success: false,
+      message: "다른 관리자가 닉네임을 수정했습니다. 새로고침 후 다시 시도해주세요." }, { status: 409 });
+  const nickname = String(body.nickname ?? check.member.nickname).trim();
   const guild = check.access.kind === "full"
     ? String(body.guild ?? check.member.guild).trim() : check.member.guild;
-  if (!nickname || !["핑뚝","천제","아스가르드","지옥소녀"].includes(guild))
-    return NextResponse.json({ success: false, message: "닉네임 또는 소속 길드가 올바르지 않습니다." }, { status: 400 });
+  if (!nickname || [...nickname].length > 24 ||
+      /[\u0000-\u001f\u007f]/u.test(nickname) ||
+      !["핑뚝","천제","아스가르드","지옥소녀"].includes(guild))
+    return NextResponse.json({ success: false,
+      message: "닉네임(1~24자) 또는 소속 길드를 확인해주세요." }, { status: 400 });
+
+  const normalizedNickname = nickname.normalize("NFKC").toLocaleLowerCase("ko-KR");
+  const nameConflict = check.data.payload.members.some((member: Member) =>
+    String(member.gid) !== gid &&
+    String(member.nickname || "").trim().normalize("NFKC")
+      .toLocaleLowerCase("ko-KR") === normalizedNickname
+  );
+  if (nameConflict)
+    return NextResponse.json({ success: false,
+      message: "이미 사용 중인 닉네임입니다. 다른 닉네임을 입력해주세요." }, { status: 409 });
+  const renamed = nickname !== check.member.nickname;
 
   // Restore the existing source-of-truth write-through. The legacy manager
   // previously called this Apps Script action; delegated managers must not
@@ -154,12 +172,14 @@ export async function PATCH(request: Request, context: Context) {
     actorRole: check.session.user.isMaster ? "MASTER" : "ADMIN",
     beforeData: check.member, afterData: changed,
     description: check.access.kind === "scoped"
-      ? `[${check.access.guild} 담당자] ${nickname} 성장력·직업 수정`
-      : `${nickname} 길드원 정보 수정`,
+      ? `[${check.access.guild} 담당자] ${renamed ? check.member.nickname + " → " + nickname + " 닉네임·" : ""}성장력·직업 수정`
+      : `${renamed ? check.member.nickname + " → " + nickname : nickname} 길드원 정보 수정`,
   });
   return NextResponse.json({ success: true,
     sheetSynced: true, portalSynced: true, auditSaved: audit.success,
-    message: `${nickname}님의 성장력과 직업을 원본 Google Sheets와 밍보드에 반영했습니다.` });
+    message: renamed
+      ? `${check.member.nickname} → ${nickname} 닉네임 변경 및 길드원 정보를 원본 Google Sheets와 밍보드에 반영했습니다.`
+      : `${nickname}님의 성장력과 직업을 원본 Google Sheets와 밍보드에 반영했습니다.` });
 }
 
 export async function DELETE(_request: Request, context: Context) {
