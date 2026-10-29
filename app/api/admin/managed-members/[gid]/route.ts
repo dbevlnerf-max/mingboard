@@ -50,27 +50,101 @@ export async function PATCH(request: Request, context: Context) {
   if (!nickname || !["핑뚝","천제","아스가르드","지옥소녀"].includes(guild))
     return NextResponse.json({ success: false, message: "닉네임 또는 소속 길드가 올바르지 않습니다." }, { status: 400 });
 
-  const now = new Date().toISOString();
-  const changed = {
+  // Restore the existing source-of-truth write-through. The legacy manager
+  // previously called this Apps Script action; delegated managers must not
+  // silently update Supabase while leaving Google Sheets unchanged.
+  const scriptUrl = process.env.GOOGLE_SCRIPT_URL;
+  const writeSecret = process.env.GUILD_WRITE_SECRET;
+  if (!scriptUrl || !writeSecret) {
+    return NextResponse.json({
+      success: false, sheetSynced: false,
+      message: "원본 Google Sheets 연동 설정이 없어 저장하지 않았습니다.",
+    }, { status: 503 });
+  }
+
+  let sheetResult: {
+    success?: boolean;
+    message?: string;
+    member?: { gid?: string | number };
+  };
+  try {
+    const response = await fetch(scriptUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "updateGuildMember",
+        secret: writeSecret, gid, nickname, job,
+        growthPower: power, guild,
+      }),
+      cache: "no-store",
+      signal: AbortSignal.timeout(15000),
+    });
+    sheetResult = await response.json();
+    if (!response.ok || !sheetResult?.success ||
+        (sheetResult.member?.gid && String(sheetResult.member.gid) !== gid)) {
+      return NextResponse.json({
+        success: false, sheetSynced: false,
+        message: sheetResult?.message || "원본 Google Sheets 저장에 실패했습니다. 변경 사항은 반영하지 않았습니다.",
+      }, { status: 502 });
+    }
+  } catch {
+    return NextResponse.json({
+      success: false, sheetSynced: false,
+      message: "Google Sheets 연결에 실패했습니다. 원본 저장 여부를 확인한 뒤 다시 시도해주세요.",
+    }, { status: 502 });
+  }
+
+  // Write the portal snapshot only after the original Sheet acknowledges the
+  // update. Use optimistic concurrency to preserve unrelated admin writes.
+  // A successful Sheet write must also remove the stale-source override: the
+  // verified 10-minute Sheet sync may subsequently refresh this character.
+  let updated = false;
+  let changed: Member = {
     ...check.member, nickname, guild, job,
     growthPowerNumber: Number(power), growthPower: Number(power).toLocaleString("en-US"),
   };
-  const nextMembers = check.data.payload.members.map((m: Member) =>
-    String(m.gid) === gid ? changed : m
-  );
-  // Guarantee the manually approved update wins over the stale legacy guild feed.
-  const excludedFromLegacy = new Set<string>((check.data.payload.overrideGids || []).map(String));
-  excludedFromLegacy.add(gid);
-  const { data: updated, error } = await supabaseAdmin.from("portal_sheet_snapshots")
-    .update({ payload: { ...check.data.payload, members: nextMembers,
-      overrideGids: [...excludedFromLegacy] },
-      fetched_at: now, invalidated_at: null })
-    .eq("guild_id", check.guildId).eq("source_key", "manual-guild-roster")
-    .eq("query_key", "v1").eq("fetched_at", check.data.fetched_at)
-    .select("fetched_at").maybeSingle();
-  if (error || !updated) return NextResponse.json({
-    success: false, message: "명단이 동시에 변경됐거나 저장에 실패했습니다. 새로고침 후 재시도해주세요.",
-  }, { status: 409 });
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const snapshot = attempt === 0 ? check.data :
+      (await supabaseAdmin.from("portal_sheet_snapshots")
+        .select("payload,fetched_at").eq("guild_id", check.guildId)
+        .eq("source_key", "manual-guild-roster").eq("query_key", "v1")
+        .maybeSingle()).data;
+    if (!snapshot || !Array.isArray(snapshot.payload?.members)) break;
+    const current: Member | undefined = snapshot.payload.members.find(
+      (m: Member) => String(m.gid) === gid
+    );
+    if (!current || current.guild !== check.member.guild ||
+        current.nickname !== check.member.nickname) break;
+    changed = {
+      ...current, nickname, guild, job,
+      growthPowerNumber: Number(power), growthPower: Number(power).toLocaleString("en-US"),
+    };
+    const remainingOverrides = (Array.isArray(snapshot.payload.overrideGids)
+      ? snapshot.payload.overrideGids : []).map(String).filter((id: string) => id !== gid);
+    const newRoster = snapshot.payload.members.map((m: Member) =>
+      String(m.gid) === gid ? changed : m
+    );
+    const now = new Date().toISOString();
+    const { data: saved, error } = await supabaseAdmin.from("portal_sheet_snapshots")
+      .update({
+        payload: { ...snapshot.payload, members: newRoster,
+          overrideGids: remainingOverrides },
+        fetched_at: now, invalidated_at: null,
+      })
+      .eq("guild_id", check.guildId).eq("source_key", "manual-guild-roster")
+      .eq("query_key", "v1").eq("fetched_at", snapshot.fetched_at)
+      .select("fetched_at").maybeSingle();
+    if (error) break;
+    if (saved) { updated = true; break; }
+  }
+  if (!updated) {
+    invalidatePortalSheetReads();
+    return NextResponse.json({
+      success: false, sheetSynced: true, portalSynced: false,
+      message: "원본 Google Sheets에는 저장됐으나 밍보드 캐시 갱신에 실패했습니다. 새로고침 후 상태를 확인해주세요.",
+    }, { status: 503 });
+  }
+
   invalidatePortalSheetReads();
   const audit = await writeAuditLog({
     action: "UPDATE", targetType: "guild_member",
@@ -83,8 +157,9 @@ export async function PATCH(request: Request, context: Context) {
       ? `[${check.access.guild} 담당자] ${nickname} 성장력·직업 수정`
       : `${nickname} 길드원 정보 수정`,
   });
-  return NextResponse.json({ success: true, auditSaved: audit.success,
-    message: `${nickname}님의 성장력과 직업을 변경했습니다.` });
+  return NextResponse.json({ success: true,
+    sheetSynced: true, portalSynced: true, auditSaved: audit.success,
+    message: `${nickname}님의 성장력과 직업을 원본 Google Sheets와 밍보드에 반영했습니다.` });
 }
 
 export async function DELETE(_request: Request, context: Context) {
