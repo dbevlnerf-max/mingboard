@@ -24,14 +24,8 @@ export default async function MembersAdminPage() {
   }
 
 
-  if (
-    !session.user.isGuildMember ||
-    !session.user.hasZeusRole
-  ) {
-    redirect("/");
-  }
-
-
+  // Scoped operators have their own verified Discord role and do not
+  // inherit the full-admin or additional Zeus-role prerequisites.
   const access = await getMemberAccess(session.user);
   if (access.kind === "denied") redirect("/admin");
   if (access.kind === "scoped") return <ScopedMembersManager guild={access.guild} />;
