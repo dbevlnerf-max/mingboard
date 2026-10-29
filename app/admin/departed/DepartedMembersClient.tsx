@@ -29,12 +29,14 @@ type DepartedMember = {
 type Props = {
   currentUser: string;
   isMaster: boolean;
+  scopedGuild: string | null;
 };
 
 
 export default function DepartedMembersClient({
   currentUser,
   isMaster,
+  scopedGuild,
 }: Props) {
   const [members, setMembers] =
     useState<DepartedMember[]>([]);
@@ -240,7 +242,7 @@ export default function DepartedMembersClient({
           <div className={styles.headerRight}>
             <span>{currentUser}</span>
             <strong>
-              {isMaster ? "MASTER" : "ADMIN"}
+              {isMaster ? "MASTER" : scopedGuild ? scopedGuild + " 운영진" : "ADMIN"}
             </strong>
           </div>
         </header>
@@ -338,15 +340,17 @@ export default function DepartedMembersClient({
                 <span>
                   {member.leftAt || "-"}
                 </span>
-                <button
-                  type="button"
-                  className={styles.deleteButton}
-                  onClick={() =>
-                    openPermanentDelete(member)
-                  }
-                >
-                  영구삭제
-                </button>
+                {scopedGuild ? (
+                  <span title="영구삭제는 전체 관리자만 가능합니다.">조회 전용</span>
+                ) : (
+                  <button
+                    type="button"
+                    className={styles.deleteButton}
+                    onClick={() => openPermanentDelete(member)}
+                  >
+                    영구삭제
+                  </button>
+                )}
               </div>
             ))}
 
