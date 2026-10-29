@@ -157,11 +157,12 @@ export async function POST(request: Request) {
     });
     sheetData=await response.json();
     if (!response.ok||!sheetData?.success||
-        (sheetData.member?.gid&&String(sheetData.member.gid)!==String(member.gid)))
+        (sheetData.member?.gid&&String(sheetData.member.gid)!==String(member.gid))) {
       const legacy = /핑뚝.{0,20}빨뚝.{0,20}검뚝/.test(String(sheetData?.message||""));
       return respond(legacy
         ? "구글시트 Apps Script가 핑뚝·빨뚝·검뚝만 허용하는 구버전입니다. 관리자가 isValidGuild를 4개 길드로 수정하고 웹앱을 재배포해야 합니다."
         : sheetData?.message||"Google Sheets에 닉네임을 저장하지 못했습니다.",502);
+    }
   } catch {
     return respond("Google Sheets 연결 실패. 저장 여부를 운영진에게 확인해주세요.",502);
   }
