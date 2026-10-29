@@ -421,7 +421,7 @@ export default async function AdminPage() {
                 {
                   user.isMaster
                     ? "MASTER ACCESS"
-                    : "ADMIN ACCESS"
+                    : user.scopedGuild ? "GUILD OPERATOR" : "ADMIN ACCESS"
                 }
 
               </div>
@@ -480,7 +480,7 @@ export default async function AdminPage() {
                   {
                     user.isMaster
                       ? "MASTER"
-                      : "ADMIN"
+                      : user.scopedGuild ? "운영진 · " + user.scopedGuild : "ADMIN"
                   }
 
                 </strong>
