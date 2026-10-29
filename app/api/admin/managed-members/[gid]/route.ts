@@ -188,7 +188,7 @@ export async function PATCH(request: Request, context: Context) {
 
 export async function DELETE(_request: Request, context: Context) {
   const { gid } = await context.params;
-  if (!/^\\d+$/.test(gid)) return NextResponse.json({
+  if (!/^\d+$/.test(gid)) return NextResponse.json({
     success: false, message: "GID 오류"
   }, { status: 400 });
 
