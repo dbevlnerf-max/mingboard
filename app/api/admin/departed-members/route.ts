@@ -95,9 +95,8 @@ export async function GET() {
 
   try {
     const members = await fetchDepartedMembers();
-    const scoped = access.scopedAccess.kind === "scoped"
-      ? members.filter(m => String(m.guild || "") === access.scopedAccess.guild)
-      : members;
+    const ownGuild = access.scopedAccess.kind === "scoped" ? access.scopedAccess.guild : null;
+    const scoped = ownGuild ? members.filter(m => String(m.guild || "") === ownGuild) : members;
     return NextResponse.json({
       success: true, count: scoped.length, members: scoped,
       scope: access.scopedAccess.kind === "scoped" ? access.scopedAccess.guild : null,
