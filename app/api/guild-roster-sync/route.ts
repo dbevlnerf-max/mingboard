@@ -88,7 +88,7 @@ export async function POST(request: Request) {
     );
     const sourceRows = (incoming as RosterMember[])
       .filter(member => !managedGids.has(String(member.gid)));
-    const merged = mergeLiveRoster(confirmed, sourceRows);
+    const merged = mergeLiveRoster(confirmed, sourceRows, { syncNickname: true });
     const syncedAt = new Date().toISOString();
     const payload: StoredPayload = {
       ...snapshot.payload,
