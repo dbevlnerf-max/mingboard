@@ -7,6 +7,8 @@ import {
 } from "@/auth";
 
 import MembersManager from "./MembersManager";
+import ScopedMembersManager from "./ScopedMembersManager";
+import { getMemberAccess } from "@/lib/guild-scoped-admin";
 
 
 export default async function MembersAdminPage() {
@@ -30,19 +32,9 @@ export default async function MembersAdminPage() {
   }
 
 
-  const canManage =
-    Boolean(
-      session.user.isAdmin ||
-      session.user.isMaster
-    );
-
-
-  if (
-    !canManage
-  ) {
-    redirect("/admin");
-  }
-
+  const access = await getMemberAccess(session.user);
+  if (access.kind === "denied") redirect("/admin");
+  if (access.kind === "scoped") return <ScopedMembersManager guild={access.guild} />;
 
   return (
 
