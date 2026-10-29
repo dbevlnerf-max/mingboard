@@ -6,7 +6,7 @@ import {
   type AccessClaims, type CharacterAccess, type DiscordAccess, type Verification,
 } from "@/lib/access-policy";
 import { verifyDiscordAccess } from "@/lib/discord-access";
-import { getScopedGuildFromDiscord } from "@/lib/guild-scoped-admin";
+import { getScopedGuildFromDiscord, isAssignedScopedOperator } from "@/lib/guild-scoped-admin";
 
 const guildId = process.env.DISCORD_GUILD_ID!;
 const zeusRoleId = process.env.DISCORD_ZEUS_ROLE_ID!;
@@ -97,13 +97,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           !token.isMaster && !token.authVerificationPending
           ? await getScopedGuildFromDiscord(String(token.discordId || ""))
           : null;
+        const delegated = Boolean(token.isAdmin && !token.isMaster && token.isGuildMember &&
+          token.hasZeusRole && await isAssignedScopedOperator(String(token.discordId || "")));
         Object.assign(session.user, {
           discordId: String(token.discordId || ""),
           isGuildMember: Boolean(token.isGuildMember),
           hasZeusRole: Boolean(token.hasZeusRole),
           // A verified scoped role limits this account even if it also
           // happens to hold the older broad ADMIN role.
-          isAdmin: Boolean(token.isAdmin) && !managerGuild,
+          isAdmin: Boolean(token.isAdmin) && !managerGuild && !delegated,
           isMaster: Boolean(token.isMaster),
           scopedGuild: managerGuild || undefined,
           hasActiveCharacterLink: Boolean(token.hasActiveCharacterLink),
