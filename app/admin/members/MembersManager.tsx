@@ -1084,7 +1084,7 @@ export default function MembersManager({
             </Link>
 
             <div className={styles.server}>
-              아프로디테 2 · 핑뚝 / 빨뚝 / 검뚝
+              아프로디테 2 · 핑뚝 / 천제 / 아스가르드 / 지옥소녀
             </div>
 
           </div>
