@@ -93,8 +93,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (session.user) {
         // Guild managers never inherit the unrestricted ADMIN role.
         // Resolve their scoped Discord role independently on each session read.
-        const managerGuild = token.isGuildMember && token.hasZeusRole &&
-          !token.isMaster && !token.authVerificationPending
+        const managerGuild = !token.isMaster
           ? await getScopedGuildFromDiscord(String(token.discordId || ""))
           : null;
         const delegated = Boolean(token.isAdmin && !token.isMaster && token.isGuildMember &&
