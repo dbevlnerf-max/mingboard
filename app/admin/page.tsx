@@ -30,10 +30,7 @@ export default async function AdminPage() {
     session.user;
 
 
-  if (
-    !user.isGuildMember ||
-    !user.hasZeusRole
-  ) {
+  if ((!user.isGuildMember || !user.hasZeusRole) && !user.scopedGuild) {
     redirect("/");
   }
 
@@ -524,9 +521,7 @@ export default async function AdminPage() {
 
 
                 {
-                  adminMenus.filter(menu =>
-                    !user.scopedGuild || user.isAdmin || user.isMaster || menu.href === "/admin/members"
-                  ).map(
+                  adminMenus.map(
                     menu => {
 
                       const content = (
