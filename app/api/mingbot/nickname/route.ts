@@ -33,7 +33,7 @@ export async function POST(request: Request) {
   const nickname=String(body.nickname||"").trim();
   const requestedGid=String(body.gid||"").trim();
   const beforeName=String(body.beforeNickname||"").trim();
-  if (!["verify_registration","verify_rename","commit_rename"].includes(action))
+  if (!["verify_registration","commit_registration","verify_rename","commit_rename"].includes(action))
     return respond("지원하지 않는 명령어",400);
   if (!/^\d{15,22}$/.test(actor) || discordGuild!==process.env.DISCORD_GUILD_ID)
     return respond("운영 Discord 서버의 계정만 사용할 수 있습니다.",403);
@@ -68,13 +68,27 @@ export async function POST(request: Request) {
   const eligible=candidates.filter(m=>active.has(String(m.gid)));
   if (!eligible.length) return respond("활동 중인 연결 캐릭터를 찾을 수 없습니다.",403);
 
-  if (action==="verify_registration") {
+  if (action==="verify_registration" || action==="commit_registration") {
     // An account claiming a character by name alone is NOT evidence of ownership.
     // Only the pre-approved GID–Discord binding is allowed to grant Zeus access.
-    const member=eligible.find(m=>m.nickname===nickname);
+    const member=eligible.find(m=>m.nickname===nickname &&
+      (!requestedGid || requestedGid===String(m.gid)));
     if (!member) return respond("입력한 닉네임은 이 Discord 계정에 연결된 캐릭터가 아닙니다.",403);
-    return NextResponse.json({success:true,gid:String(member.gid),
-      nickname:member.nickname,guild:member.guild});
+    if (action==="verify_registration")
+      return NextResponse.json({success:true,gid:String(member.gid),
+        nickname:member.nickname,guild:member.guild});
+    const oldDiscordName=beforeName.slice(0,50) || actor;
+    const updatedDiscordName=nickname+"["+guild+"]";
+    const audit=await supabaseAdmin.from("audit_logs").insert({
+      action:"UPDATE",target_type:"discord_registration",target_id:String(member.gid),
+      target_name:updatedDiscordName,actor_discord_id:actor,actor_name:actor,
+      actor_role:"MEMBER",
+      before_data:{gid:member.gid,nickname:oldDiscordName,guild},
+      after_data:{gid:member.gid,nickname:updatedDiscordName,guild},
+      description:"[밍봇 최초 인증] "+oldDiscordName+" → "+updatedDiscordName,
+    }).select("id").maybeSingle();
+    if(audit.error) return respond("최초 인증 성공, 감사로그 기록 실패",503);
+    return NextResponse.json({success:true,auditId:audit.data?.id});
   }
   if (!beforeName) return respond("기존 캐릭터 닉네임 확인이 필요합니다.",400);
   // Existing Discord nickname selects one exact GID, even if the account
@@ -172,7 +186,7 @@ export async function GET(request: Request) {
   const {data,error}=await supabaseAdmin.from("audit_logs")
     .select("id,created_at,target_type,target_id,actor_discord_id,actor_name,actor_role,before_data,after_data")
     .eq("action","UPDATE")
-    .in("target_type",["guild_member","guild_member_nickname"])
+    .in("target_type",["guild_member","guild_member_nickname","discord_registration"])
     .gt("id",after).order("id",{ascending:true}).limit(150);
   if(error) return respond("닉네임 감사로그를 조회할 수 없습니다.",503);
   const events=(data||[]).flatMap(row=>{
@@ -185,7 +199,8 @@ export async function GET(request: Request) {
       oldNickname:prior,newNickname:next,
       actorDiscordId:row.actor_discord_id,actorName:row.actor_name,
       actorRole:row.actor_role,
-      source:row.target_type==="guild_member_nickname"?"밍봇 셀프변경":"밍보드 관리자",
+      source:row.target_type==="discord_registration"?"최초 인증":
+        row.target_type==="guild_member_nickname"?"밍봇 셀프변경":"밍보드 관리자",
     }];
   });
   return NextResponse.json({success:true,events,
