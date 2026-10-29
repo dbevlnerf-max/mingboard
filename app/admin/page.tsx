@@ -403,7 +403,7 @@ export default async function AdminPage() {
                 </h1>
 
                 <p>
-                  아프로디테 2서버 핑뚝 · 빨뚝 · 검뚝 길드의
+                  아프로디테 2서버 핑뚝 · 천제 · 아스가르드 · 지옥소녀 길드의
                   운영 정보를 한 곳에서 관리합니다.
                 </p>
 
@@ -443,11 +443,11 @@ export default async function AdminPage() {
                 </span>
 
                 <strong>
-                  3
+                  {user.scopedGuild && !user.isAdmin && !user.isMaster ? "1" : "4"}
                 </strong>
 
                 <small>
-                  핑뚝 · 빨뚝 · 검뚝
+                  {user.scopedGuild && !user.isAdmin && !user.isMaster ? user.scopedGuild : "핑뚝 · 천제 · 아스가르드 · 지옥소녀"}
                 </small>
 
               </div>
