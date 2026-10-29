@@ -93,8 +93,11 @@ export default function ScopedMembersManager({ guild }: { guild: string }) {
       const r=await fetch(`/api/admin/managed-members/${leaving.gid}`, {method:"DELETE"});
       const data=await r.json();
       if(!r.ok || !data.success)throw new Error(data.message||"탈퇴 실패");
+      if(!data.sheetSynced || !data.portalSynced)
+        throw new Error("원본 시트 탈퇴자 이동과 밍보드 탈퇴 반영을 모두 확인할 수 없습니다.");
       if(data.warning) window.alert(data.warning);
       setLeaving(null);setConfirmName("");await reload();
+      setNotice(data.message || "원본 구글시트와 밍보드에 탈퇴 처리를 반영했습니다.");
     }catch(e){setError(e instanceof Error?e.message:"탈퇴 실패");}
     finally{setBusy(false);}
   }
@@ -175,7 +178,7 @@ export default function ScopedMembersManager({ guild }: { guild: string }) {
       {leaving&&<div className={styles.overlay} role="dialog" aria-modal="true" aria-label="길드원 탈퇴">
         <div className={styles.modal}><h2>길드원 탈퇴 처리</h2>
           <p>{leaving.nickname} · {leaving.guild} · GID {leaving.gid}</p>
-          <p>활동 명단에서 제외하지만 과거 분배·참여 기록은 보존합니다.</p>
+          <p>원본 🧾길드현황에서 🧾탈퇴인원으로 이동하고 밍보드 활동 명단에서 제외합니다. 과거 분배·참여 기록은 보존합니다.</p>
           <label>확인을 위해 닉네임 입력
             <input value={confirmName} onChange={e=>setConfirmName(e.target.value)}
               placeholder={leaving.nickname}/>
