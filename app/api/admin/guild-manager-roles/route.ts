@@ -63,10 +63,34 @@ export async function POST() {
           .select("nickname,gid,discord_id").eq("guild", guild);
         if (assignmentError) throw assignmentError;
         for (const assignee of assignees || []) {
-          if (!assignee.discord_id) { output.pending.push(`${assignee.nickname}: Discord 계정 연결 필요`); continue; }
+          let discordId: string | null = assignee.discord_id || null;
+          if (!discordId) {
+            // Allow a previously unlinked manager (e.g. 왕알) to join later.
+            // Never guess a Discord account based only on a nickname.
+            const { data: links, error: lookupError } = await supabaseAdmin
+              .from("guild_member_discord_links").select("discord_id,account_type")
+              .eq("gid", assignee.gid).is("revoked_at", null);
+            if (!lookupError && links?.length) {
+              const primary = links.filter(link => link.account_type === "primary");
+              const chosen = primary.length === 1 ? primary[0] :
+                links.length === 1 ? links[0] : null;
+              if (chosen) {
+                discordId = String(chosen.discord_id);
+                const { error: saveError } = await supabaseAdmin
+                  .from("guild_scoped_admin_assignments")
+                  .update({ discord_id: discordId })
+                  .eq("guild", guild).eq("gid", assignee.gid);
+                if (saveError) {
+                  output.errors.push(`${assignee.nickname}: 연결 계정 저장 실패`);
+                  continue;
+                }
+              }
+            }
+          }
+          if (!discordId) { output.pending.push(`${assignee.nickname}: Discord 계정 연결 필요`); continue; }
           const [linked, state] = await Promise.all([
             supabaseAdmin.from("guild_member_discord_links").select("gid")
-              .eq("gid", assignee.gid).eq("discord_id", assignee.discord_id)
+              .eq("gid", assignee.gid).eq("discord_id", discordId)
               .is("revoked_at", null).maybeSingle(),
             supabaseAdmin.from("guild_member_states").select("status")
               .eq("gid", assignee.gid).maybeSingle(),
@@ -76,7 +100,7 @@ export async function POST() {
             continue;
           }
           try {
-            await requestDiscord(`/guilds/${guildId}/members/${assignee.discord_id}/roles/${role.id}`, "PUT");
+            await requestDiscord(`/guilds/${guildId}/members/${discordId}/roles/${role.id}`, "PUT");
             output.assigned.push(assignee.nickname);
           } catch (error) {
             output.errors.push(`${assignee.nickname}: ${error instanceof Error ? error.message : "지급 실패"}`);
