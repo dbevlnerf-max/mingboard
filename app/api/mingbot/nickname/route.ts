@@ -155,3 +155,42 @@ export async function POST(request: Request) {
     auditSaved:!audit.error,gid:String(member.gid),beforeNickname:beforeName,
     nickname,guild,message:"닉네임이 원본 시트 및 밍보드에 반영됐습니다."});
 }
+
+
+/**
+ * Service-account Sheet journal consumer. The Mingbot process polls changes
+ * to the existing audit_logs table and writes each nickname change exactly
+ * once into the private 📝닉네임변경이력 tab (cursor stored in the bot DB).
+ * This covers web guild-manager updates AND Discord self-service updates.
+ */
+export async function GET(request: Request) {
+  if (!sameSecret(request.headers.get("x-mingbot-secret")))
+    return respond("밍봇 인증 실패", 401);
+  const url=new URL(request.url);
+  const after=Number(url.searchParams.get("after")||"0");
+  if (!Number.isSafeInteger(after)||after<0) return respond("커서 오류",400);
+  const {data,error}=await supabaseAdmin.from("audit_logs")
+    .select("id,created_at,target_type,target_id,actor_discord_id,actor_name,actor_role,before_data,after_data")
+    .eq("action","UPDATE")
+    .in("target_type",["guild_member","guild_member_nickname"])
+    .gt("id",after).order("id",{ascending:true}).limit(150);
+  if(error) return respond("닉네임 감사로그를 조회할 수 없습니다.",503);
+  const events=(data||[]).flatMap(row=>{
+    const prior=String(row.before_data?.nickname||"").trim();
+    const next=String(row.after_data?.nickname||"").trim();
+    if (!prior || !next || prior===next) return [];
+    return [{
+      id:row.id,occurredAt:row.created_at,gid:row.target_id,
+      guild:String(row.after_data?.guild||row.before_data?.guild||""),
+      oldNickname:prior,newNickname:next,
+      actorDiscordId:row.actor_discord_id,actorName:row.actor_name,
+      actorRole:row.actor_role,
+      source:row.target_type==="guild_member_nickname"?"밍봇 셀프변경":"밍보드 관리자",
+    }];
+  });
+  return NextResponse.json({success:true,events,
+    nextCursor:(data||[]).length?Number(data![data!.length-1].id):after,
+    hasMore:(data||[]).length===150},{
+    headers:{"Cache-Control":"private, no-store"},
+  });
+}
