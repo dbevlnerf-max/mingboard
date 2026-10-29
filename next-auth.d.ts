@@ -12,6 +12,7 @@ type SessionAccess = {
   characterStatus?: string;
   isAdmin?: boolean;
   isMaster?: boolean;
+  scopedGuild?: "천제" | "지옥소녀" | "아스가르드";
   authVerificationPending?: boolean;
   authDegraded?: boolean;
 };
