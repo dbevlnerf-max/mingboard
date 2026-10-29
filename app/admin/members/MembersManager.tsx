@@ -601,11 +601,7 @@ export default function MembersManager({
 
     setFormGrowth("");
 
-    if (
-      guildFilter === "핑뚝" ||
-      guildFilter === "빨뚝" ||
-      guildFilter === "검뚝"
-    ) {
+    if (["핑뚝", "천제", "아스가르드", "지옥소녀"].includes(guildFilter)) {
       setFormGuild(
         guildFilter
       );
@@ -1426,7 +1422,7 @@ export default function MembersManager({
                               "핑뚝"
                                 ? `${styles.guildBadge} ${styles.pink}`
                                 : member.guild ===
-                                  "빨뚝"
+                                  "천제"
                                 ? `${styles.guildBadge} ${styles.red}`
                                 : `${styles.guildBadge} ${styles.black}`
                             }
