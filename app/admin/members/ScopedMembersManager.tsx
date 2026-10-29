@@ -15,6 +15,10 @@ export default function ScopedMembersManager({ guild }: { guild: string }) {
   const [notice, setNotice] = useState("");
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<Member | null>(null);
+  const [adding, setAdding] = useState(false);
+  const [newNickname, setNewNickname] = useState("");
+  const [newJob, setNewJob] = useState("");
+  const [newPower, setNewPower] = useState("");
   const [nickname, setNickname] = useState("");
   const [job, setJob] = useState("");
   const [power, setPower] = useState("");
@@ -58,6 +62,28 @@ export default function ScopedMembersManager({ guild }: { guild: string }) {
     } catch(e){setError(e instanceof Error?e.message:"수정 실패");}
     finally{setBusy(false);}
   }
+  async function addMember() {
+    if (!newNickname.trim() || !newJob.trim() || !/^\d{1,9}$/.test(newPower.replace(/,/g, "").trim())) {
+      setError("닉네임·직업·전투력을 올바르게 입력해주세요."); return;
+    }
+    setBusy(true);setError("");setNotice("");
+    try {
+      const r = await fetch("/api/admin/managed-members", {
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({nickname:newNickname.trim(),job:newJob.trim(),
+          growthPower:newPower.replace(/,/g, "").trim(),guild})
+      });
+      const data = await r.json();
+      if (!r.ok || !data.success)throw new Error(data.message || "길드원 추가 실패");
+      if (!data.sheetSynced || !data.portalSynced)
+        throw new Error("원본 구글시트와 밍보드 동시 저장 상태를 확인할 수 없습니다.");
+      setAdding(false);setNewNickname("");setNewJob("");setNewPower("");
+      await reload();
+      setNotice(data.message || "새 길드원을 양쪽에 등록했습니다.");
+    } catch(e) {setError(e instanceof Error?e.message:"길드원 추가 실패");}
+    finally {setBusy(false);}
+  }
+
   async function leave() {
     if(!leaving || confirmName.trim()!==leaving.nickname) {
       setError("탈퇴 확인을 위해 닉네임을 정확히 입력해주세요.");return;
@@ -77,9 +103,10 @@ export default function ScopedMembersManager({ guild }: { guild: string }) {
       <header className={styles.header}>
         <div><small>GUILD MEMBER · LIMITED ACCESS</small>
           <h1>{guild} 길드원 관리</h1>
-          <p>담당 길드의 닉네임·전투력·직업 수정 및 탈퇴 처리만 가능합니다.</p>
+          <p>담당 길드의 길드원 추가·닉네임·전투력·직업 수정 및 탈퇴 처리만 가능합니다.</p>
         </div>
         <div className={styles.actions}>
+          <button type="button" onClick={()=>{setAdding(true);setError("");setNotice("");}} disabled={busy}>+ {guild} 길드원 추가</button>
           <button type="button" onClick={reload} disabled={loading}>↻ 새로고침</button>
           <Link href="/admin">← 관리자 홈</Link>
         </div>
@@ -87,7 +114,7 @@ export default function ScopedMembersManager({ guild }: { guild: string }) {
       <section className={styles.stats}>
         <div><small>관리 가능한 인원</small><strong>{members.length}명</strong></div>
         <div><small>권한 범위</small><strong>{guild} 전용</strong></div>
-        <div><small>수정 가능한 항목</small><strong>닉네임 · 전투력 · 직업 · 탈퇴</strong></div>
+        <div><small>수정 가능한 항목</small><strong>추가 · 닉네임 · 전투력 · 직업 · 탈퇴</strong></div>
       </section>
       <div className={styles.toolbar}><input aria-label="길드원 검색" value={search}
         onChange={e=>setSearch(e.target.value)} placeholder="닉네임 · GID · 직업 검색" />
@@ -108,6 +135,26 @@ export default function ScopedMembersManager({ guild }: { guild: string }) {
           </article>)}
           {!filtered.length&&<p className={styles.empty}>해당 길드원이 없습니다.</p>}
         </div>}
+      {adding&&<div className={styles.overlay} role="dialog" aria-modal="true" aria-label="길드원 추가">
+        <div className={styles.modal}>
+          <h2>{guild} 길드원 추가</h2>
+          <p>새 GID는 원본 Google Sheets에서 발급하며, {guild} 이외의 길드에는 추가할 수 없습니다.</p>
+          <label>닉네임<input value={newNickname} maxLength={24}
+            onChange={e=>setNewNickname(e.target.value)} placeholder="인게임 닉네임"/></label>
+          <label>직업<input value={newJob} maxLength={40}
+            onChange={e=>setNewJob(e.target.value)} placeholder="직업"/></label>
+          <label>전투력<input type="text" inputMode="numeric" value={newPower}
+            onChange={e=>setNewPower(e.target.value)} placeholder="예: 55000"/></label>
+          <label>길드 · 고정<input type="text" value={guild} disabled readOnly/></label>
+          <p>저장하면 원본 🧾길드현황과 밍보드에 함께 반영됩니다.</p>
+          <div className={styles.modalActions}>
+            <button type="button" onClick={()=>setAdding(false)} disabled={busy}>취소</button>
+            <button type="button" onClick={addMember} disabled={busy}>
+              {busy?"저장 중":"길드원 추가 저장"}
+            </button>
+          </div>
+        </div>
+      </div>}
       {editing&&<div className={styles.overlay} role="dialog" aria-modal="true" aria-label="길드원 수정">
         <div className={styles.modal}><h2>{editing.nickname} 정보 수정</h2>
           <p>GID {editing.gid} · 담당 길드 내 닉네임·직업·전투력을 수정할 수 있습니다.</p>
