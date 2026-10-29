@@ -6,6 +6,7 @@ import {
   type AccessClaims, type CharacterAccess, type DiscordAccess, type Verification,
 } from "@/lib/access-policy";
 import { verifyDiscordAccess } from "@/lib/discord-access";
+import { getScopedGuildFromDiscord } from "@/lib/guild-scoped-admin";
 
 const guildId = process.env.DISCORD_GUILD_ID!;
 const zeusRoleId = process.env.DISCORD_ZEUS_ROLE_ID!;
@@ -90,11 +91,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async session({ session, token }) {
       if (session.user) {
+        // Guild managers never inherit the unrestricted ADMIN role.
+        // Resolve their scoped Discord role independently on each session read.
+        const managerGuild = token.isGuildMember && token.hasZeusRole &&
+          !token.isAdmin && !token.isMaster && !token.authVerificationPending
+          ? await getScopedGuildFromDiscord(String(token.discordId || ""))
+          : null;
         Object.assign(session.user, {
           discordId: String(token.discordId || ""),
           isGuildMember: Boolean(token.isGuildMember),
           hasZeusRole: Boolean(token.hasZeusRole),
           isAdmin: Boolean(token.isAdmin), isMaster: Boolean(token.isMaster),
+          scopedGuild: managerGuild || undefined,
           hasActiveCharacterLink: Boolean(token.hasActiveCharacterLink),
           needsCharacterLink: Boolean(token.needsCharacterLink),
           linkedGid: token.linkedGid ? String(token.linkedGid) : undefined,
