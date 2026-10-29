@@ -39,7 +39,7 @@ export default async function NoticesAdminPage() {
 
   if (
     !session.user.isGuildMember ||
-    !session.user.hasZeusRole
+    (!session.user.hasZeusRole && !session.user.isAdmin && !session.user.isMaster)
   ) {
     redirect("/");
   }
