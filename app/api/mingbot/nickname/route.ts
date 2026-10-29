@@ -52,6 +52,7 @@ export async function POST(request: Request) {
       !Array.isArray(snap.payload.members))
     return respond("승인된 길드원 명단을 확인할 수 없습니다.",503);
   if (linkResult.error) return respond("Discord 연결정보 확인 실패",503);
+  const roster: Member[] = snap.payload.members;
   const linked=new Set((linkResult.data||[]).map(x=>String(x.gid)));
 
   // First-time registration is a DIFFERENT trust flow from later self-renames.
