@@ -30,7 +30,7 @@ export default async function AdminPage() {
     session.user;
 
 
-  if ((!user.isGuildMember || !user.hasZeusRole) && !user.scopedGuild) {
+  if ((!user.isGuildMember || !user.hasZeusRole) && !user.scopedGuild && !user.isAdmin && !user.isMaster) {
     redirect("/");
   }
 
