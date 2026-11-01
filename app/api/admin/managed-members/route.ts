@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { getMemberAccess, MANAGED_GUILDS } from "@/lib/guild-scoped-admin";
 import { invalidatePortalSheetReads } from "@/lib/sheet-read";
 import { writeAuditLog } from "@/lib/audit";
+import { findHistoricalNicknameConflict, reservedNicknameMessage } from "@/lib/guild-nickname-reservation";
 
 export async function GET() {
   const session = await auth();
@@ -89,6 +90,14 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: false, message: "이미 등록된 닉네임입니다."
     }, { status: 409 });
+  // A newly created GID must never claim ANY previously seen nickname.
+  try {
+    if (await findHistoricalNicknameConflict(nickname))
+      return NextResponse.json({success:false,message:reservedNicknameMessage},{status:409});
+  } catch {
+    return NextResponse.json({success:false,
+      message:"닉네임 사용이력을 확인하지 못해 인원 추가를 중단했습니다."},{status:503});
+  }
 
   let sheet: {
     success?: boolean; message?: string;
