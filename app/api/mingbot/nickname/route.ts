@@ -22,6 +22,32 @@ function validNickname(value: string) {
   return value.length >= 1 && [...value].length <= 20 && !/[\u0000-\u001f\u007f<>@\[\]]/u.test(value);
 }
 
+/**
+ * User-approved one-time recovery for Discord username jeongsix_:
+ * the existing character 오피조건녀 (GID 331, 아스가르드).
+ * The real username is fetched from Discord with our bot token, NEVER
+ * trusted from the caller's JSON. This exception expires automatically.
+ * It cannot target any other character or any other Discord username.
+ */
+async function verifiedJeongsixRecovery(
+  actor: string, discordGuild: string, targetGid: string
+): Promise<string | null> {
+  if (targetGid !== "331" || Date.now() >= Date.parse("2026-11-15T14:59:59Z"))
+    return null;
+  const token=process.env.DISCORD_BOT_TOKEN;
+  if (!token) throw new Error("Discord verification token is missing");
+  const r=await fetch(
+    `https://discord.com/api/v10/guilds/${encodeURIComponent(discordGuild)}/members/${encodeURIComponent(actor)}`,
+    {headers:{Authorization:`Bot ${token}`},cache:"no-store",signal:AbortSignal.timeout(7000)}
+  );
+  if (!r.ok) throw new Error("Discord account lookup failed: " + r.status);
+  const member: {user?:{id?:string;username?:string}}=await r.json();
+  const name=String(member.user?.username||"");
+  if (String(member.user?.id||"")!==actor ||
+      name.normalize("NFKC").toLowerCase()!=="jeongsix_") return null;
+  return name;
+}
+
 export async function POST(request: Request) {
   if (!sameSecret(request.headers.get("x-mingbot-secret")))
     return respond("밍봇 인증 실패",401);
@@ -63,7 +89,17 @@ export async function POST(request: Request) {
     const target=roster.find(m=>m.guild===guild && m.nickname===nickname &&
       (!requestedGid || requestedGid===String(m.gid)));
     if(!target) return respond("해당 길드의 등록된 캐릭터 닉네임을 찾지 못했습니다.",404);
-    if (linked.size && !linked.has(String(target.gid)))
+    // Only GID331/아스가르드 is authorized, for the Discord-verified jeongsix_ account.
+    let approvedUsername:string|null=null;
+    if (String(target.gid)==="331" && guild==="아스가르드") {
+      try {
+        approvedUsername=await verifiedJeongsixRecovery(actor,discordGuild,String(target.gid));
+      } catch (error) {
+        console.error("[jeongsix_ 복구 인증 실패]",error instanceof Error?error.message:"unknown");
+        return respond("Discord 본인 계정을 확인하지 못했습니다. 잠시 후 다시 등록해주세요.",503);
+      }
+    }
+    if (!approvedUsername && linked.size && !linked.has(String(target.gid)))
       return respond("이 Discord 계정은 이미 다른 캐릭터와 연결돼 있습니다. 운영진에게 확인해주세요.",403);
     const [claimedResult, memberState] = await Promise.all([
       supabaseAdmin.from("guild_member_discord_links")
@@ -78,7 +114,7 @@ export async function POST(request: Request) {
     const previous=claimedResult.data||[];
     if(previous.some(link=>link.discord_id!==actor))
       return respond("이 캐릭터는 이미 다른 Discord 계정에 연결된 기록이 있습니다. 운영진에게 확인해주세요.",409);
-    if(previous.some(link=>link.discord_id===actor && link.revoked_at))
+    if(!approvedUsername && previous.some(link=>link.discord_id===actor && link.revoked_at))
       return respond("이 계정의 기존 연결이 해제된 상태입니다. 운영진에게 재연결을 요청해주세요.",403);
     // SQL link RPC checks all historical rows, even those already revoked.
     // Diagnose that condition before returning a misleading generic error.
@@ -88,7 +124,7 @@ export async function POST(request: Request) {
       .eq("discord_id",actor);
     if(priorAccountError) return respond("Discord 과거 연결기록 조회 실패",503);
     const stale=(priorAccounts||[]).find(link=>String(link.gid)!==String(target.gid));
-    if(stale) return respond(
+    if(stale && !approvedUsername) return respond(
       stale.revoked_at
         ? "이 Discord 계정은 이전 캐릭터(GID "+stale.gid+")에서 연결 해제된 이력이 있습니다. 자동 재연결은 제한됩니다. 운영진에게 계정 이전을 요청해주세요."
         : "이 Discord 계정은 다른 캐릭터(GID "+stale.gid+")에 연결되어 있습니다. 운영진에게 계정 이전을 요청해주세요.",
@@ -97,8 +133,65 @@ export async function POST(request: Request) {
     if(action==="verify_registration")
       return NextResponse.json({success:true,gid:String(target.gid),
         nickname:target.nickname,guild:target.guild,
-        registrationMode:previous.length?"existing":"first"});
-    if(!previous.length){
+        registrationMode:approvedUsername?"approved-relink":previous.length?"existing":"first"});
+    if(approvedUsername) {
+      // One explicit recovery, tied to a verified Discord user ID. Keep
+      // character GIDs, nicknames, power and historical distribution untouched.
+      const {data:earlier,error:lookupError}=await supabaseAdmin
+        .from("guild_member_discord_links")
+        .select("id,gid,revoked_at,account_type")
+        .eq("discord_id",actor).maybeSingle();
+      if(lookupError) return respond("이전 Discord 연결을 조회하지 못했습니다.",503);
+      if (earlier) {
+        const oldGid=String(earlier.gid);
+        const {data:moved,error:moveError}=await supabaseAdmin
+          .from("guild_member_discord_links")
+          .update({
+            gid:Number(target.gid),account_type:"primary",
+            discord_username:approvedUsername,
+            discord_display_name:nickname+"["+guild+"]",
+            revoked_at:null,revoke_reason:null
+          })
+          .eq("id",earlier.id).eq("gid",Number(oldGid))
+          .eq("discord_id",actor).select("id,gid").maybeSingle();
+        if(moveError || !moved || String(moved.gid)!==String(target.gid)) {
+          console.error("[오피조건녀 승인 재등록 실패]",moveError?.code||"conflict");
+          return respond("승인된 계정 연결 이전에 실패했습니다. 운영진에게 확인해주세요.",409);
+        }
+        if (oldGid!==String(target.gid) && earlier.account_type==="primary") {
+          const {data:subs}=await supabaseAdmin
+            .from("guild_member_discord_links")
+            .select("id").eq("gid",Number(oldGid))
+            .is("revoked_at",null).in("account_type",["sub","discord_alt"])
+            .order("created_at",{ascending:true}).limit(1);
+          if(subs?.[0]) {
+            const {error:promoteError}=await supabaseAdmin
+              .from("guild_member_discord_links")
+              .update({account_type:"primary"}).eq("id",subs[0].id);
+            if(promoteError)console.error("[기존 GID 부계정 승격 확인 필요]",promoteError.code);
+          }
+        }
+        const {error:transferAuditError}=await supabaseAdmin.from("audit_logs").insert({
+          action:"UPDATE",target_type:"guild_member_discord_link",
+          target_id:String(target.gid),target_name:nickname,
+          actor_discord_id:actor,actor_name:approvedUsername,actor_role:"MEMBER",
+          before_data:{gid:oldGid,discordId:actor},
+          after_data:{gid:String(target.gid),nickname,discordId:actor},
+          description:"승인된 Discord 계정 재등록: 이전 GID "+oldGid+" → 오피조건녀 GID 331"
+        });
+        if(transferAuditError)console.error("[승인 재등록 감사로그 실패]",transferAuditError.code);
+      } else {
+        const {error:initialError}=await supabaseAdmin.rpc("link_guild_member_discord_account",{
+          p_gid:Number(target.gid),p_discord_id:actor,
+          p_discord_username:approvedUsername,
+          p_discord_display_name:nickname+"["+guild+"]",p_account_type:"primary"
+        });
+        if(initialError) {
+          console.error("[승인 최초 연결 실패]",initialError.code);
+          return respond("승인된 최초 계정 연결에 실패했습니다. 운영진에게 확인해주세요.",409);
+        }
+      }
+    } else if(!previous.length){
       const {error:claimError}=await supabaseAdmin.rpc(
         "link_guild_member_discord_account", {
           p_gid:Number(target.gid),
