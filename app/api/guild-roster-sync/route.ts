@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { mergeLiveRoster } from "@/lib/guild-roster-merge";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import type { RosterMember } from "@/lib/guild-roster";
+import { nicknameKey, reservedNicknameMessage } from "@/lib/guild-nickname-reservation";
 
 export const runtime = "nodejs";
 
@@ -127,6 +128,34 @@ export async function POST(request: Request) {
         targetCount:Number(member.targetCount || 0)
       }));
     const nextMembers = [...merged.members, ...additions];
+    // Block direct Sheet edits that try to reuse another GID's historic name.
+    // Only changed or newly added names need checking; unchanged legacy
+    // historical collisions are grandfathered, never assigned to a new GID.
+    const previousByGid = new Map(confirmed.map(m => [String(m.gid),m]));
+    const nicknameChanges = nextMembers.filter(m => {
+      const old = previousByGid.get(String(m.gid));
+      return !old || nicknameKey(String(old.nickname)) !== nicknameKey(String(m.nickname));
+    });
+    if (nicknameChanges.length) {
+      const keys = [...new Set(nicknameChanges.map(m => nicknameKey(String(m.nickname))))];
+      const {data: registered,error: registryError} = await supabaseAdmin
+        .from("guild_nickname_registry").select("name_key,owner_gid")
+        .in("name_key",keys);
+      if (registryError) return NextResponse.json({
+        success:false,message:"닉네임 사용이력을 확인할 수 없어 동기화를 중단했습니다."
+      },{status:503});
+      const ownerByName = new Map((registered||[]).map(r => [
+        String(r.name_key), r.owner_gid == null ? null : String(r.owner_gid)
+      ]));
+      const claimed = nicknameChanges.find(m => {
+        const key = nicknameKey(String(m.nickname));
+        return ownerByName.has(key) && ownerByName.get(key) !== String(m.gid);
+      });
+      if(claimed) return NextResponse.json({
+        success:false,message:reservedNicknameMessage,
+        blockedNickname:claimed.nickname,blockedGid:String(claimed.gid)
+      },{status:409});
+    }
     const changed = nextMembers.flatMap<{ before: RosterMember | null; after: RosterMember }>(member => {
       const before = confirmed.find(old => String(old.gid) === String(member.gid));
       if (!before) return [{before:null,after:member}];
