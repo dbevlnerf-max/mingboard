@@ -6,6 +6,7 @@ import { invalidatePortalSheetReads } from "@/lib/sheet-read";
 import { writeAuditLog } from "@/lib/audit";
 import { archiveCuratedMember } from "@/lib/curated-roster-archive";
 import { setMemberLifecycleStatus } from "@/lib/member-lifecycle";
+import { findHistoricalNicknameConflict, reservedNicknameMessage } from "@/lib/guild-nickname-reservation";
 
 type Context = { params: Promise<{ gid: string }> };
 type Member = { gid: string | number; nickname: string; guild: string; job: string;
@@ -67,6 +68,15 @@ export async function PATCH(request: Request, context: Context) {
     return NextResponse.json({ success: false,
       message: "이미 사용 중인 닉네임입니다. 다른 닉네임을 입력해주세요." }, { status: 409 });
   const renamed = nickname !== check.member.nickname;
+  if (renamed) {
+    try {
+      if (await findHistoricalNicknameConflict(nickname,gid))
+        return NextResponse.json({success:false,message:reservedNicknameMessage},{status:409});
+    } catch {
+      return NextResponse.json({success:false,
+        message:"닉네임 사용이력을 확인하지 못해 변경을 중단했습니다."},{status:503});
+    }
+  }
 
   // Restore the existing source-of-truth write-through. The legacy manager
   // previously called this Apps Script action; delegated managers must not
