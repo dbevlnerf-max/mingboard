@@ -257,13 +257,28 @@ export async function GET(request: Request) {
       (m:unknown):m is {nickname:string;gid:string|number} =>
         !!m && typeof m==="object" && "gid" in m && "nickname" in m
     );
+  const keys=[...new Set((data||[]).map(row => String(row.before_data?.nickname||"").trim())
+    .filter(Boolean).map(normalized))];
+  const historicalNames=keys.length
+    ? await supabaseAdmin.from("guild_nickname_registry")
+      .select("name_key,owner_gid").in("name_key",keys)
+    : {data:[] as {name_key:string;owner_gid:number|null}[],error:null};
+  if(historicalNames.error) return respond("분배 이름의 과거 소유권을 확인하지 못했습니다.",503);
+  const reservationOwner=new Map((historicalNames.data||[]).map(x=>[
+    String(x.name_key),x.owner_gid==null?null:String(x.owner_gid)
+  ]));
   const events=(data||[]).flatMap(row=>{
     const prior=String(row.before_data?.nickname||"").trim();
     const next=String(row.after_data?.nickname||"").trim();
     if (!prior || !next || prior===next) return [];
-    const ambiguous=knownMembers.some(m =>
-      String(m.gid)!==String(row.target_id) &&
-      normalized(String(m.nickname||""))===normalized(prior)
+    const key=normalized(prior);
+    const ambiguous=(
+      (reservationOwner.has(key) &&
+        reservationOwner.get(key)!==String(row.target_id)) ||
+      knownMembers.some(m =>
+        String(m.gid)!==String(row.target_id) &&
+        normalized(String(m.nickname||""))===key
+      )
     );
     return [{
       id:row.id,occurredAt:row.created_at,gid:row.target_id,
