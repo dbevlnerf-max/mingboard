@@ -2,6 +2,7 @@ import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { invalidatePortalSheetReads } from "@/lib/sheet-read";
+import { findHistoricalNicknameConflict, reservedNicknameMessage } from "@/lib/guild-nickname-reservation";
 
 export const runtime = "nodejs";
 const GUILDS = new Set(["핑뚝", "천제", "아스가르드", "지옥소녀"]);
@@ -137,6 +138,14 @@ export async function POST(request: Request) {
     normalized(m.nickname)===normalized(nickname));
   if (duplicate) return respond("다른 길드원이 이미 사용 중인 닉네임입니다.",409);
   if (nickname===beforeName) return respond("현재 닉네임과 동일합니다.",409);
+  // Also reject names from former characters, departed members, and old
+  // distribution ledger recipients BEFORE any Google Sheet write.
+  try {
+    const conflict=await findHistoricalNicknameConflict(nickname, member.gid);
+    if (conflict) return respond(reservedNicknameMessage,409);
+  } catch {
+    return respond("닉네임 사용이력을 확인할 수 없어 변경을 중단했습니다.",503);
+  }
   if (action==="verify_rename")
     return NextResponse.json({success:true,gid:String(member.gid),
       beforeNickname:member.nickname,nickname,guild});
