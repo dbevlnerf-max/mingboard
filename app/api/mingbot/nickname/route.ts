@@ -80,6 +80,20 @@ export async function POST(request: Request) {
       return respond("이 캐릭터는 이미 다른 Discord 계정에 연결된 기록이 있습니다. 운영진에게 확인해주세요.",409);
     if(previous.some(link=>link.discord_id===actor && link.revoked_at))
       return respond("이 계정의 기존 연결이 해제된 상태입니다. 운영진에게 재연결을 요청해주세요.",403);
+    // SQL link RPC checks all historical rows, even those already revoked.
+    // Diagnose that condition before returning a misleading generic error.
+    const {data:priorAccounts,error:priorAccountError}=await supabaseAdmin
+      .from("guild_member_discord_links")
+      .select("gid,revoked_at,revoke_reason")
+      .eq("discord_id",actor);
+    if(priorAccountError) return respond("Discord 과거 연결기록 조회 실패",503);
+    const stale=(priorAccounts||[]).find(link=>String(link.gid)!==String(target.gid));
+    if(stale) return respond(
+      stale.revoked_at
+        ? "이 Discord 계정은 이전 캐릭터(GID "+stale.gid+")에서 연결 해제된 이력이 있습니다. 자동 재연결은 제한됩니다. 운영진에게 계정 이전을 요청해주세요."
+        : "이 Discord 계정은 다른 캐릭터(GID "+stale.gid+")에 연결되어 있습니다. 운영진에게 계정 이전을 요청해주세요.",
+      409
+    );
     if(action==="verify_registration")
       return NextResponse.json({success:true,gid:String(target.gid),
         nickname:target.nickname,guild:target.guild,
@@ -96,7 +110,16 @@ export async function POST(request: Request) {
       );
       if(claimError){
         console.error("[밍봇 최초 사용자등록 GID 연결 실패]",claimError.code);
-        return respond("최초 계정 연결이 완료되지 않았습니다. 이미 등록됐는지 확인해주세요.",409);
+        if (claimError.code==="P0001") {
+          const errorMessage=String(claimError.message||"");
+          if (errorMessage.includes("다른 길드원에게 연결"))
+            return respond("이 Discord 계정의 과거 또는 현재 연결이 다른 GID에 남아 있습니다. 기존 연결 확인과 운영진 승인이 필요합니다.",409);
+          if (errorMessage.includes("2개가 연결"))
+            return respond("이 캐릭터의 Discord 연결 가능한 2개 계정이 이미 모두 등록돼 있습니다.",409);
+          if (errorMessage.includes("소유권 이전"))
+            return respond("캐릭터 소유권 이전 보호가 설정되어 운영진 승인이 필요합니다.",409);
+        }
+        return respond("최초 계정 연결 저장이 실패했습니다. 운영진에게 Discord 숫자 ID와 오류 발생 시각을 알려주세요.",409);
       }
     }
     const original=beforeName.slice(0,50)||actor;
